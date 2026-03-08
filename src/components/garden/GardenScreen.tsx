@@ -295,6 +295,40 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                     </div>
                   </div>
                   {garden.notes && <p className="text-xs text-muted-foreground italic">{garden.notes}</p>}
+                  {/* Rotation badges */}
+                  {(() => {
+                    const lastYearGardenCrops = lastYearCrops.filter((c: any) => c.garden_id === garden.id);
+                    const currentGardenCrops = gardenCrops;
+                    if (lastYearGardenCrops.length === 0 || currentGardenCrops.length === 0) return null;
+                    const warnings: { current: string; prev: string; family: string }[] = [];
+                    let allGood = true;
+                    currentGardenCrops.forEach((cc: any) => {
+                      const family = getCropFamily(cc.name);
+                      if (!family) return;
+                      const conflict = lastYearGardenCrops.find((lc: any) => getCropFamily(lc.name) === family);
+                      if (conflict) {
+                        allGood = false;
+                        warnings.push({ current: cc.name, prev: (conflict as any).name, family });
+                      }
+                    });
+                    if (warnings.length > 0) {
+                      return (
+                        <div className="space-y-1 pt-1">
+                          {warnings.map((w, i) => (
+                            <p key={i} className="text-xs text-destructive bg-destructive/10 rounded-lg px-2 py-1">
+                              🔄 Undvik {w.family} – du hade {w.prev} här {seasonYear - 1}
+                            </p>
+                          ))}
+                        </div>
+                      );
+                    }
+                    if (allGood && currentGardenCrops.some((c: any) => getCropFamily(c.name))) {
+                      return (
+                        <p className="text-xs text-primary bg-primary/10 rounded-lg px-2 py-1 pt-1">✅ Bra rotation</p>
+                      );
+                    }
+                    return null;
+                  })()}
                   {gardenCrops.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {gardenCrops.map((c: any) => (

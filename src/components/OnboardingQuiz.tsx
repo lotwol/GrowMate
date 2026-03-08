@@ -72,6 +72,16 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
 
   const update = (partial: Partial<OnboardingData>) => setData((d) => ({ ...d, ...partial }));
 
+  // School reveal auto-advance timer
+  useEffect(() => {
+    if (!showSchoolReveal) return;
+    const timer = setTimeout(() => {
+      setShowSchoolReveal(false);
+      setStep(4);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [showSchoolReveal]);
+
   const zones = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
   const totalSteps = 5;
 

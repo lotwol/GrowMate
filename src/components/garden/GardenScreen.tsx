@@ -175,7 +175,7 @@ export function GardenScreen() {
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {gardenCrops.map((c: any) => (
                         <span key={c.id} className="text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground">
-                          {CATEGORY_EMOJI[c.category] || "🌱"} {c.name}
+                          {(c as any).emoji || CATEGORY_EMOJI[c.category] || "🌱"} {c.name}
                         </span>
                       ))}
                     </div>

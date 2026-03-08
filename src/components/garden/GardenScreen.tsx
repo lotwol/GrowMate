@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera, Flower2, X, AlertTriangle } from "lucide-react";
 import { findCompanionData, findBadNeighbors } from "@/data/companionPlanting";
 import { getCropFamily } from "@/data/cropRotation";
@@ -138,6 +139,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const [companionCropId, setCompanionCropId] = useState<string | null>(null);
   const [harvestCrop, setHarvestCrop] = useState<{ id: string; name: string; emoji?: string } | null>(null);
   const [editingSeedId, setEditingSeedId] = useState<string | null>(null);
+  const [confirmDeleteCropId, setConfirmDeleteCropId] = useState<string | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
@@ -432,7 +434,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                         <button onClick={() => setEditingCropId(crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button onClick={() => deleteCrop.mutate(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+                        <button onClick={() => setConfirmDeleteCropId(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -676,6 +678,30 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             onNavigate?.("diary");
           }}
         />
+
+        {/* Delete crop confirmation */}
+        <AlertDialog open={!!confirmDeleteCropId} onOpenChange={(open) => { if (!open) setConfirmDeleteCropId(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ta bort gröda?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Är du säker på att du vill ta bort den här grödan? Det går inte att ångra.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  if (confirmDeleteCropId) deleteCrop.mutate(confirmDeleteCropId);
+                  setConfirmDeleteCropId(null);
+                }}
+              >
+                Ta bort
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

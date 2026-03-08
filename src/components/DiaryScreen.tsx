@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Plus, ChevronLeft, ChevronRight, Trash2, Pencil, Save } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Trash2, Pencil, Save, CalendarDays } from "lucide-react";
 import { format, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import { sv } from "date-fns/locale";
 import { useDiaryEntries, useAddDiaryEntry, useUpdateDiaryEntry, useDeleteDiaryEntry } from "@/hooks/useDiary";

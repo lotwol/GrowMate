@@ -114,6 +114,7 @@ function HarvestContribution({
 
 interface GardenScreenProps {
   zone?: string | null;
+  school?: string | null;
 }
 
 export function GardenScreen({ zone }: GardenScreenProps) {

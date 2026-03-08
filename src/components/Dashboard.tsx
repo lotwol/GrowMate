@@ -317,7 +317,37 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
           </div>
         </div>
 
-        {/* Companion planting warning */}
+        {/* Frost Alert */}
+        {showFrostAlert && !frostDismissed && (
+          <div className={cn(
+            "rounded-2xl p-4 border",
+            weather.frostRisk === "likely"
+              ? "bg-destructive/10 border-destructive/30"
+              : "bg-growmate-sun/10 border-growmate-sun/30"
+          )}>
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">
+                {weather.frostRisk === "likely" ? "🚨" : "❄️"}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  {weather.frostRisk === "likely" ? "Nattfrost trolig" : "Nattfrost möjlig"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {weather.frostRisk === "likely"
+                    ? `Prognos: ${weather.minTempTonight}°C. Skydda dessa grödor nu: ${frostAffectedCrops.join(", ")}`
+                    : `Temperaturen kan sjunka till ${weather.minTempTonight}°C. Täck in: ${frostAffectedCrops.join(", ")}`
+                  }
+                </p>
+              </div>
+              <button onClick={dismissFrost} className="text-muted-foreground hover:text-foreground shrink-0">
+                <span className="text-xs">✕</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+
         {badNeighbors.length > 0 && !companionDismissed && (
           <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4">
             <div className="flex items-start gap-3">

@@ -226,10 +226,10 @@ export function usePlaceCrop() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (placement: { layout_id: string; crop_id: string; zone_id?: string; cell_row?: number; cell_col?: number }) => {
+    mutationFn: async (placement: { layout_id: string; crop_id: string; zone_id?: string; cell_row: number; cell_col: number }) => {
       const { error } = await supabase
         .from("crop_placements")
-        .upsert({ ...placement, user_id: user!.id }, { onConflict: "layout_id,crop_id" });
+        .upsert({ ...placement, user_id: user!.id }, { onConflict: "layout_id,cell_row,cell_col" });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crop_placements"] }),
@@ -239,12 +239,13 @@ export function usePlaceCrop() {
 export function useRemovePlacement() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ layoutId, cropId }: { layoutId: string; cropId: string }) => {
+    mutationFn: async ({ layoutId, cellRow, cellCol }: { layoutId: string; cellRow: number; cellCol: number }) => {
       const { error } = await supabase
         .from("crop_placements")
         .delete()
         .eq("layout_id", layoutId)
-        .eq("crop_id", cropId);
+        .eq("cell_row", cellRow)
+        .eq("cell_col", cellCol);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crop_placements"] }),

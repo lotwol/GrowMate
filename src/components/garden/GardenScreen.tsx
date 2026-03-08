@@ -541,6 +541,19 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             ))}
           </div>
         )}
+
+        {/* Harvest celebration modal */}
+        <HarvestCelebrationModal
+          open={!!harvestCrop}
+          onClose={() => setHarvestCrop(null)}
+          cropName={harvestCrop?.name || ""}
+          cropEmoji={harvestCrop?.emoji}
+          school={school || null}
+          onLogDiary={() => {
+            setHarvestCrop(null);
+            onNavigate?.("diary");
+          }}
+        />
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
 const VALID_CATEGORIES: CropCategory[] = ["grönsak", "ört", "frukt", "bär", "blomma"];
 
 interface AddSeedFormProps {
-  onSubmit: (seed: { name: string; category: CropCategory; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; photo_urls?: string[] }) => void;
+  onSubmit: (seed: { name: string; category: CropCategory; emoji?: string; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; photo_urls?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }

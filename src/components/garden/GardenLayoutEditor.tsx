@@ -36,6 +36,16 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
   const [rows, setRows] = useState(layout?.rows || 4);
   const [cols, setCols] = useState(layout?.cols || 6);
   const [zones, setZones] = useState<LayoutZone[]>((layout?.zones as any) || []);
+
+  // Sync state when layout data arrives asynchronously
+  useEffect(() => {
+    if (layout) {
+      setMode(prev => prev === "setup" ? "view" : prev);
+      setRows(layout.rows);
+      setCols(layout.cols);
+      setZones((layout.zones as any) || []);
+    }
+  }, [layout?.id]);
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [newZoneName, setNewZoneName] = useState("");
   const [selectedCropId, setSelectedCropId] = useState<string | null>(null);

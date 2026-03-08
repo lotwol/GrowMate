@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Mic, MicOff, Leaf, Plus, ChevronLeft, Trash2, MessageSquare, Sparkles, CalendarPlus, Check } from "lucide-react";
+import { Send, Mic, Square, Loader2, Leaf, Plus, ChevronLeft, Trash2, MessageSquare, Sparkles, CalendarPlus, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
 import {
   useChatConversations,
   useChatMessages,

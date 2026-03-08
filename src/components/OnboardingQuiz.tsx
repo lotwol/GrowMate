@@ -445,15 +445,6 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
       traditionalisten: "Beprövade metoder som fungerat i generationer. Trygg och tidlös kunskap.",
     };
 
-    // Auto-advance after 2 seconds
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        setShowSchoolReveal(false);
-        setStep(4);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }, []);
-
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12" onClick={() => { setShowSchoolReveal(false); setStep(4); }}>
         <div className="text-center space-y-4" style={{ animation: "school-reveal 400ms ease-out forwards" }}>

@@ -1,7 +1,7 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Grid3X3, Camera, Plus, X, Paintbrush, Eraser, Save, Loader2 } from "lucide-react";
+import { Grid3X3, Camera, Plus, X, Paintbrush, Save, Loader2 } from "lucide-react";
 import { useUpsertLayout, useCropPlacements, usePlaceCrop, useRemovePlacement, type LayoutZone, type GardenLayout, type Crop } from "@/hooks/useGarden";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,6 +41,7 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
   const [selectedCropId, setSelectedCropId] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(layout?.photo_url || null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isPainting, setIsPainting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const upsertLayout = useUpsertLayout();
@@ -48,7 +49,6 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
   const placeCrop = usePlaceCrop();
   const removePlacement = useRemovePlacement();
 
-  // Build cell→zone and cell→crop maps
   const cellZoneMap = useMemo(() => {
     const map: Record<string, LayoutZone> = {};
     zones.forEach(z => z.cells.forEach(([r, c]) => { map[`${r}-${c}`] = z; }));
@@ -79,11 +79,10 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
     setMode("paint-zone");
   };
 
-  const toggleCellInZone = (row: number, col: number) => {
+  const toggleCellInZone = useCallback((row: number, col: number) => {
     if (!activeZoneId) return;
     setZones(prev => prev.map(z => {
       if (z.id !== activeZoneId) {
-        // Remove cell from other zones
         return { ...z, cells: z.cells.filter(([r, c]) => !(r === row && c === col)) };
       }
       const has = z.cells.some(([r, c]) => r === row && c === col);
@@ -94,16 +93,16 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
           : [...z.cells, [row, col] as [number, number]],
       };
     }));
-  };
+  }, [activeZoneId]);
 
-  const handleCellClick = (row: number, col: number) => {
+  const handleCellAction = useCallback((row: number, col: number) => {
     if (mode === "paint-zone") {
       toggleCellInZone(row, col);
     } else if (mode === "place-crop" && selectedCropId && layout) {
       const key = `${row}-${col}`;
       const existing = cellCropMap[key];
       if (existing && existing.crop_id === selectedCropId) {
-        removePlacement.mutate({ layoutId: layout.id, cropId: selectedCropId });
+        removePlacement.mutate({ layoutId: layout.id, cellRow: row, cellCol: col });
       } else {
         placeCrop.mutate({
           layout_id: layout.id,
@@ -114,7 +113,22 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
         });
       }
     }
+  }, [mode, activeZoneId, selectedCropId, layout, cellCropMap, cellZoneMap, toggleCellInZone, placeCrop, removePlacement]);
+
+  const handlePointerDown = (row: number, col: number) => {
+    if (mode === "paint-zone" || mode === "place-crop") {
+      setIsPainting(true);
+      handleCellAction(row, col);
+    }
   };
+
+  const handlePointerEnter = (row: number, col: number) => {
+    if (isPainting && (mode === "paint-zone" || mode === "place-crop")) {
+      handleCellAction(row, col);
+    }
+  };
+
+  const handlePointerUp = () => setIsPainting(false);
 
   const saveLayout = async () => {
     await upsertLayout.mutateAsync({
@@ -212,9 +226,10 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
   }
 
   const activeZone = zones.find(z => z.id === activeZoneId);
+  const selectedCrop = crops.find(c => c.id === selectedCropId);
 
   return (
-    <div className="rounded-2xl bg-card border border-border p-4 space-y-3 animate-fade-in">
+    <div className="rounded-2xl bg-card border border-border p-4 space-y-3 animate-fade-in" onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-display text-foreground text-sm">{gardenName} – {seasonYear}</h3>
@@ -292,14 +307,17 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
               <Plus className="w-3 h-3" />
             </Button>
           </div>
-          {activeZone && <p className="text-[10px] text-muted-foreground">Klicka på rutor för att lägga till i "{activeZone.name}"</p>}
+          {activeZone ? (
+            <p className="text-[10px] text-muted-foreground">🖌️ Dra fingret/musen över rutor för att måla "{activeZone.name}"</p>
+          ) : (
+            <p className="text-[10px] text-muted-foreground">Välj en zon ovan eller skapa en ny för att börja måla</p>
+          )}
         </div>
       )}
 
       {/* Crop selector in place mode */}
       {mode === "place-crop" && (
         <div className="space-y-2">
-          <p className="text-[10px] text-muted-foreground">Välj en gröda och klicka på en ruta</p>
           <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
             {crops.map(c => (
               <button
@@ -315,12 +333,17 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
             ))}
             {crops.length === 0 && <p className="text-xs text-muted-foreground">Inga grödor för {seasonYear}</p>}
           </div>
+          {selectedCrop ? (
+            <p className="text-[10px] text-muted-foreground">🌱 Dra fingret/musen för att placera "{selectedCrop.name}" på flera rutor</p>
+          ) : (
+            <p className="text-[10px] text-muted-foreground">Välj en gröda ovan och dra sedan över rutorna</p>
+          )}
         </div>
       )}
 
       {/* The grid */}
       <div
-        className="grid gap-0.5 rounded-xl overflow-hidden border border-border"
+        className={cn("grid gap-0.5 rounded-xl overflow-hidden border border-border select-none", (mode === "paint-zone" || mode === "place-crop") && "touch-none")}
         style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
       >
         {Array.from({ length: rows * cols }, (_, i) => {
@@ -334,7 +357,8 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
           return (
             <button
               key={key}
-              onClick={() => handleCellClick(r, c)}
+              onPointerDown={(e) => { e.preventDefault(); handlePointerDown(r, c); }}
+              onPointerEnter={() => handlePointerEnter(r, c)}
               className={cn(
                 "aspect-square flex items-center justify-center text-[10px] transition-all relative",
                 mode === "view" ? "cursor-default" : "cursor-pointer hover:brightness-90",

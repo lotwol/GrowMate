@@ -584,22 +584,41 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
               </div>
             )}
 
-            {seeds.map((seed) => (
-              <div key={seed.id} className="rounded-2xl bg-card border border-border p-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{CATEGORY_EMOJI[seed.category] || "🌱"}</span>
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">{seed.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {seed.quantity || "–"}{seed.purchased_from ? ` · från ${seed.purchased_from}` : ""}{seed.cost ? ` · ${seed.cost} kr` : ""}
-                    </p>
-                    {seed.best_before && (
-                      <p className="text-xs text-muted-foreground">Bäst före: {seed.best_before}</p>
-                    )}
+            {seeds.map((seed) => {
+              const linkedCrops = crops.filter((c: any) => c.seed_id === seed.id);
+              return (
+                <div key={seed.id} className="rounded-2xl bg-card border border-border p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{CATEGORY_EMOJI[seed.category] || "🌱"}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{seed.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {seed.quantity || "–"}{seed.purchased_from ? ` · från ${seed.purchased_from}` : ""}{seed.cost ? ` · ${seed.cost} kr` : ""}
+                      </p>
+                      {seed.best_before && (
+                        <p className="text-xs text-muted-foreground">Bäst före: {seed.best_before}</p>
+                      )}
+                    </div>
                   </div>
+                  {linkedCrops.length > 0 && (
+                    <div className="pt-1">
+                      <p className="text-xs text-muted-foreground mb-1">Används i {linkedCrops.length} gröda{linkedCrops.length !== 1 ? "r" : ""}:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {linkedCrops.map((c: any) => (
+                          <button
+                            key={c.id}
+                            onClick={() => { setTab("grödor"); }}
+                            className="text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors"
+                          >
+                            🌱 {c.name}{c.gardens?.name ? ` (${c.gardens.name})` : ""}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

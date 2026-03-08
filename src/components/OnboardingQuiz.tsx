@@ -1,99 +1,65 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MapPin, Info } from "lucide-react";
+import { MapPin, Info, ArrowLeft } from "lucide-react";
+import { OnboardingData, DEFAULT_ONBOARDING } from "@/types/onboarding";
 
 const PROFILES = [
-  {
-    id: "sinnesron",
-    emoji: "🌿",
-    title: "Sinnesron",
-    reason: "...stänga av hjärnan och arbeta med händerna",
-    description: "Du odlar för att hitta lugn och närvaro",
-    color: "bg-growmate-leaf-light",
-  },
-  {
-    id: "skordeglädjen",
-    emoji: "🥕",
-    title: "Skördeglädjen",
-    reason: "...äta det jag själv odlat",
-    description: "Du odlar för den otroliga smaken av hemmaodlat",
-    color: "bg-growmate-warm",
-  },
-  {
-    id: "lararen",
-    emoji: "👨‍👧",
-    title: "Läraren",
-    reason: "...odla med mina barn",
-    description: "Du odlar för att lära och dela med de unga",
-    color: "bg-growmate-sky/30",
-  },
-  {
-    id: "experimenteraren",
-    emoji: "🧪",
-    title: "Experimenteraren",
-    reason: "...testa nytt varje säsong",
-    description: "Du odlar för nyfikenhetens skull",
-    color: "bg-growmate-sun/30",
-  },
-  {
-    id: "självhushållaren",
-    emoji: "🏡",
-    title: "Självhushållaren",
-    reason: "...bli mer självförsörjande",
-    description: "Du odlar för oberoende och hållbarhet",
-    color: "bg-growmate-bloom/20",
-  },
+  { id: "sinnesron", emoji: "🌿", title: "Sinnesron", reason: "...stänga av hjärnan och arbeta med händerna", description: "Du odlar för att hitta lugn och närvaro", color: "bg-growmate-leaf-light" },
+  { id: "skordeglädjen", emoji: "🥕", title: "Skördeglädjen", reason: "...äta det jag själv odlat", description: "Du odlar för den otroliga smaken av hemmaodlat", color: "bg-growmate-warm" },
+  { id: "lararen", emoji: "👨‍👧", title: "Läraren", reason: "...odla med mina barn", description: "Du odlar för att lära och dela med de unga", color: "bg-growmate-sky/30" },
+  { id: "experimenteraren", emoji: "🧪", title: "Experimenteraren", reason: "...testa nytt varje säsong", description: "Du odlar för nyfikenhetens skull", color: "bg-growmate-sun/30" },
+  { id: "självhushållaren", emoji: "🏡", title: "Självhushållaren", reason: "...bli mer självförsörjande", description: "Du odlar för oberoende och hållbarhet", color: "bg-growmate-bloom/20" },
 ] as const;
 
+const LOCATION_ZONES: Record<string, { zone: string; desc: string }> = {
+  "malmö": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+  "lund": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+  "helsingborg": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+  "kristianstad": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+  "ystad": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+  "göteborg": { zone: "II", desc: "Västkusten – milt maritimt klimat" },
+  "halmstad": { zone: "II", desc: "Västkusten – milt maritimt klimat" },
+  "kalmar": { zone: "II", desc: "Sydöstra kusten" },
+  "växjö": { zone: "III", desc: "Småland – lite kallare vintrar" },
+  "jönköping": { zone: "III", desc: "Småland – lite kallare vintrar" },
+  "linköping": { zone: "III", desc: "Östergötland" },
+  "norrköping": { zone: "III", desc: "Östergötland" },
+  "stockholm": { zone: "III", desc: "Stockholmsregionen" },
+  "nyköping": { zone: "III", desc: "Södermanland" },
+  "västerås": { zone: "IV", desc: "Mälardalen" },
+  "örebro": { zone: "IV", desc: "Mellansverige" },
+  "uppsala": { zone: "IV", desc: "Uppland" },
+  "karlstad": { zone: "IV", desc: "Värmland" },
+  "borlänge": { zone: "V", desc: "Dalarna" },
+  "falun": { zone: "V", desc: "Dalarna" },
+  "gävle": { zone: "V", desc: "Gästrikland" },
+  "sundsvall": { zone: "V", desc: "Medelpad" },
+  "härnösand": { zone: "V", desc: "Ångermanland" },
+  "östersund": { zone: "VI", desc: "Jämtland – kort men intensiv säsong" },
+  "umeå": { zone: "VI", desc: "Västerbotten" },
+  "luleå": { zone: "VII", desc: "Norrbotten – utmanande men möjligt" },
+  "kiruna": { zone: "VIII", desc: "Fjällnära – kort säsong, ljusa nätter" },
+  "gällivare": { zone: "VIII", desc: "Fjällnära – kort säsong, ljusa nätter" },
+};
+
 interface OnboardingQuizProps {
-  onComplete: (profiles: string[]) => void;
+  onComplete: (data: OnboardingData) => void;
+  initialData?: OnboardingData;
 }
 
-export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
+export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps) {
   const [step, setStep] = useState(0);
-  const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
-  const [name, setName] = useState("");
-  const [customReason, setCustomReason] = useState("");
-  const [showCustom, setShowCustom] = useState(false);
-  const [zone, setZone] = useState<string | null>(null);
-  const [location, setLocation] = useState("");
+  const [data, setData] = useState<OnboardingData>(initialData || DEFAULT_ONBOARDING);
+  const [showCustom, setShowCustom] = useState(!!initialData?.customReason);
   const [manualZone, setManualZone] = useState(false);
 
-  const LOCATION_ZONES: Record<string, { zone: string; desc: string }> = {
-    "malmö": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
-    "lund": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
-    "helsingborg": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
-    "kristianstad": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
-    "ystad": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
-    "göteborg": { zone: "II", desc: "Västkusten – milt maritimt klimat" },
-    "halmstad": { zone: "II", desc: "Västkusten – milt maritimt klimat" },
-    "kalmar": { zone: "II", desc: "Sydöstra kusten" },
-    "växjö": { zone: "III", desc: "Småland – lite kallare vintrar" },
-    "jönköping": { zone: "III", desc: "Småland – lite kallare vintrar" },
-    "linköping": { zone: "III", desc: "Östergötland" },
-    "norrköping": { zone: "III", desc: "Östergötland" },
-    "stockholm": { zone: "III", desc: "Stockholmsregionen" },
-    "nyköping": { zone: "III", desc: "Södermanland" },
-    "västerås": { zone: "IV", desc: "Mälardalen" },
-    "örebro": { zone: "IV", desc: "Mellansverige" },
-    "uppsala": { zone: "IV", desc: "Uppland" },
-    "karlstad": { zone: "IV", desc: "Värmland" },
-    "borlänge": { zone: "V", desc: "Dalarna" },
-    "falun": { zone: "V", desc: "Dalarna" },
-    "gävle": { zone: "V", desc: "Gästrikland" },
-    "sundsvall": { zone: "V", desc: "Medelpad" },
-    "härnösand": { zone: "V", desc: "Ångermanland" },
-    "östersund": { zone: "VI", desc: "Jämtland – kort men intensiv säsong" },
-    "umeå": { zone: "VI", desc: "Västerbotten" },
-    "luleå": { zone: "VII", desc: "Norrbotten – utmanande men möjligt" },
-    "kiruna": { zone: "VIII", desc: "Fjällnära – kort säsong, ljusa nätter" },
-    "gällivare": { zone: "VIII", desc: "Fjällnära – kort säsong, ljusa nätter" },
-  };
+  const update = (partial: Partial<OnboardingData>) => setData((d) => ({ ...d, ...partial }));
 
   const zones = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+  const totalSteps = 4;
 
-  // Levenshtein distance for fuzzy matching
+  // Levenshtein
   const levenshtein = (a: string, b: string): number => {
     const m = a.length, n = b.length;
     const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
@@ -101,43 +67,79 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
     );
     for (let i = 1; i <= m; i++)
       for (let j = 1; j <= n; j++)
-        dp[i][j] = a[i - 1] === b[j - 1]
-          ? dp[i - 1][j - 1]
-          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
     return dp[m][n];
   };
 
   const locationSuggestions = useMemo(() => {
-    const loc = location.toLowerCase().trim();
+    const loc = data.location.toLowerCase().trim();
     if (!loc || loc.length < 2) return [];
-    const cities = Object.keys(LOCATION_ZONES);
-
-    // Exact match → no suggestions needed
     if (LOCATION_ZONES[loc]) return [];
-
-    // Score each city: prefix match, contains, or fuzzy distance
-    const scored = cities.map((city) => {
+    const scored = Object.keys(LOCATION_ZONES).map((city) => {
       let score = 100;
       if (city.startsWith(loc)) score = 0;
       else if (city.includes(loc) || loc.includes(city)) score = 1;
       else score = levenshtein(loc, city.substring(0, Math.max(loc.length, 3)));
       return { city, score };
     });
-
-    return scored
-      .filter((s) => s.score <= 3)
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 3)
-      .map((s) => s.city);
-  }, [location]);
+    return scored.filter((s) => s.score <= 3).sort((a, b) => a.score - b.score).slice(0, 3).map((s) => s.city);
+  }, [data.location]);
 
   const suggestedZone = useMemo(() => {
-    const loc = location.toLowerCase().trim();
-    if (!loc) return null;
-    if (LOCATION_ZONES[loc]) return { ...LOCATION_ZONES[loc], city: loc };
-    return null;
-  }, [location]);
+    const loc = data.location.toLowerCase().trim();
+    if (!loc || !LOCATION_ZONES[loc]) return null;
+    return { ...LOCATION_ZONES[loc], city: loc };
+  }, [data.location]);
 
+  // Philosophical reflection based on slider combo
+  const getReflection = () => {
+    const { timeScore, resultVsJoyScore } = data;
+    if (timeScore < 35 && resultVsJoyScore > 65) {
+      return {
+        emoji: "🌱",
+        text: "Du vill mycket men har lite tid – det är helt mänskligt. Vi hjälper dig välja rätt så att varje minut räknas. Men kom ihåg: ibland är det bästa resultatet att man tog sig ut överhuvudtaget.",
+      };
+    }
+    if (timeScore < 35 && resultVsJoyScore < 35) {
+      return {
+        emoji: "☀️",
+        text: "Perfekt – du söker glädjen utan press. Några krukor på balkongen och solen i ansiktet kan vara precis allt du behöver.",
+      };
+    }
+    if (timeScore > 65 && resultVsJoyScore > 65) {
+      return {
+        emoji: "🥕",
+        text: "Du är redo att satsa – och du kommer skörda! Med tid och ambition kan vi bygga något riktigt fint tillsammans.",
+      };
+    }
+    if (timeScore > 65 && resultVsJoyScore < 35) {
+      return {
+        emoji: "🧘",
+        text: "Du har tid och söker lugnet. Trädgården väntar på dig som en meditation utan instruktioner.",
+      };
+    }
+    return {
+      emoji: "🌿",
+      text: "En fin balans – vi skräddarsyr upplevelsen efter just dig. Du kan alltid justera senare.",
+    };
+  };
+
+  const BackButton = ({ onClick }: { onClick: () => void }) => (
+    <button onClick={onClick} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2">
+      <ArrowLeft className="w-4 h-4" />
+      <span>Tillbaka</span>
+    </button>
+  );
+
+  const StepIndicator = ({ current }: { current: number }) => (
+    <div className="flex items-center justify-center gap-1.5 mb-1">
+      {Array.from({ length: totalSteps }, (_, i) => (
+        <div key={i} className={cn("h-1.5 rounded-full transition-all duration-300", i < current ? "w-6 bg-primary" : i === current ? "w-6 bg-primary/60" : "w-3 bg-border")} />
+      ))}
+    </div>
+  );
+
+  // Step 0: Welcome
   if (step === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
@@ -154,17 +156,11 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
             <input
               type="text"
               placeholder="Vad heter du?"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={data.name}
+              onChange={(e) => update({ name: e.target.value })}
               className="w-full rounded-full border border-input bg-background px-6 py-3 text-center text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body"
             />
-            <Button
-              variant="growmate"
-              size="lg"
-              className="w-full"
-              onClick={() => name.trim() && setStep(1)}
-              disabled={!name.trim()}
-            >
+            <Button variant="growmate" size="lg" className="w-full" onClick={() => data.name.trim() && setStep(1)} disabled={!data.name.trim()}>
               Kom igång
             </Button>
           </div>
@@ -173,102 +169,58 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
     );
   }
 
+  // Step 1: Why do you grow?
   if (step === 1) {
     return (
-      <div className="min-h-screen flex flex-col px-6 py-12">
-        <div className="max-w-md w-full mx-auto space-y-6 animate-fade-in">
+      <div className="min-h-screen flex flex-col px-6 py-8">
+        <div className="max-w-md w-full mx-auto space-y-5 animate-fade-in">
+          <BackButton onClick={() => setStep(0)} />
+          <StepIndicator current={0} />
           <div className="text-center space-y-2">
-            <p className="text-muted-foreground text-sm">Steg 1 av 2</p>
-            <h2 className="text-2xl font-display text-foreground">
-              Hej {name}! Varför odlar du?
-            </h2>
-             <p className="text-muted-foreground">
-               Välj en eller flera – ditt svar formar hela upplevelsen
-             </p>
+            <h2 className="text-2xl font-display text-foreground">Hej {data.name}! Varför odlar du?</h2>
+            <p className="text-muted-foreground">Välj en eller flera – ditt svar formar hela upplevelsen</p>
           </div>
-
           <div className="space-y-3">
             {PROFILES.map((profile) => (
               <button
                 key={profile.id}
-                onClick={() => setSelectedProfiles((prev) =>
-                  prev.includes(profile.id)
-                    ? prev.filter((p) => p !== profile.id)
-                    : [...prev, profile.id]
-                )}
-                className={cn(
-                  "w-full text-left rounded-2xl p-4 border-2 transition-all duration-200",
-                  selectedProfiles.includes(profile.id)
-                    ? "border-primary bg-accent shadow-md"
-                    : "border-transparent bg-card hover:border-primary/30"
-                )}
+                onClick={() => update({ profiles: data.profiles.includes(profile.id) ? data.profiles.filter((p) => p !== profile.id) : [...data.profiles, profile.id] })}
+                className={cn("w-full text-left rounded-2xl p-4 border-2 transition-all duration-200", data.profiles.includes(profile.id) ? "border-primary bg-accent shadow-md" : "border-transparent bg-card hover:border-primary/30")}
               >
                 <div className="flex items-start gap-3">
-                  <span
-                    className={cn(
-                      "text-2xl w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                      profile.color
-                    )}
-                  >
-                    {profile.emoji}
-                  </span>
+                  <span className={cn("text-2xl w-10 h-10 rounded-xl flex items-center justify-center shrink-0", profile.color)}>{profile.emoji}</span>
                   <div>
-                    <p className="font-medium text-foreground">
-                      {profile.title}
-                    </p>
-                    <p className="text-sm text-muted-foreground italic">
-                      "Jag odlar för att {profile.reason}"
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {profile.description}
-                    </p>
+                    <p className="font-medium text-foreground">{profile.title}</p>
+                    <p className="text-sm text-muted-foreground italic">"Jag odlar för att {profile.reason}"</p>
+                    <p className="text-xs text-muted-foreground mt-1">{profile.description}</p>
                   </div>
                 </div>
               </button>
             ))}
-            {/* "Annat" option */}
             <button
               onClick={() => {
                 setShowCustom(!showCustom);
                 if (showCustom) {
-                  setSelectedProfiles((prev) => prev.filter((p) => p !== "annat"));
-                  setCustomReason("");
+                  update({ profiles: data.profiles.filter((p) => p !== "annat"), customReason: "" });
                 }
               }}
-              className={cn(
-                "w-full text-left rounded-2xl p-4 border-2 transition-all duration-200 border-dashed",
-                showCustom
-                  ? "border-primary bg-accent shadow-md"
-                  : "border-border bg-card hover:border-primary/30"
-              )}
+              className={cn("w-full text-left rounded-2xl p-4 border-2 transition-all duration-200 border-dashed", showCustom ? "border-primary bg-accent shadow-md" : "border-border bg-card hover:border-primary/30")}
             >
               <div className="flex items-start gap-3">
-                <span className="text-2xl w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">
-                  ✨
-                </span>
+                <span className="text-2xl w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">✨</span>
                 <div>
                   <p className="font-medium text-foreground">Annat</p>
-                  <p className="text-sm text-muted-foreground italic">
-                    "Jag odlar för att..." – berätta med egna ord!
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Hjälp oss förstå fler anledningar till odling
-                  </p>
+                  <p className="text-sm text-muted-foreground italic">"Jag odlar för att..." – berätta med egna ord!</p>
                 </div>
               </div>
             </button>
-
             {showCustom && (
               <div className="animate-fade-in pl-2">
                 <textarea
-                  value={customReason}
+                  value={data.customReason}
                   onChange={(e) => {
-                    setCustomReason(e.target.value);
-                    if (e.target.value.trim() && !selectedProfiles.includes("annat")) {
-                      setSelectedProfiles((prev) => [...prev, "annat"]);
-                    } else if (!e.target.value.trim()) {
-                      setSelectedProfiles((prev) => prev.filter((p) => p !== "annat"));
-                    }
+                    const val = e.target.value;
+                    update({ customReason: val, profiles: val.trim() && !data.profiles.includes("annat") ? [...data.profiles, "annat"] : !val.trim() ? data.profiles.filter((p) => p !== "annat") : data.profiles });
                   }}
                   placeholder="Berätta varför du odlar – allt räknas! 🌱"
                   rows={3}
@@ -277,13 +229,10 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
               </div>
             )}
           </div>
-
           <Button
-            variant="growmate"
-            size="lg"
-            className="w-full"
-            onClick={() => (selectedProfiles.length > 0 || (showCustom && customReason.trim())) && setStep(2)}
-            disabled={selectedProfiles.length === 0 && !(showCustom && customReason.trim())}
+            variant="growmate" size="lg" className="w-full"
+            onClick={() => setStep(2)}
+            disabled={data.profiles.length === 0 && !(showCustom && data.customReason.trim())}
           >
             Nästa
           </Button>
@@ -292,58 +241,128 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
     );
   }
 
+  // Step 2: Personality & time
+  if (step === 2) {
+    const reflection = getReflection();
+    return (
+      <div className="min-h-screen flex flex-col px-6 py-8">
+        <div className="max-w-md w-full mx-auto space-y-5 animate-fade-in">
+          <BackButton onClick={() => setStep(1)} />
+          <StepIndicator current={1} />
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-display text-foreground">Berätta lite om dig 🪞</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Var ärlig mot dig själv – det finns inga fel svar. Du kan alltid ändra det här senare.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {/* Planner vs Spontaneous */}
+            <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">Hur odlar du helst?</p>
+              <div className="space-y-2">
+                <input
+                  type="range" min={0} max={100} value={data.plannerScore}
+                  onChange={(e) => update({ plannerScore: Number(e.target.value) })}
+                  className="w-full accent-primary"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span className={cn(data.plannerScore < 40 && "text-foreground font-medium")}>🎲 Spontan & fri</span>
+                  <span className={cn(data.plannerScore > 60 && "text-foreground font-medium")}>📋 Planerar allt</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                {data.plannerScore < 30 ? "Du gillar att följa magkänslan – vi håller det flexibelt!" : data.plannerScore > 70 ? "Struktur är din grej – vi ger dig scheman och påminnelser." : "Lite av varje – perfekt balans."}
+              </p>
+            </div>
+
+            {/* Time per week */}
+            <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">Hur mycket tid har du för odling i veckan?</p>
+              <div className="space-y-2">
+                <input
+                  type="range" min={0} max={100} value={data.timeScore}
+                  onChange={(e) => update({ timeScore: Number(e.target.value) })}
+                  className="w-full accent-primary"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span className={cn(data.timeScore < 40 && "text-foreground font-medium")}>⏱️ Några minuter</span>
+                  <span className={cn(data.timeScore > 60 && "text-foreground font-medium")}>🌻 Timmar & timmar</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                {data.timeScore < 30 ? "Helt okej! Varje minut i jorden räknas." : data.timeScore > 70 ? "Fantastiskt – du har utrymme att verkligen experimentera." : "Lagom är bäst – vi anpassar efter det."}
+              </p>
+            </div>
+
+            {/* Result vs Joy */}
+            <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">Vad är viktigast för dig?</p>
+              <div className="space-y-2">
+                <input
+                  type="range" min={0} max={100} value={data.resultVsJoyScore}
+                  onChange={(e) => update({ resultVsJoyScore: Number(e.target.value) })}
+                  className="w-full accent-primary"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span className={cn(data.resultVsJoyScore < 40 && "text-foreground font-medium")}>🧘 Glädjen i att påta</span>
+                  <span className={cn(data.resultVsJoyScore > 60 && "text-foreground font-medium")}>🥕 Resultatet på tallriken</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Philosophical reflection */}
+            <div className="rounded-2xl bg-accent/60 border border-primary/20 p-4 animate-fade-in">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">{reflection.emoji}</span>
+                <p className="text-sm text-foreground/80 leading-relaxed italic">
+                  {reflection.text}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Button variant="growmate" size="lg" className="w-full" onClick={() => setStep(3)}>
+            Nästa
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 3: Zone
   return (
-    <div className="min-h-screen flex flex-col px-6 py-12">
+    <div className="min-h-screen flex flex-col px-6 py-8">
       <div className="max-w-md w-full mx-auto space-y-5 animate-fade-in">
+        <BackButton onClick={() => setStep(2)} />
+        <StepIndicator current={2} />
         <div className="text-center space-y-2">
-          <p className="text-muted-foreground text-sm">Steg 2 av 2</p>
-          <h2 className="text-2xl font-display text-foreground">
-            Var odlar du?
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Vi föreslår en odlingszon baserat på var du bor
-          </p>
+          <h2 className="text-2xl font-display text-foreground">Var odlar du?</h2>
+          <p className="text-muted-foreground text-sm">Vi föreslår en odlingszon baserat på var du bor</p>
         </div>
 
-        {/* Location input */}
         <div className="relative">
           <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
-            type="text"
-            placeholder="Skriv din stad, t.ex. Stockholm"
-            value={location}
-            onChange={(e) => {
-              setLocation(e.target.value);
-              setManualZone(false);
-            }}
+            type="text" placeholder="Skriv din stad, t.ex. Stockholm" value={data.location}
+            onChange={(e) => { update({ location: e.target.value }); setManualZone(false); }}
             className="w-full rounded-full border border-input bg-background pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body"
           />
-
-          {/* Fuzzy suggestions */}
           {locationSuggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-10 animate-fade-in">
               <p className="text-xs text-muted-foreground px-4 pt-2 pb-1">Menade du:</p>
               {locationSuggestions.map((city) => (
-                <button
-                  key={city}
-                  onClick={() => {
-                    setLocation(city.charAt(0).toUpperCase() + city.slice(1));
-                    setManualZone(false);
-                  }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors flex items-center gap-2"
-                >
+                <button key={city} onClick={() => { update({ location: city.charAt(0).toUpperCase() + city.slice(1) }); setManualZone(false); }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors flex items-center gap-2">
                   <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
                   <span className="capitalize">{city}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    Zon {LOCATION_ZONES[city].zone}
-                  </span>
+                  <span className="text-xs text-muted-foreground ml-auto">Zon {LOCATION_ZONES[city].zone}</span>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Suggested zone */}
         {suggestedZone && !manualZone && (
           <div className="rounded-2xl bg-accent/60 border border-primary/20 p-4 space-y-3 animate-fade-in">
             <div className="flex items-start gap-3">
@@ -351,73 +370,44 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
                 <span className="text-primary-foreground font-bold text-sm">{suggestedZone.zone}</span>
               </div>
               <div>
-                <p className="font-medium text-foreground">
-                  Vi föreslår Zon {suggestedZone.zone}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {suggestedZone.desc}
-                </p>
+                <p className="font-medium text-foreground">Vi föreslår Zon {suggestedZone.zone}</p>
+                <p className="text-sm text-muted-foreground">{suggestedZone.desc}</p>
               </div>
             </div>
-            <Button
-              variant="growmate"
-              size="sm"
-              className="w-full"
-              onClick={() => setZone(suggestedZone.zone)}
-            >
-              {zone === suggestedZone.zone ? "✓ Vald" : "Välj Zon " + suggestedZone.zone}
+            <Button variant="growmate" size="sm" className="w-full" onClick={() => update({ zone: suggestedZone.zone })}>
+              {data.zone === suggestedZone.zone ? "✓ Vald" : "Välj Zon " + suggestedZone.zone}
             </Button>
           </div>
         )}
 
-        {/* No match or manual */}
-        {location.trim() && !suggestedZone && !manualZone && (
+        {data.location.trim() && !suggestedZone && !manualZone && (
           <div className="rounded-2xl bg-card border border-border p-4 text-center space-y-2 animate-fade-in">
-            <p className="text-sm text-muted-foreground">
-              Vi hittade inte din stad – men du kan välja zon manuellt nedan.
-            </p>
+            <p className="text-sm text-muted-foreground">Vi hittade inte din stad – men du kan välja zon manuellt nedan.</p>
           </div>
         )}
 
-        {/* Microclimat info + manual toggle */}
         <div className="rounded-2xl bg-secondary/50 border border-border p-4 space-y-3">
           <div className="flex items-start gap-2">
             <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
             <div className="text-xs text-muted-foreground leading-relaxed">
               <p className="font-medium text-foreground text-sm mb-1">Om mikroklimat</p>
-              <p>
-                Odlingszonerna är en guide – ditt faktiska klimat kan skilja sig. 
-                Stadsmiljöer, sydvända lägen och kustnära platser kan vara varmare. 
-                Högt belägna eller vindexponerade platser kan vara kallare.
-              </p>
+              <p>Odlingszonerna är en guide – ditt faktiska klimat kan skilja sig. Stadsmiljöer, sydvända lägen och kustnära platser kan vara varmare. Högt belägna eller vindexponerade platser kan vara kallare.</p>
             </div>
           </div>
           {!manualZone && (
-            <button
-              onClick={() => setManualZone(true)}
-              className="text-xs font-medium text-primary hover:underline"
-            >
+            <button onClick={() => setManualZone(true)} className="text-xs font-medium text-primary hover:underline">
               Jag vill välja zon manuellt →
             </button>
           )}
         </div>
 
-        {/* Manual zone grid */}
-        {(manualZone || (!suggestedZone && location.trim())) && (
+        {(manualZone || (!suggestedZone && data.location.trim())) && (
           <div className="space-y-2 animate-fade-in">
             <p className="text-sm font-medium text-foreground">Välj din zon:</p>
             <div className="grid grid-cols-4 gap-2">
               {zones.map((z) => (
-                <button
-                  key={z}
-                  onClick={() => setZone(z)}
-                  className={cn(
-                    "py-3 rounded-xl font-medium text-sm border-2 transition-all",
-                    zone === z
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-foreground hover:border-primary/40"
-                  )}
-                >
+                <button key={z} onClick={() => update({ zone: z })}
+                  className={cn("py-3 rounded-xl font-medium text-sm border-2 transition-all", data.zone === z ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground hover:border-primary/40")}>
                   {z}
                 </button>
               ))}
@@ -431,13 +421,7 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
           </div>
         )}
 
-        <Button
-          variant="growmate"
-          size="lg"
-          className="w-full"
-          onClick={() => zone && selectedProfiles.length > 0 && onComplete(selectedProfiles)}
-          disabled={!zone}
-        >
+        <Button variant="growmate" size="lg" className="w-full" onClick={() => data.zone && onComplete(data)} disabled={!data.zone}>
           Starta min odling 🌱
         </Button>
       </div>

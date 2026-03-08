@@ -9,6 +9,7 @@ import {
   Heart,
   BookOpen,
   Thermometer,
+  Users,
 } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";

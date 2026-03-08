@@ -40,12 +40,22 @@ interface GrowMateChatProps {
   school?: string | null;
 }
 
-const WELCOME_MESSAGE: Message = {
-  id: "welcome",
-  role: "assistant",
-  content:
-    "Hej! 🌱 Jag är GrowMate – din odlingskompis. Fråga mig om sådd, skadegörare, gödning, eller bara berätta vad du har på gång i trädgården. Du kan också tala in din fråga!",
+const SCHOOL_WELCOME: Record<string, string> = {
+  "naturens-vag": "Hej! Jag är GrowMaten. Jag hjälper dig odla i samklang med naturen – inga onödiga kemikalier, inget krångel. Vad funderar du på? 🌿",
+  precisionsodlaren: "Hej! Jag är GrowMaten. Jag kan hjälpa dig optimera varje aspekt av odlingen – datum, avstånd, data. Vad vill du förbättra? 📊",
+  hackaren: "Tja! Jag är GrowMaten. Jag gillar genvägar lika mycket som du. Vad vill du lösa med minsta möjliga ansträngning? ⚡",
+  traditionalisten: "God dag! Jag är GrowMaten. Jag respekterar beprövade metoder och gammal kunskap. Vad kan jag hjälpa dig med? 🌻",
 };
+
+const DEFAULT_WELCOME = "Hej! 🌱 Jag är GrowMate – din odlingskompis. Fråga mig om sådd, skadegörare, gödning, eller bara berätta vad du har på gång i trädgården. Du kan också tala in din fråga!";
+
+function getWelcomeMessage(school?: string | null): Message {
+  return {
+    id: "welcome",
+    role: "assistant",
+    content: (school && SCHOOL_WELCOME[school]) || DEFAULT_WELCOME,
+  };
+}
 
 export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const { user } = useAuth();

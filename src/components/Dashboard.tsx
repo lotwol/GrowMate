@@ -190,6 +190,9 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
     },
   ];
 
+  const greeting = getSchoolGreeting(school || null, name || "");
+  const schoolMeta = school ? SCHOOL_META[school] : null;
+
   return (
     <div className="min-h-screen pb-24">
       {/* Hero */}
@@ -202,11 +205,19 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
         <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background" />
         <div className="absolute bottom-4 left-4 right-4">
           <h1 className="text-2xl font-display text-foreground drop-shadow-sm">
-            God morgon! {profileEmojis[profile] || "🌱"}
+            {greeting}
           </h1>
-          <p className="text-sm text-foreground/80 mt-1">
-            Säsongen har börjat – dags att planera din odling
-          </p>
+          {schoolMeta && (
+            <button
+              onClick={() => onNavigate("profile")}
+              className={cn(
+                "inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-medium transition-all hover:scale-105",
+                schoolMeta.badgeColor
+              )}
+            >
+              {schoolMeta.emoji} {schoolMeta.label}
+            </button>
+          )}
         </div>
       </div>
 

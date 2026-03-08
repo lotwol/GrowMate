@@ -1,0 +1,1 @@
+ALTER TABLE public.crops ADD COLUMN seed_id uuid REFERENCES public.seed_inventory(id) ON DELETE SET NULL;

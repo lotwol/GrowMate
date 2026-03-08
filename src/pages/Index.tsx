@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, useSaveProfile } from "@/hooks/useProfile";
 import { AuthScreen } from "@/components/AuthScreen";

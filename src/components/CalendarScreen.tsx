@@ -541,6 +541,42 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
           </div>
         </div>
 
+        {/* Calendar events from GrowMate */}
+        {calendarEvents && calendarEvents.length > 0 && (
+          <div>
+            <h2 className="font-display text-lg mb-3">Kommande händelser 📅</h2>
+            <div className="space-y-2">
+              {calendarEvents
+                .filter((e) => {
+                  const m = parseInt(e.event_date.split("-")[1]);
+                  return m === viewMonth;
+                })
+                .map((e) => (
+                  <div
+                    key={e.id}
+                    className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3"
+                  >
+                    <span className="text-xl">{e.emoji || "📅"}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{e.title}</p>
+                      {e.description && (
+                        <p className="text-xs text-muted-foreground">{e.description}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {formatSwedishDate(e.event_date)}
+                      </p>
+                    </div>
+                    {e.event_type === "growmate" && (
+                      <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">
+                        🤖 GrowMate
+                      </span>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* Wellbeing sparkline */}
         <div>
           <h2 className="font-display text-lg mb-3">

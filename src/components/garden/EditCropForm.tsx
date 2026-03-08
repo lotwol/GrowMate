@@ -35,6 +35,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
   const [harvestDate, setHarvestDate] = useState(crop.harvest_date || "");
   const [notes, setNotes] = useState(crop.notes || "");
   const [cost, setCost] = useState(crop.cost ? String(crop.cost) : "");
+  const [photoUrls, setPhotoUrls] = useState<string[]>((crop as any).photo_urls || []);
 
   const handleSave = () => {
     if (!name.trim()) return;

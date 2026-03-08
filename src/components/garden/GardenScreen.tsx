@@ -117,7 +117,7 @@ interface GardenScreenProps {
   school?: string | null;
 }
 
-export function GardenScreen({ zone }: GardenScreenProps) {
+export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [tab, setTab] = useState<Tab>("ytor");
   const [showAddGarden, setShowAddGarden] = useState(false);
   const [showAddCrop, setShowAddCrop] = useState(false);

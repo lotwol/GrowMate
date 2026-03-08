@@ -94,8 +94,8 @@ const Index = () => {
       {activeTab === "chat" && (
         <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} school={onboardingData.school} /></div>
       )}
-      {activeTab === "diary" && <DiaryScreen />}
-      {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" />}
+      {activeTab === "diary" && <DiaryScreen onNavigate={(tab) => setActiveTab(tab as Tab)} />}
+      {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />

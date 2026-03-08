@@ -1,3 +1,5 @@
+export type GrowingSchool = "naturens-vag" | "precisionsodlaren" | "hackaren" | "traditionalisten";
+
 export interface OnboardingData {
   name: string;
   profiles: string[];
@@ -8,6 +10,7 @@ export interface OnboardingData {
   plannerScore: number; // 0 = spontan, 100 = planerare
   timeScore: number; // 0 = minimal tid, 100 = mycket tid
   resultVsJoyScore: number; // 0 = glädjen i processen, 100 = resultatet
+  school: GrowingSchool | null;
 }
 
 export const DEFAULT_ONBOARDING: OnboardingData = {
@@ -19,4 +22,5 @@ export const DEFAULT_ONBOARDING: OnboardingData = {
   plannerScore: 50,
   timeScore: 5,
   resultVsJoyScore: 50,
+  school: null,
 };

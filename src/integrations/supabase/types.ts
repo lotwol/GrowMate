@@ -345,6 +345,7 @@ export type Database = {
           planner_score: number | null
           profiles: string[] | null
           result_vs_joy_score: number | null
+          school: string | null
           time_score: number | null
           updated_at: string
           user_id: string
@@ -361,6 +362,7 @@ export type Database = {
           planner_score?: number | null
           profiles?: string[] | null
           result_vs_joy_score?: number | null
+          school?: string | null
           time_score?: number | null
           updated_at?: string
           user_id: string
@@ -377,6 +379,7 @@ export type Database = {
           planner_score?: number | null
           profiles?: string[] | null
           result_vs_joy_score?: number | null
+          school?: string | null
           time_score?: number | null
           updated_at?: string
           user_id?: string
@@ -437,6 +440,10 @@ export type Database = {
           harvest_end: number | null
           harvest_start: number | null
           id: string
+          school_hackaren_tip: string | null
+          school_naturens_vag_tip: string | null
+          school_precisionsodlaren_tip: string | null
+          school_traditionalisten_tip: string | null
           sow_indoor_end: number | null
           sow_indoor_start: number | null
           sow_outdoor_end: number | null
@@ -455,6 +462,10 @@ export type Database = {
           harvest_end?: number | null
           harvest_start?: number | null
           id?: string
+          school_hackaren_tip?: string | null
+          school_naturens_vag_tip?: string | null
+          school_precisionsodlaren_tip?: string | null
+          school_traditionalisten_tip?: string | null
           sow_indoor_end?: number | null
           sow_indoor_start?: number | null
           sow_outdoor_end?: number | null
@@ -473,6 +484,10 @@ export type Database = {
           harvest_end?: number | null
           harvest_start?: number | null
           id?: string
+          school_hackaren_tip?: string | null
+          school_naturens_vag_tip?: string | null
+          school_precisionsodlaren_tip?: string | null
+          school_traditionalisten_tip?: string | null
           sow_indoor_end?: number | null
           sow_indoor_start?: number | null
           sow_outdoor_end?: number | null

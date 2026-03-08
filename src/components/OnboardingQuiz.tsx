@@ -283,8 +283,8 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
                     />
                     <div className="flex justify-between items-center text-xs text-muted-foreground">
                       <span>⏱️ 1h</span>
-                      <span className="text-base font-medium text-foreground">{displayHours >= 40 ? ">40" : displayHours}h / vecka</span>
-                      <span>🌻 >40h</span>
+                      <span className="text-base font-medium text-foreground">{displayHours >= 40 ? ">40" : displayHours + ""}h / vecka</span>
+                      <span>🌻 {">"} 40h</span>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground italic">{timeLabel}</p>

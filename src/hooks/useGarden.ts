@@ -201,6 +201,17 @@ export function useAddSeed() {
   });
 }
 
+export function useUpdateSeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<TablesInsert<"seed_inventory">>) => {
+      const { error } = await supabase.from("seed_inventory").update(updates as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["seed_inventory"] }),
+  });
+}
+
 export function useDeleteGarden() {
   const qc = useQueryClient();
   return useMutation({

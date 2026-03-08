@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map } from "lucide-react";
+import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star } from "lucide-react";
 import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
@@ -10,6 +10,8 @@ import { EditCropForm } from "@/components/garden/EditCropForm";
 import { GardenLayoutEditor } from "@/components/garden/GardenLayoutEditor";
 import type { Database } from "@/integrations/supabase/types";
 import { Constants } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Tab = "ytor" | "grödor" | "frön";
 
@@ -30,7 +32,91 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   misslyckad: { label: "Misslyckad", color: "bg-destructive/20 text-destructive" },
 };
 
-export function GardenScreen() {
+// Harvest contribution inline card
+function HarvestContribution({
+  crop,
+  zone,
+  gardenType,
+  onDone,
+}: {
+  crop: any;
+  zone: string;
+  gardenType?: string;
+  onDone: () => void;
+}) {
+  const [rating, setRating] = useState<number>(0);
+  const [note, setNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleShare = async () => {
+    setSubmitting(true);
+    try {
+      await supabase.from("community_growing_data" as any).insert({
+        crop_name: crop.name,
+        zone,
+        season_year: crop.season_year || new Date().getFullYear(),
+        sow_date: crop.sow_date || null,
+        harvest_date: new Date().toISOString().split("T")[0],
+        success_rating: rating || null,
+        garden_type: gardenType || null,
+        notes_public: note.trim() || null,
+      } as any);
+      toast.success("Tack! Din data hjälper svenska odlare 🌱");
+    } catch {
+      // silent fail
+    }
+    onDone();
+  };
+
+  return (
+    <div className="rounded-xl bg-accent/50 border border-border p-3 space-y-3 animate-fade-in">
+      <div>
+        <p className="text-sm font-medium text-foreground">Bra jobbat! 🌟 Hjälp andra svenska odlare?</p>
+        <p className="text-xs text-muted-foreground">Din anonyma data hjälper GrowMate lära sig vad som funkar i ditt klimat.</p>
+      </div>
+
+      <div>
+        <p className="text-xs text-muted-foreground mb-1">Hur gick säsongen?</p>
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setRating(v)}
+              className={cn("text-lg transition-transform", v <= rating ? "scale-110" : "opacity-40")}
+            >
+              ⭐
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <input
+        type="text"
+        maxLength={140}
+        placeholder="Något du vill dela? (visas anonymt)"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+
+      <div className="flex gap-2">
+        <Button variant="growmate" size="sm" onClick={handleShare} disabled={submitting}>
+          Dela anonymt
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onDone}>
+          Hoppa över
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface GardenScreenProps {
+  zone?: string | null;
+}
+
+export function GardenScreen({ zone }: GardenScreenProps) {
   const [tab, setTab] = useState<Tab>("ytor");
   const [showAddGarden, setShowAddGarden] = useState(false);
   const [showAddCrop, setShowAddCrop] = useState(false);
@@ -38,6 +124,8 @@ export function GardenScreen() {
   const [editingCropId, setEditingCropId] = useState<string | null>(null);
   const [layoutGardenId, setLayoutGardenId] = useState<string | null>(null);
   const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
+  const [contributingCropId, setContributingCropId] = useState<string | null>(null);
+  const [dismissedContributions, setDismissedContributions] = useState<Set<string>>(new Set());
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
@@ -61,6 +149,24 @@ export function GardenScreen() {
   ];
 
   const statuses = Constants.public.Enums.crop_status;
+
+  const handleStatusChange = (cropId: string, status: string) => {
+    updateStatus.mutate(
+      { id: cropId, status: status as any },
+      {
+        onSuccess: () => {
+          if (status === "skördad" && zone && !dismissedContributions.has(cropId)) {
+            setContributingCropId(cropId);
+          }
+        },
+      }
+    );
+  };
+
+  const dismissContribution = (cropId: string) => {
+    setDismissedContributions((prev) => new Set(prev).add(cropId));
+    setContributingCropId(null);
+  };
 
   // Layout editor view
   if (layoutGardenId && layoutGarden) {
@@ -192,6 +298,7 @@ export function GardenScreen() {
             {showAddCrop ? (
               <AddCropForm
                 gardens={gardens}
+                zone={zone}
                 onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear }, { onSuccess: () => setShowAddCrop(false) }); }}
                 onCancel={() => setShowAddCrop(false)}
                 isLoading={addCrop.isPending}
@@ -228,52 +335,69 @@ export function GardenScreen() {
               }
 
               const statusConf = STATUS_CONFIG[crop.status] || STATUS_CONFIG.planerad;
+              const cropGarden = gardens.find((g) => g.id === crop.garden_id);
+              const gardenType = cropGarden?.type
+                ? (Array.isArray(cropGarden.type) ? cropGarden.type[0] : cropGarden.type)
+                : undefined;
+
               return (
-                <div key={crop.id} className="rounded-2xl bg-card border border-border p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
-                      <div>
-                        <p className="font-medium text-foreground">{crop.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {crop.gardens?.name || "Ingen yta"}
-                          {crop.sow_date ? ` · Sådd ${crop.sow_date}` : ""}
-                          {crop.cost ? ` · ${crop.cost} kr` : ""}
-                        </p>
+                <div key={crop.id} className="space-y-2">
+                  <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
+                        <div>
+                          <p className="font-medium text-foreground">{crop.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {crop.gardens?.name || "Ingen yta"}
+                            {crop.sow_date ? ` · Sådd ${crop.sow_date}` : ""}
+                            {crop.cost ? ` · ${crop.cost} kr` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setEditingCropId(crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => deleteCrop.mutate(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => setEditingCropId(crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => deleteCrop.mutate(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                    {/* Status selector */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {statuses.map((s) => {
+                        const conf = STATUS_CONFIG[s] || STATUS_CONFIG.planerad;
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => handleStatusChange(crop.id, s)}
+                            className={cn(
+                              "text-xs px-2.5 py-1 rounded-full border transition-all",
+                              crop.status === s
+                                ? `${conf.color} border-transparent font-medium`
+                                : "border-border text-muted-foreground hover:border-primary/30"
+                            )}
+                          >
+                            {conf.label}
+                          </button>
+                        );
+                      })}
                     </div>
+
+                    {crop.notes && <p className="text-xs text-muted-foreground italic">{crop.notes}</p>}
                   </div>
 
-                  {/* Status selector */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {statuses.map((s) => {
-                      const conf = STATUS_CONFIG[s] || STATUS_CONFIG.planerad;
-                      return (
-                        <button
-                          key={s}
-                          onClick={() => updateStatus.mutate({ id: crop.id, status: s })}
-                          className={cn(
-                            "text-xs px-2.5 py-1 rounded-full border transition-all",
-                            crop.status === s
-                              ? `${conf.color} border-transparent font-medium`
-                              : "border-border text-muted-foreground hover:border-primary/30"
-                          )}
-                        >
-                          {conf.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {crop.notes && <p className="text-xs text-muted-foreground italic">{crop.notes}</p>}
+                  {/* Harvest contribution card */}
+                  {contributingCropId === crop.id && zone && (
+                    <HarvestContribution
+                      crop={crop}
+                      zone={zone}
+                      gardenType={gardenType}
+                      onDone={() => dismissContribution(crop.id)}
+                    />
+                  )}
                 </div>
               );
             })}

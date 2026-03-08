@@ -83,7 +83,7 @@ const Index = () => {
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} zone={onboardingData.zone} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}
-      {activeTab === "garden" && <GardenScreen />}
+      {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} />}
       {activeTab === "chat" && (
         <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
       )}

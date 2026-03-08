@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { X, Sparkles } from "lucide-react";
@@ -6,6 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 import type { Garden } from "@/hooks/useGarden";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
 import { EmojiPicker } from "./EmojiPicker";
+import { supabase } from "@/integrations/supabase/client";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -19,14 +20,66 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
 
 const VALID_CATEGORIES: CropCategory[] = ["grönsak", "ört", "frukt", "bär", "blomma"];
 
+const MONTH_NAMES = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+const monthRange = (start?: number | null, end?: number | null) => {
+  if (!start) return null;
+  const s = MONTH_NAMES[start - 1];
+  const e = end ? MONTH_NAMES[end - 1] : s;
+  return s === e ? s : `${s}–${e}`;
+};
+
+const DIFFICULTY_BADGE: Record<string, string> = {
+  lätt: "🟢 Lätt",
+  medel: "🟡 Medel",
+  avancerad: "🔴 Avancerad",
+};
+
 interface AddCropFormProps {
   gardens: Garden[];
+  zone?: string | null;
   onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropFormProps) {
+// OpenFarm suggestion type
+interface OpenFarmSuggestion {
+  name: string;
+  description: string;
+  sun?: string;
+  spread?: string;
+  rowSpacing?: string;
+  sowingMethod?: string;
+}
+
+// Swedish tip type
+interface SwedishTip {
+  crop_name: string;
+  zone: string;
+  sow_indoor_start: number | null;
+  sow_indoor_end: number | null;
+  sow_outdoor_start: number | null;
+  sow_outdoor_end: number | null;
+  harvest_start: number | null;
+  harvest_end: number | null;
+  days_to_harvest: number | null;
+  spacing_cm: number | null;
+  difficulty: string | null;
+  tips: string | null;
+}
+
+interface CommunityInsight {
+  crop_name: string;
+  zone: string;
+  sample_count: number;
+  avg_success_rating: number | null;
+  typical_sow_month_start: number | null;
+  typical_sow_month_end: number | null;
+  typical_harvest_month_start: number | null;
+  typical_harvest_month_end: number | null;
+}
+
+export function AddCropForm({ gardens, zone, onSubmit, onCancel, isLoading }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");
@@ -36,14 +89,76 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
   const [notes, setNotes] = useState("");
   const [sowDate, setSowDate] = useState("");
 
+  // Knowledge layer state
+  const [openFarmSuggestions, setOpenFarmSuggestions] = useState<OpenFarmSuggestion[]>([]);
+  const [swedishTip, setSwedishTip] = useState<SwedishTip | null>(null);
+  const [communityInsight, setCommunityInsight] = useState<CommunityInsight | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Debounced lookups when name changes
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const trimmed = name.trim();
+    if (trimmed.length < 3) {
+      setOpenFarmSuggestions([]);
+      setSwedishTip(null);
+      setCommunityInsight(null);
+      return;
+    }
+    debounceRef.current = setTimeout(() => {
+      // OpenFarm lookup
+      fetch(`https://openfarm.cc/api/v1/crops/?filter=${encodeURIComponent(trimmed)}`)
+        .then((r) => r.json())
+        .then((json) => {
+          const results = (json.data || []).slice(0, 3).map((item: any) => ({
+            name: item.attributes?.name || "",
+            description: item.attributes?.description || "",
+            sun: item.attributes?.sun_requirements,
+            spread: item.attributes?.spread ? `${item.attributes.spread} cm` : undefined,
+            rowSpacing: item.attributes?.row_spacing ? `${item.attributes.row_spacing} cm` : undefined,
+            sowingMethod: item.attributes?.sowing_method,
+          }));
+          setOpenFarmSuggestions(results);
+        })
+        .catch(() => setOpenFarmSuggestions([]));
+
+      // Swedish tips lookup
+      if (zone) {
+        supabase
+          .from("swedish_crop_tips" as any)
+          .select("*")
+          .ilike("crop_name", `%${trimmed}%`)
+          .eq("zone", zone)
+          .limit(1)
+          .then(({ data }) => {
+            setSwedishTip((data as any)?.[0] || null);
+          });
+      }
+
+      // Community insights lookup
+      if (zone) {
+        supabase
+          .from("community_insights" as any)
+          .select("*")
+          .ilike("crop_name", `%${trimmed}%`)
+          .eq("zone", zone)
+          .limit(1)
+          .then(({ data }) => {
+            const row = (data as any)?.[0];
+            setCommunityInsight(row && row.sample_count >= 3 ? row : null);
+          });
+      }
+    }, 400);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [name, zone]);
+
   const handleScanComplete = (data: ScannedSeedData) => {
     const filled = new Set<string>();
-
     if (data.name) { setName(data.name); filled.add("name"); }
     if (data.category && VALID_CATEGORIES.includes(data.category)) {
       setCategory(data.category); filled.add("category");
     }
-
     const extraNotes: string[] = [];
     if (data.sow_indoor) extraNotes.push(`Förkultivering: ${data.sow_indoor}`);
     if (data.sow_outdoor) extraNotes.push(`Direktsådd: ${data.sow_outdoor}`);
@@ -54,9 +169,20 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
       setNotes(extraNotes.join("\n"));
       filled.add("notes");
     }
-
     setScannedFields(filled);
     setShowScanner(false);
+  };
+
+  const applyOpenFarmSuggestion = (s: OpenFarmSuggestion) => {
+    setName(s.name);
+    const infoLines: string[] = [];
+    if (s.sun) infoLines.push(`Solbehov: ${s.sun}`);
+    if (s.sowingMethod) infoLines.push(`Såmetod: ${s.sowingMethod}`);
+    if (s.spread) infoLines.push(`Bredd: ${s.spread}`);
+    if (s.rowSpacing) infoLines.push(`Radavstånd: ${s.rowSpacing}`);
+    if (infoLines.length > 0) {
+      setNotes((prev) => prev ? prev + "\n\n" + infoLines.join("\n") : infoLines.join("\n"));
+    }
   };
 
   const handleSubmit = () => {
@@ -93,6 +219,11 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
     scannedFields.has(field) ? "border-primary/50 bg-primary/5" : "border-input bg-background"
   );
 
+  const renderStars = (rating: number) => {
+    const rounded = Math.round(rating * 2) / 2;
+    return Array.from({ length: 5 }, (_, i) => (i + 1 <= rounded ? "⭐" : "☆")).join("");
+  };
+
   return (
     <div className="rounded-2xl bg-card border border-border p-4 space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -119,6 +250,66 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
           className={cn(inputCn("name"), "flex-1")}
         />
       </div>
+
+      {/* OpenFarm suggestions */}
+      {openFarmSuggestions.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-muted-foreground">Från global fröbas 🌍</p>
+          <div className="flex flex-wrap gap-1.5">
+            {openFarmSuggestions.map((s, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => applyOpenFarmSuggestion(s)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm border border-border bg-card text-foreground hover:border-primary/40 transition-colors"
+              >
+                🌱 {s.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Swedish tip card */}
+      {swedishTip && (
+        <div className="bg-green-500/10 rounded-lg px-3 py-2 space-y-1">
+          <p className="text-sm font-medium text-green-700">🇸🇪 Tips för Zon {swedishTip.zone}</p>
+          <div className="text-xs text-green-700 space-y-0.5">
+            {swedishTip.sow_indoor_start && (
+              <p>Så inomhus: {monthRange(swedishTip.sow_indoor_start, swedishTip.sow_indoor_end)}</p>
+            )}
+            {swedishTip.sow_outdoor_start && (
+              <p>Direktså: {monthRange(swedishTip.sow_outdoor_start, swedishTip.sow_outdoor_end)}</p>
+            )}
+            {swedishTip.harvest_start && (
+              <p>Skörd: {monthRange(swedishTip.harvest_start, swedishTip.harvest_end)}</p>
+            )}
+            {swedishTip.days_to_harvest && <p>Tid till skörd: ~{swedishTip.days_to_harvest} dagar</p>}
+            {swedishTip.spacing_cm && <p>Plantavstånd: {swedishTip.spacing_cm} cm</p>}
+            {swedishTip.difficulty && <p>{DIFFICULTY_BADGE[swedishTip.difficulty] || swedishTip.difficulty}</p>}
+            {swedishTip.tips && <p className="italic mt-1">{swedishTip.tips}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Community insights card */}
+      {communityInsight && (
+        <div className="bg-blue-500/10 rounded-lg px-3 py-2 space-y-1">
+          <p className="text-sm font-medium text-blue-700">👥 Från svenska odlare i zon {communityInsight.zone}</p>
+          <div className="text-xs text-blue-700 space-y-0.5">
+            {communityInsight.avg_success_rating && (
+              <p>{renderStars(communityInsight.avg_success_rating)} ({communityInsight.avg_success_rating.toFixed(1)}/5)</p>
+            )}
+            <p>{communityInsight.sample_count} odlare har delat data</p>
+            {communityInsight.typical_sow_month_start && (
+              <p>Typisk sådd: {monthRange(communityInsight.typical_sow_month_start, communityInsight.typical_sow_month_end)}</p>
+            )}
+            {communityInsight.typical_harvest_month_start && (
+              <p>Typisk skörd: {monthRange(communityInsight.typical_harvest_month_start, communityInsight.typical_harvest_month_end)}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       <div>
         <p className="text-xs text-muted-foreground mb-2">Kategori</p>

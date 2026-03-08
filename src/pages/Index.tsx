@@ -11,9 +11,10 @@ import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
 import { CalendarScreen } from "@/components/CalendarScreen";
 import { CommunityScreen } from "@/components/CommunityScreen";
+import { AdminScreen } from "@/components/AdminScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();

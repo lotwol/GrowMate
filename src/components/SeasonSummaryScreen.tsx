@@ -1,9 +1,11 @@
 import { useMemo, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Share2 } from "lucide-react";
+import { ChevronLeft, Share2, ChevronDown, ChevronUp } from "lucide-react";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { findRecipes, type Recipe } from "@/data/harvestRecipes";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { GrowingSchool } from "@/types/onboarding";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -93,6 +95,8 @@ interface SeasonSummaryScreenProps {
 export function SeasonSummaryScreen({ year, name, zone, school, onBack }: SeasonSummaryScreenProps) {
   const { data: crops = [] } = useCropsForCalendar(year);
   const { data: diary = [] } = useDiaryEntriesForCalendar(year);
+  const [harvestsExpanded, setHarvestsExpanded] = useState(false);
+  const [recipeCrop, setRecipeCrop] = useState<string | null>(null);
 
   const stats = useMemo(() => {
     const totalCrops = crops.length;
@@ -243,7 +247,69 @@ export function SeasonSummaryScreen({ year, name, zone, school, onBack }: Season
           )}
         </FadeSection>
 
-        {/* SECTION 4 – VÄLMÅENDE CHART */}
+        {/* SECTION 3b – DINA SKÖRDAR */}
+        {(() => {
+          const harvested = crops.filter((c) => c.status === "skördad");
+          if (harvested.length === 0) return null;
+          const showAll = harvestsExpanded || harvested.length <= 5;
+          const visible = showAll ? harvested : harvested.slice(0, 5);
+          return (
+            <FadeSection>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-display text-foreground">Dina skördar</h2>
+                {harvested.length > 5 && (
+                  <button
+                    onClick={() => setHarvestsExpanded(!harvestsExpanded)}
+                    className="text-xs text-muted-foreground flex items-center gap-1 hover:text-foreground transition-colors"
+                  >
+                    {harvestsExpanded ? "Visa färre" : `Visa alla (${harvested.length})`}
+                    {harvestsExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
+                )}
+              </div>
+              <div className="space-y-2">
+                {visible.map((crop) => (
+                  <div key={crop.id} className="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
+                    <span className="text-lg">{crop.emoji || "🌱"}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{crop.name}</p>
+                      {crop.harvest_date && (
+                        <p className="text-xs text-muted-foreground">Skördad {crop.harvest_date}</p>
+                      )}
+                    </div>
+                    {findRecipes(crop.name) && (
+                      <button
+                        onClick={() => setRecipeCrop(crop.name)}
+                        className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors shrink-0"
+                      >
+                        🍽️ Recept
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </FadeSection>
+          );
+        })()}
+
+        {/* Recipe dialog */}
+        <Dialog open={!!recipeCrop} onOpenChange={(v) => !v && setRecipeCrop(null)}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>🍽️ Recept med {recipeCrop}</DialogTitle>
+            </DialogHeader>
+            {recipeCrop && findRecipes(recipeCrop)?.map((r) => (
+              <div key={r.name} className="rounded-xl bg-accent/50 border border-border p-3 space-y-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-foreground">{r.name}</p>
+                  <span className="text-xs text-muted-foreground">{r.difficulty} {r.time}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{r.description}</p>
+              </div>
+            ))}
+          </DialogContent>
+        </Dialog>
+
         <FadeSection>
           <h2 className="font-display text-foreground mb-3">Välmående över säsongen</h2>
           {chartData.length < 3 ? (

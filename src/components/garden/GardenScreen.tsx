@@ -9,6 +9,7 @@ import { AddCropForm } from "@/components/garden/AddCropForm";
 import { AddSeedForm } from "@/components/garden/AddSeedForm";
 import { EditCropForm } from "@/components/garden/EditCropForm";
 import { GardenLayoutEditor } from "@/components/garden/GardenLayoutEditor";
+import { HarvestCelebrationModal } from "@/components/garden/HarvestCelebrationModal";
 import { PhotoStrip } from "@/components/PhotoStrip";
 import type { Database } from "@/integrations/supabase/types";
 import { Constants } from "@/integrations/supabase/types";
@@ -117,9 +118,10 @@ function HarvestContribution({
 interface GardenScreenProps {
   zone?: string | null;
   school?: string | null;
+  onNavigate?: (tab: string) => void;
 }
 
-export function GardenScreen({ zone, school }: GardenScreenProps) {
+export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const [tab, setTab] = useState<Tab>("ytor");
   const [showAddGarden, setShowAddGarden] = useState(false);
   const [showAddCrop, setShowAddCrop] = useState(false);
@@ -131,6 +133,7 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [dismissedContributions, setDismissedContributions] = useState<Set<string>>(new Set());
   const [photoCropId, setPhotoCropId] = useState<string | null>(null);
   const [companionCropId, setCompanionCropId] = useState<string | null>(null);
+  const [harvestCrop, setHarvestCrop] = useState<{ id: string; name: string; emoji?: string } | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
@@ -162,8 +165,14 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
       { id: cropId, status: status as any },
       {
         onSuccess: () => {
-          if (status === "skördad" && zone && !dismissedContributions.has(cropId)) {
-            setContributingCropId(cropId);
+          if (status === "skördad") {
+            const crop = crops.find((c: any) => c.id === cropId);
+            if (crop) {
+              setHarvestCrop({ id: crop.id, name: crop.name, emoji: (crop as any).emoji });
+            }
+            if (zone && !dismissedContributions.has(cropId)) {
+              setContributingCropId(cropId);
+            }
           }
         },
       }
@@ -532,6 +541,19 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
             ))}
           </div>
         )}
+
+        {/* Harvest celebration modal */}
+        <HarvestCelebrationModal
+          open={!!harvestCrop}
+          onClose={() => setHarvestCrop(null)}
+          cropName={harvestCrop?.name || ""}
+          cropEmoji={harvestCrop?.emoji}
+          school={school || null}
+          onLogDiary={() => {
+            setHarvestCrop(null);
+            onNavigate?.("diary");
+          }}
+        />
       </div>
     </div>
   );

@@ -48,6 +48,8 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
   const [savingShare, setSavingShare] = useState(false);
   const { settings: notifSettings, updateSettings: updateNotifSettings } = useNotifications(data.zone);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const { earned, notYetEarned } = useEarnedBadges(data.school);
+  useNewBadgeNotifications(earned);
 
   useEffect(() => { setSharing(shareGrowingData); }, [shareGrowingData]);
 

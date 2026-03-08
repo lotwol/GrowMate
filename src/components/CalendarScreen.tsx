@@ -54,14 +54,17 @@ function fmt(d: string) {
 
 interface CalendarScreenProps {
   zone?: string | null;
+  school?: string | null;
   onBack: () => void;
 }
 
-export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
+export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
+  const { user } = useAuth();
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
   const currentDay = today.getDate();
+  const [selectedTip, setSelectedTip] = useState<any>(null);
 
   const [viewMonth, setViewMonth] = useState(currentMonth);
   const [viewYear, setViewYear] = useState(currentYear);

@@ -90,7 +90,7 @@ const Index = () => {
       )}
       {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} school={onboardingData.school} />}
       {activeTab === "calendar" && (
-        <CalendarScreen zone={onboardingData.zone} onBack={() => setActiveTab("home")} />
+        <CalendarScreen zone={onboardingData.zone} school={onboardingData.school} onBack={() => setActiveTab("home")} />
       )}
       {activeTab === "chat" && (
         <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} school={onboardingData.school} /></div>

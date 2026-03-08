@@ -23,7 +23,7 @@ const INITIAL_MESSAGE: Message = {
     "Hej! 🌱 Jag är GrowMate – din odlingskompis. Fråga mig om sådd, skadegörare, gödning, eller bara berätta vad du har på gång i trädgården. Du kan också tala in din fråga!",
 };
 
-export function GrowMateChat({ zone, profiles }: GrowMateChatProps) {
+export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);

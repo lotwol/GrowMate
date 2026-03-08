@@ -139,6 +139,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const [companionCropId, setCompanionCropId] = useState<string | null>(null);
   const [harvestCrop, setHarvestCrop] = useState<{ id: string; name: string; emoji?: string } | null>(null);
   const [editingSeedId, setEditingSeedId] = useState<string | null>(null);
+  const [confirmDeleteCropId, setConfirmDeleteCropId] = useState<string | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);

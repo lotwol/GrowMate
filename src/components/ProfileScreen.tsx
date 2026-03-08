@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";

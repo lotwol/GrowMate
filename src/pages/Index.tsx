@@ -125,6 +125,7 @@ const Index = () => {
         <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
       <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+      <InstallPrompt />
 
       {/* Notification permission modal */}
       <Dialog open={showNotifModal} onOpenChange={setShowNotifModal}>

@@ -104,8 +104,11 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
       </div>
 
       <div>
-        <label className="text-xs text-muted-foreground">Namn</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCn} />
+        <label className="text-xs text-muted-foreground">Namn & ikon</label>
+        <div className="flex items-center gap-2 mt-1">
+          <EmojiPicker value={emoji} onChange={setEmoji} size="sm" />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="flex-1 rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body" />
+        </div>
       </div>
 
       <div>

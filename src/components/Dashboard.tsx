@@ -16,7 +16,7 @@ import {
   Lightbulb,
   ShoppingCart,
 } from "lucide-react";
-import { useWeather } from "@/hooks/useWeather";
+import { useWeather, useFrostAffectedCrops } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,6 +172,28 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
     setCompanionDismissed(true);
   };
 
+  // Frost alert logic
+  const activeCropNames = useMemo(
+    () => crops.filter((c) => ["sådd", "grodd", "utplanterad"].includes(c.status)).map((c) => c.name),
+    [crops]
+  );
+  const frostAffectedCrops = useFrostAffectedCrops(activeCropNames, weather?.minTempTonight ?? null);
+  const showFrostAlert = weather && (weather.frostRisk === "possible" || weather.frostRisk === "likely") && frostAffectedCrops.length > 0;
+  const [frostDismissed, setFrostDismissed] = useState(() => {
+    try {
+      const stored = localStorage.getItem("growmate_frost_dismissed");
+      if (stored) {
+        const { date } = JSON.parse(stored);
+        return date === new Date().toISOString().split("T")[0];
+      }
+    } catch {}
+    return false;
+  });
+  const dismissFrost = () => {
+    localStorage.setItem("growmate_frost_dismissed", JSON.stringify({ date: new Date().toISOString().split("T")[0] }));
+    setFrostDismissed(true);
+  };
+
 
   const tips = [
     // Tip 1: Weather (real or fallback)
@@ -295,7 +317,37 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
           </div>
         </div>
 
-        {/* Companion planting warning */}
+        {/* Frost Alert */}
+        {showFrostAlert && !frostDismissed && (
+          <div className={cn(
+            "rounded-2xl p-4 border",
+            weather.frostRisk === "likely"
+              ? "bg-destructive/10 border-destructive/30"
+              : "bg-growmate-sun/10 border-growmate-sun/30"
+          )}>
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">
+                {weather.frostRisk === "likely" ? "🚨" : "❄️"}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  {weather.frostRisk === "likely" ? "Nattfrost trolig" : "Nattfrost möjlig"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {weather.frostRisk === "likely"
+                    ? `Prognos: ${weather.minTempTonight}°C. Skydda dessa grödor nu: ${frostAffectedCrops.join(", ")}`
+                    : `Temperaturen kan sjunka till ${weather.minTempTonight}°C. Täck in: ${frostAffectedCrops.join(", ")}`
+                  }
+                </p>
+              </div>
+              <button onClick={dismissFrost} className="text-muted-foreground hover:text-foreground shrink-0">
+                <span className="text-xs">✕</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+
         {badNeighbors.length > 0 && !companionDismissed && (
           <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4">
             <div className="flex items-start gap-3">

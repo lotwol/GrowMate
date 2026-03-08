@@ -11,6 +11,7 @@ import {
   useCalendarEvents,
   useSwedishCropTips,
 } from "@/hooks/useCalendarData";
+import { useWeather } from "@/hooks/useWeather";
 
 const MONTH_NAMES_SV = [
   "Januari", "Februari", "Mars", "April", "Maj", "Juni",
@@ -61,6 +62,7 @@ interface CalendarScreenProps {
 
 export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
   const { user } = useAuth();
+  const { data: weatherData } = useWeather(zone);
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
@@ -99,6 +101,19 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
     });
     return map;
   }, [calendarEvents]);
+
+  // Frost forecast map (date -> minTemp)
+  const frostDates = useMemo(() => {
+    const map = new Map<string, number>();
+    if (weatherData?.frostForecast) {
+      weatherData.frostForecast.forEach((f) => {
+        if (f.minTemp <= 0) {
+          map.set(f.date, f.minTemp);
+        }
+      });
+    }
+    return map;
+  }, [weatherData]);
 
   // Build lookup maps
   const sowDates = useMemo(() => {
@@ -456,6 +471,8 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
               const diary = cell.inMonth ? diaryMap.get(cell.dateStr) : undefined;
               const hasDiary = !!diary;
               const moodColor = diary?.mood ? MOOD_COLORS[diary.mood] : undefined;
+              const frostTemp = cell.inMonth ? frostDates.get(cell.dateStr) : undefined;
+              const hasFrost = frostTemp !== undefined;
 
               return (
                 <div
@@ -499,6 +516,14 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
                           className="block w-1.5 h-1.5 rounded-full"
                           style={{ backgroundColor: "#a855f7" }}
                         />
+                      )}
+                      {hasFrost && (
+                        <span
+                          className="block text-[8px] leading-none"
+                          title={`Frost prognos: ${frostTemp}°C`}
+                        >
+                          ❄️
+                        </span>
                       )}
                     </div>
                   )}

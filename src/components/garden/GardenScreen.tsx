@@ -434,7 +434,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                         <button onClick={() => setEditingCropId(crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button onClick={() => deleteCrop.mutate(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+                        <button onClick={() => setConfirmDeleteCropId(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

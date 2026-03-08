@@ -574,11 +574,8 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
         )}
 
         <Button variant="growmate" size="lg" className="w-full" onClick={() => {
-          if (!data.school && suggestedSchool) {
-            onComplete({ ...data, school: suggestedSchool });
-          } else {
-            onComplete(data);
-          }
+          const finalSchools = data.schools.length > 0 ? data.schools : (suggestedSchool ? [suggestedSchool] : []);
+          onComplete({ ...data, schools: finalSchools, school: finalSchools[0] || null });
         }} disabled={!data.zone}>
           Starta min odling 🌱
         </Button>

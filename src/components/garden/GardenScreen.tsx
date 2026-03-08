@@ -598,6 +598,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
 
             {seeds.map((seed) => {
               const linkedCrops = crops.filter((c: any) => c.seed_id === seed.id);
+              const activeCrops = linkedCrops.filter((c: any) => ["planerad", "sådd", "grodd", "utplanterad"].includes(c.status));
 
               if (editingSeedId === seed.id) {
                 return (
@@ -614,19 +615,44 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
               }
 
               const isInactive = (seed as any).status && (seed as any).status !== "active";
-              const statusLabel = (seed as any).status === "depleted" ? "Slut" : (seed as any).status === "expired" ? "Utgången" : (seed as any).status === "archived" ? "Arkiverad" : null;
               const seedPhotos: string[] = (seed as any).photo_urls || [];
+              const qtyNum = seed.quantity ? parseInt(seed.quantity, 10) : NaN;
+              const isDepletedNoActive = !isNaN(qtyNum) && qtyNum <= 0 && activeCrops.length === 0;
+
+              // Status chip logic
+              let seedStatusChip: { label: string; className: string } | null = null;
+              if (isInactive) {
+                const statusLabel = (seed as any).status === "depleted" ? "Slut" : (seed as any).status === "expired" ? "Utgången" : (seed as any).status === "archived" ? "Arkiverad" : null;
+                if (statusLabel) seedStatusChip = { label: statusLabel, className: "bg-muted text-muted-foreground" };
+              } else if (isDepletedNoActive) {
+                seedStatusChip = { label: "Slut i lager", className: "bg-muted text-muted-foreground" };
+              } else if (activeCrops.length > 0) {
+                seedStatusChip = { label: `🌱 Odlas (${activeCrops.length} st)`, className: "bg-primary/10 text-primary" };
+              } else {
+                seedStatusChip = { label: "I lager", className: "bg-primary/10 text-primary" };
+              }
+
+              const isHighlighted = highlightedSeedId === seed.id;
 
               return (
-                <div key={seed.id} className={cn("rounded-2xl bg-card border border-border p-4 space-y-2", isInactive && "opacity-60")}>
+                <div
+                  key={seed.id}
+                  id={`seed-${seed.id}`}
+                  className={cn(
+                    "rounded-2xl bg-card border p-4 space-y-2 transition-all",
+                    isInactive && "opacity-60",
+                    isHighlighted ? "border-primary ring-2 ring-primary/20" : "border-border"
+                  )}
+                  onAnimationEnd={() => { if (isHighlighted) setTimeout(() => setHighlightedSeedId(null), 2000); }}
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{(seed as any).emoji || CATEGORY_EMOJI[seed.category] || "🌱"}</span>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium text-foreground">{seed.name}</p>
-                        {statusLabel && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
-                            {statusLabel}
+                        {seedStatusChip && (
+                          <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium", seedStatusChip.className)}>
+                            {seedStatusChip.label}
                           </span>
                         )}
                       </div>
@@ -641,6 +667,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                       <Pencil className="w-4 h-4" />
                     </button>
                   </div>
+
                   {/* Scanned photos thumbnails */}
                   {seedPhotos.length > 0 && (
                     <div className="flex gap-2 pt-1">
@@ -651,6 +678,8 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                       ))}
                     </div>
                   )}
+
+                  {/* Linked crops */}
                   {linkedCrops.length > 0 && (
                     <div className="pt-1">
                       <p className="text-xs text-muted-foreground mb-1">Används i {linkedCrops.length} gröda{linkedCrops.length !== 1 ? "r" : ""}:</p>
@@ -666,6 +695,24 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                         ))}
                       </div>
                     </div>
+                  )}
+
+                  {/* Börja odla button or "Odlas nu" chip */}
+                  {!isInactive && (
+                    activeCrops.length > 0 ? (
+                      <div className="pt-1">
+                        <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                          🌱 Odlas nu
+                        </span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setStartCropSeedId(seed.id)}
+                        className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors pt-1"
+                      >
+                        Börja odla <ArrowRight className="w-4 h-4" />
+                      </button>
+                    )
                   )}
                 </div>
               );

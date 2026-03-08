@@ -329,7 +329,7 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
                     ? "border-primary bg-accent text-accent-foreground font-medium"
                     : "border-border text-muted-foreground"
                 )}
-              >{CATEGORY_EMOJI[c.category] || "🌱"} {c.name}</button>
+              >{(c as any).emoji || CATEGORY_EMOJI[c.category] || "🌱"} {c.name}</button>
             ))}
             {crops.length === 0 && <p className="text-xs text-muted-foreground">Inga grödor för {seasonYear}</p>}
           </div>

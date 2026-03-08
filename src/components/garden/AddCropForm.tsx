@@ -42,11 +42,13 @@ const DIFFICULTY_BADGE: Record<string, string> = {
 
 interface AddCropFormProps {
   gardens: Garden[];
+  seeds: SeedItem[];
   zone?: string | null;
   school?: string | null;
-  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string }) => void;
+  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string; seed_id?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  onSeedLinked?: (seedId: string) => void;
 }
 
 // OpenFarm suggestion type

@@ -190,8 +190,8 @@ export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: Dashboa
                 Odling handlar inte bara om växter. Ta en stund och checka in
                 med dig själv.
               </p>
-              <Button variant="growmate-soft" size="sm" className="mt-3">
-                Veckoincheckning
+              <Button variant="growmate-soft" size="sm" className="mt-3" onClick={() => onNavigate("diary-wellbeing")}>
+                Checka in nu
               </Button>
             </div>
           </div>

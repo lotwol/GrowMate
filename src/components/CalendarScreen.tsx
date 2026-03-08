@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   useCropsForCalendar,
   useDiaryEntriesForCalendar,
+  useCalendarEvents,
   useSwedishCropTips,
 } from "@/hooks/useCalendarData";
 

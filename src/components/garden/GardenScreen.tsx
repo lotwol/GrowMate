@@ -132,11 +132,11 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [photoCropId, setPhotoCropId] = useState<string | null>(null);
   const [companionCropId, setCompanionCropId] = useState<string | null>(null);
 
-  const allCropNames = useMemo(() => crops.map((c: any) => c.name as string), [crops]);
-
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
   const { data: seeds = [], isLoading: seedsLoading } = useSeedInventory();
+
+  const allCropNames = useMemo(() => crops.map((c: any) => c.name as string), [crops]);
 
   const layoutGarden = gardens.find(g => g.id === layoutGardenId);
   const { data: currentLayout } = useGardenLayout(layoutGardenId, seasonYear);

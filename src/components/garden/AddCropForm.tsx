@@ -7,6 +7,7 @@ import type { Garden } from "@/hooks/useGarden";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
 import { EmojiPicker } from "./EmojiPicker";
 import { supabase } from "@/integrations/supabase/client";
+import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 

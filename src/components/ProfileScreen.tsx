@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
-import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users, Bell, BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users, Bell, BarChart3, TrendingUp, TrendingDown, Minus, Lock } from "lucide-react";
 import { useNotifications, getNotificationPermission, requestNotificationPermission } from "@/hooks/useNotifications";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useEarnedBadges, useNewBadgeNotifications } from "@/hooks/useBadges";
+import { ALL_BADGES, type Badge } from "@/data/badges";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   sinnesron: { emoji: "🌿", title: "Sinnesron" },

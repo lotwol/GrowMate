@@ -8,10 +8,11 @@ export interface DiaryEntry {
   entry_date: string;
   title: string | null;
   content: string | null;
-  mood: number | null;
-  weather_note: string | null;
+  mood_garden: number | null;
+  wellbeing_physical: number | null;
+  wellbeing_mental: number | null;
+  wellbeing_social: number | null;
   activities: string[];
-  photo_urls: string[];
   season_year: number | null;
   created_at: string;
   updated_at: string;
@@ -39,15 +40,7 @@ export function useAddDiaryEntry() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (entry: {
-      entry_date: string;
-      title?: string;
-      content?: string;
-      mood?: number;
-      weather_note?: string;
-      activities?: string[];
-      season_year: number;
-    }) => {
+    mutationFn: async (entry: Record<string, any>) => {
       const { error } = await supabase.from("diary_entries" as any).insert({
         ...entry,
         user_id: user!.id,

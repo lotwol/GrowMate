@@ -22,7 +22,34 @@ Regler:
 - Du kan lägga till flera händelser i samma svar
 - Lägg ALLTID till kalenderåtgärder när användaren explicit ber om det
 - Föreslå proaktivt att lägga till händelser när du ger datumspecifika råd
-- Beskriv i din vanliga text vad du lagt till i kalendern`;
+- Beskriv i din vanliga text vad du lagt till i kalendern
+
+STRUKTURERADE ÅTGÄRDER:
+När användaren ber dig att lägga till en gröda, sätta en påminnelse, eller logga något i dagboken, svara med normal text OCH lägg till ett åtgärdsblock i slutet av ditt svar med exakt detta format:
+
+<action>
+{"type": "ADD_CROP", "data": {"name": "Grödans namn", "emoji": "🥒", "sowDate": "YYYY-MM-DD", "harvestDate": "YYYY-MM-DD", "notes": "Valfria anteckningar"}}
+</action>
+
+<action>
+{"type": "ADD_REMINDER", "data": {"text": "Påminnelsens text", "date": "YYYY-MM-DD"}}
+</action>
+
+<action>
+{"type": "LOG_DIARY", "data": {"title": "Dagbokens rubrik", "content": "Innehåll", "mood": 4}}
+</action>
+
+Regler för åtgärder:
+- Använd ADD_CROP när användaren vill lägga till en gröda i sin odling
+- Använd ADD_REMINDER när användaren vill bli påmind om något
+- Använd LOG_DIARY när användaren vill logga något i dagboken
+- mood ska vara ett heltal 1-5 (1=dåligt, 5=fantastiskt)
+- Datum ska alltid vara i formatet YYYY-MM-DD
+- Om användaren säger "i april" utan specifikt datum, använd den 1:a i den månaden
+- Välj passande emoji för grödor (🥒 gurka, 🍅 tomat, 🥕 morot, etc.)
+- Du kan inkludera BÅDE kalenderåtgärder och strukturerade åtgärder i samma svar
+- Beskriv alltid i din vanliga text vad du gör, och åtgärdsblocket utför sedan handlingen`;
+
 
 const schoolDescriptions: Record<string, string> = {
   'naturens-vag': 'Naturens väg (kallsådd, minimal inblandning, enkelt och tåligt)',

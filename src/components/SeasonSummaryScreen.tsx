@@ -97,6 +97,8 @@ export function SeasonSummaryScreen({ year: initialYear, name, zone, school, onB
   const { data: diary = [] } = useDiaryEntriesForCalendar(year);
   const [harvestsExpanded, setHarvestsExpanded] = useState(false);
   const [recipeCrop, setRecipeCrop] = useState<string | null>(null);
+  const { earned: allEarned } = useEarnedBadges(school);
+  const seasonBadges = useSeasonBadges(allEarned, crops, diary);
 
   const stats = useMemo(() => {
     const totalCrops = crops.length;

@@ -1,0 +1,1 @@
+ALTER TABLE public.seed_inventory ADD COLUMN IF NOT EXISTS emoji text;

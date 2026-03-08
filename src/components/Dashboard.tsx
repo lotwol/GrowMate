@@ -44,7 +44,7 @@ interface DashboardProps {
   onNavigate: (tab: string) => void;
 }
 
-export function Dashboard({ profile, onNavigateChat }: DashboardProps) {
+export function Dashboard({ profile, onNavigateChat, onNavigate }: DashboardProps) {
   const profileEmojis: Record<string, string> = {
     sinnesron: "🌿",
     "skordeglädjen": "🥕",

@@ -60,10 +60,22 @@ interface CommunityScreenProps {
 type CommunityTab = "bidra" | "zon";
 
 export function CommunityScreen({ zone }: CommunityScreenProps) {
+  const { user } = useAuth();
   const [tab, setTab] = useState<CommunityTab>("zon");
   const [insights, setInsights] = useState<CommunityInsight[]>([]);
   const [logEntries, setLogEntries] = useState<LearningLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Bidra form state
+  const [userCrops, setUserCrops] = useState<{ name: string; sow_date: string | null; harvest_date: string | null }[]>([]);
+  const [cropName, setCropName] = useState("");
+  const [sowDate, setSowDate] = useState("");
+  const [harvestDate, setHarvestDate] = useState("");
+  const [gardenType, setGardenType] = useState("");
+  const [successRating, setSuccessRating] = useState<number | null>(null);
+  const [notesPublic, setNotesPublic] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     async function load() {

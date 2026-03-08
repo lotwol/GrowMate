@@ -25,8 +25,10 @@ interface EditCropFormProps {
 }
 
 export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: EditCropFormProps) {
+  const defaultEmoji = CATEGORIES.find(c => c.value === crop.category)?.emoji || "🌱";
   const [name, setName] = useState(crop.name);
   const [category, setCategory] = useState<CropCategory>(crop.category);
+  const [emoji, setEmoji] = useState((crop as any).emoji || defaultEmoji);
   const [gardenId, setGardenId] = useState(crop.garden_id || "");
   const [sowDate, setSowDate] = useState(crop.sow_date || "");
   const [harvestDate, setHarvestDate] = useState(crop.harvest_date || "");

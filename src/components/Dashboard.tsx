@@ -10,9 +10,12 @@ import {
   BookOpen,
   Thermometer,
   Users,
+  ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 
 const MONTH_TIPS: Record<number, { title: string; description: string }> = {
   1: { title: "Januaritips", description: "Planera årets odling och beställ fröer" },
@@ -56,6 +59,10 @@ interface DashboardProps {
 
 export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: DashboardProps) {
   const { data: weather, isLoading: weatherLoading } = useWeather(zone);
+  const currentYear = new Date().getFullYear();
+  const { data: crops = [] } = useCropsForCalendar(currentYear);
+  const { data: diary = [] } = useDiaryEntriesForCalendar(currentYear);
+  const diaryDays = diary.filter((d) => d.mood_garden !== null || d.title).length;
   const month = new Date().getMonth() + 1;
   const monthTip = MONTH_TIPS[month] || MONTH_TIPS[3];
   const sowTip = zone ? (ZONE_SOW_TIPS[zone] || "Sallad kan direktsås snart") : "Sallad kan direktsås om 4 veckor";
@@ -197,6 +204,27 @@ export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: Dashboa
             </div>
           </div>
         </div>
+
+        {/* Season Summary Card */}
+        <button
+          onClick={() => onNavigate("season-summary")}
+          className="w-full rounded-2xl bg-card border border-border p-4 text-left transition-all hover:border-primary/30 active:scale-[0.98]"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Din säsong {currentYear}</p>
+                <p className="text-xs text-muted-foreground">
+                  {crops.length} grödor • {diaryDays} loggdagar
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </div>
+        </button>
 
         {/* AI CTA */}
         <button

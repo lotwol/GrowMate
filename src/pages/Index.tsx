@@ -12,9 +12,10 @@ import { GardenScreen } from "@/components/garden/GardenScreen";
 import { CalendarScreen } from "@/components/CalendarScreen";
 import { CommunityScreen } from "@/components/CommunityScreen";
 import { AdminScreen } from "@/components/AdminScreen";
+import { SeasonSummaryScreen } from "@/components/SeasonSummaryScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin" | "season-summary";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -98,13 +99,16 @@ const Index = () => {
       {activeTab === "diary" && <DiaryScreen onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
+      {activeTab === "season-summary" && (
+        <SeasonSummaryScreen year={new Date().getFullYear()} name={onboardingData.name} zone={onboardingData.zone} school={onboardingData.school} onBack={() => setActiveTab("home")} />
+      )}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} shareGrowingData={(profile as any).share_growing_data || false} onEdit={() => setEditingProfile(true)} onSignOut={signOut} onOpenAdmin={() => setActiveTab("admin")} />
       )}
       {activeTab === "admin" && (
         <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
-      <BottomNav active={["diary-wellbeing", "calendar", "community"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+      <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>
   );
 };

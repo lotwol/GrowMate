@@ -509,9 +509,10 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
           <h2 className="font-display text-lg mb-3">Att göra nu 📋</h2>
           <div className="space-y-2">
             {sowingTasks.map((t) => (
-              <div
+              <button
                 key={t.id}
-                className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3"
+                className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3 w-full text-left hover:border-primary/30 transition-colors"
+                onClick={() => setSelectedTip(t)}
               >
                 <span className="text-xl">🌱</span>
                 <div className="flex-1">
@@ -520,7 +521,7 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
                   </p>
                   <p className="text-xs text-muted-foreground">{t.sowType}</p>
                   <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5 inline-flex items-center gap-1 mt-1">
-                    📖 Standardråd
+                    📖 Tryck för detaljer
                   </span>
                 </div>
                 <span
@@ -528,7 +529,7 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
                 >
                   {t.difficulty}
                 </span>
-              </div>
+              </button>
             ))}
             {harvestTasks.map((t) => (
               <div

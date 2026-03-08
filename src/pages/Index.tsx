@@ -122,6 +122,40 @@ const Index = () => {
         <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
       <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+
+      {/* Notification permission modal */}
+      <Dialog open={showNotifModal} onOpenChange={setShowNotifModal}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader className="text-center">
+            <div className="text-4xl mb-2 text-center">🔔</div>
+            <DialogTitle className="text-center">Få påminnelser om din odling?</DialogTitle>
+            <DialogDescription className="text-center">
+              Vi skickar bara relevanta tips – aldrig spam.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              variant="growmate"
+              onClick={async () => {
+                await requestNotificationPermission();
+                markPermAsked();
+                setShowNotifModal(false);
+              }}
+            >
+              Ja tack
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                markPermAsked();
+                setShowNotifModal(false);
+              }}
+            >
+              Inte nu
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

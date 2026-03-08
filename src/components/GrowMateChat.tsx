@@ -232,7 +232,7 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
             <p className="font-medium text-sm text-foreground">GrowMate Bot</p>
             <p className="text-xs text-muted-foreground">Din AI-odlingskompis</p>
           </div>
-          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => setShowHistory(true)}>
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => setShowHistory(true)} title="Se historiska konversationer">
             <MessageSquare className="w-5 h-5" />
           </Button>
           <Button variant="ghost" size="icon" className="shrink-0" onClick={startNewConversation}>

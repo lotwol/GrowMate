@@ -7,6 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { findRecipes } from "@/data/harvestRecipes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { GrowingSchool } from "@/types/onboarding";
+import { useEarnedBadges, useSeasonBadges } from "@/hooks/useBadges";
 
 const STATUS_COLORS: Record<string, string> = {
   skördad: "bg-primary text-primary-foreground",

@@ -417,3 +417,47 @@ function NotificationSettings({
     </div>
   );
 }
+
+function BadgeGrid({ earned, notYetEarned }: { earned: Badge[]; notYetEarned: Badge[] }) {
+  return (
+    <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-foreground">Dina märken 🏅</p>
+        <span className="text-xs text-muted-foreground">{earned.length} av {ALL_BADGES.length} märken</span>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {earned.map((badge) => (
+          <Popover key={badge.id}>
+            <PopoverTrigger asChild>
+              <button className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-accent/50 transition-colors">
+                <span className="text-2xl">{badge.emoji}</span>
+                <span className="text-[10px] text-foreground font-medium text-center leading-tight">{badge.name}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="text-xs p-3 max-w-[200px]">
+              <p className="font-medium">{badge.emoji} {badge.name}</p>
+              <p className="text-muted-foreground mt-1">{badge.description}</p>
+            </PopoverContent>
+          </Popover>
+        ))}
+        {notYetEarned.map((badge) => (
+          <Popover key={badge.id}>
+            <PopoverTrigger asChild>
+              <button className="flex flex-col items-center gap-1 p-2 rounded-xl opacity-40 grayscale hover:opacity-60 transition-all">
+                <div className="relative">
+                  <span className="text-2xl">{badge.emoji}</span>
+                  <Lock className="w-3 h-3 text-muted-foreground absolute -bottom-0.5 -right-0.5" />
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">{badge.name}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="text-xs p-3 max-w-[200px]">
+              <p className="font-medium">🔒 {badge.name}</p>
+              <p className="text-muted-foreground mt-1">{badge.description}</p>
+            </PopoverContent>
+          </Popover>
+        ))}
+      </div>
+    </div>
+  );
+}

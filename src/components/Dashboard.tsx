@@ -151,13 +151,6 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
     fetchTip();
   }, [zone, school, currentYear]);
 
-  const profileEmojis: Record<string, string> = {
-    sinnesron: "🌿",
-    "skordeglädjen": "🥕",
-    lararen: "👨‍👧",
-    experimenteraren: "🧪",
-    "självhushållaren": "🏡",
-  };
 
   const tips = [
     // Tip 1: Weather (real or fallback)

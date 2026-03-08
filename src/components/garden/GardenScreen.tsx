@@ -604,12 +604,23 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                 );
               }
 
+              const isInactive = (seed as any).status && (seed as any).status !== "active";
+              const statusLabel = (seed as any).status === "depleted" ? "Slut" : (seed as any).status === "expired" ? "Utgången" : (seed as any).status === "archived" ? "Arkiverad" : null;
+              const seedPhotos: string[] = (seed as any).photo_urls || [];
+
               return (
-                <div key={seed.id} className="rounded-2xl bg-card border border-border p-4 space-y-2">
+                <div key={seed.id} className={cn("rounded-2xl bg-card border border-border p-4 space-y-2", isInactive && "opacity-60")}>
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{CATEGORY_EMOJI[seed.category] || "🌱"}</span>
                     <div className="flex-1">
-                      <p className="font-medium text-foreground">{seed.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-foreground">{seed.name}</p>
+                        {statusLabel && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                            {statusLabel}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {seed.quantity || "–"}{seed.purchased_from ? ` · från ${seed.purchased_from}` : ""}{seed.cost ? ` · ${seed.cost} kr` : ""}
                       </p>
@@ -621,6 +632,16 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                       <Pencil className="w-4 h-4" />
                     </button>
                   </div>
+                  {/* Scanned photos thumbnails */}
+                  {seedPhotos.length > 0 && (
+                    <div className="flex gap-2 pt-1">
+                      {seedPhotos.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block w-14 h-18 rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors">
+                          <img src={url} alt={`Fröpåse ${i + 1}`} className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                   {linkedCrops.length > 0 && (
                     <div className="pt-1">
                       <p className="text-xs text-muted-foreground mb-1">Används i {linkedCrops.length} gröda{linkedCrops.length !== 1 ? "r" : ""}:</p>

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { X, Archive, CheckCircle2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { PhotoStrip } from "@/components/PhotoStrip";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -12,6 +13,13 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
   { value: "frukt", emoji: "🍎", label: "Frukt" },
   { value: "bär", emoji: "🫐", label: "Bär" },
   { value: "blomma", emoji: "🌸", label: "Blomma" },
+];
+
+const STATUS_OPTIONS = [
+  { value: "active", label: "Aktiv", emoji: "🟢" },
+  { value: "depleted", label: "Slut", emoji: "📦" },
+  { value: "expired", label: "Utgången", emoji: "⏰" },
+  { value: "archived", label: "Arkiverad", emoji: "🗄️" },
 ];
 
 interface EditSeedFormProps {
@@ -24,8 +32,10 @@ interface EditSeedFormProps {
     purchased_from?: string | null;
     cost?: number | null;
     notes?: string | null;
+    status?: string | null;
+    photo_urls?: string[] | null;
   };
-  onSave: (updates: { id: string; name: string; category: CropCategory; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string }) => void;
+  onSave: (updates: { id: string; name: string; category: CropCategory; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; status?: string; photo_urls?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -38,6 +48,8 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
   const [purchasedFrom, setPurchasedFrom] = useState(seed.purchased_from || "");
   const [cost, setCost] = useState(seed.cost != null ? String(seed.cost) : "");
   const [notes, setNotes] = useState(seed.notes || "");
+  const [status, setStatus] = useState(seed.status || "active");
+  const [photoUrls, setPhotoUrls] = useState<string[]>(seed.photo_urls || []);
 
   const handleSubmit = () => {
     if (!name.trim()) return;
@@ -50,6 +62,8 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
       purchased_from: purchasedFrom.trim() || undefined,
       cost: cost ? Number(cost) : undefined,
       notes: notes.trim() || undefined,
+      status,
+      photo_urls: photoUrls,
     });
   };
 
@@ -62,6 +76,27 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
         <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
           <X className="w-5 h-5" />
         </button>
+      </div>
+
+      {/* Status selector */}
+      <div>
+        <p className="text-xs text-muted-foreground mb-2">Status</p>
+        <div className="flex flex-wrap gap-2">
+          {STATUS_OPTIONS.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => setStatus(s.value)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all",
+                status === s.value
+                  ? s.value === "active" ? "border-primary bg-primary/10 text-foreground" : "border-muted-foreground bg-muted text-foreground"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40"
+              )}
+            >
+              <span>{s.emoji}</span> {s.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div>
@@ -120,6 +155,18 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
           className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body resize-none mt-1"
         />
       </div>
+
+      {/* Scanned photos */}
+      {photoUrls.length > 0 && (
+        <div>
+          <label className="text-xs text-muted-foreground mb-2 block">Fröpåsebilder</label>
+          <PhotoStrip
+            photos={photoUrls}
+            onPhotosChange={setPhotoUrls}
+            storagePath={`seeds/${seed.id}`}
+          />
+        </div>
+      )}
 
       <Button variant="growmate" className="w-full" onClick={handleSubmit} disabled={!name.trim() || isLoading}>
         {isLoading ? "Sparar..." : "Spara ändringar"}

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow, format } from "date-fns";
 import { sv } from "date-fns/locale";
 import { Send, Check } from "lucide-react";
+import { FrobyteTab } from "@/components/community/FrobyteTab";
 
 interface CommunityInsight {
   id: string;

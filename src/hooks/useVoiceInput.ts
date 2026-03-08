@@ -1,7 +1,7 @@
 import { useReducer, useRef, useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
 
-type VoiceState = "idle" | "recording" | "processing" | "error";
+type VoiceState = "idle" | "recording" | "processing";
 
 interface State {
   status: VoiceState;
@@ -11,10 +11,8 @@ interface State {
 type Action =
   | { type: "START_RECORDING" }
   | { type: "TICK" }
-  | { type: "STOP_RECORDING" }
   | { type: "PROCESSING" }
   | { type: "DONE" }
-  | { type: "ERROR" }
   | { type: "CANCEL" };
 
 function reducer(state: State, action: Action): State {
@@ -23,13 +21,11 @@ function reducer(state: State, action: Action): State {
       return { status: "recording", elapsedSeconds: 0 };
     case "TICK":
       return { ...state, elapsedSeconds: state.elapsedSeconds + 1 };
-    case "STOP_RECORDING":
     case "PROCESSING":
       return { ...state, status: "processing" };
     case "DONE":
     case "CANCEL":
-    case "ERROR":
-      return { status: action.type === "ERROR" ? "error" : "idle", elapsedSeconds: 0 };
+      return { status: "idle", elapsedSeconds: 0 };
     default:
       return state;
   }
@@ -65,18 +61,18 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
       formData.append("model", "whisper-1");
       formData.append("language", "sv");
 
-      const resp = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-transcribe`;
+      const resp = await fetch(url, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${await getApiKey()}`,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: formData,
       });
 
       if (!resp.ok) {
-        const errText = await resp.text();
-        console.error("Transcription error:", resp.status, errText);
-        throw new Error("Transcription failed");
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || "Transcription failed");
       }
 
       const data = await resp.json();
@@ -94,22 +90,21 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
         description: "Försök igen eller skriv din fråga",
         variant: "destructive",
       });
-      dispatch({ type: "ERROR" });
-      // Reset to idle after brief error state
-      setTimeout(() => dispatch({ type: "DONE" }), 100);
+      dispatch({ type: "DONE" });
     }
   }, [onTranscription]);
+
+  const stopRecordingRef = useRef<() => void>();
 
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : "audio/webm",
-      });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "audio/webm";
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -118,7 +113,7 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const blob = new Blob(chunksRef.current, { type: mimeType });
         cleanup();
         if (blob.size > 0) {
           transcribe(blob);
@@ -127,35 +122,29 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
         }
       };
 
-      mediaRecorder.start(250); // collect in 250ms chunks
+      mediaRecorder.start(250);
       dispatch({ type: "START_RECORDING" });
 
-      // Timer for elapsed seconds + max duration
       let seconds = 0;
       timerRef.current = setInterval(() => {
         seconds++;
         dispatch({ type: "TICK" });
-        if (seconds >= MAX_DURATION) {
-          stopRecording();
+        if (seconds >= MAX_DURATION && stopRecordingRef.current) {
+          stopRecordingRef.current();
         }
       }, 1000);
     } catch (err: any) {
       console.error("Mic permission error:", err);
-      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-        toast({
-          title: "Mikrofontillstånd saknas",
-          description: "Aktivera mikrofonen i webbläsarens inställningar",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Kunde inte starta inspelning",
-          description: "Kontrollera att din mikrofon fungerar",
-          variant: "destructive",
-        });
-      }
-      dispatch({ type: "ERROR" });
-      setTimeout(() => dispatch({ type: "DONE" }), 100);
+      toast({
+        title: err.name === "NotAllowedError"
+          ? "Mikrofontillstånd saknas"
+          : "Kunde inte starta inspelning",
+        description: err.name === "NotAllowedError"
+          ? "Aktivera mikrofonen i webbläsarens inställningar"
+          : "Kontrollera att din mikrofon fungerar",
+        variant: "destructive",
+      });
+      dispatch({ type: "DONE" });
     }
   }, [cleanup, transcribe]);
 
@@ -169,9 +158,10 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
     }
   }, []);
 
+  stopRecordingRef.current = stopRecording;
+
   const cancelRecording = useCallback(() => {
     if (mediaRecorderRef.current) {
-      // Remove onstop handler to prevent transcription
       mediaRecorderRef.current.onstop = null;
       if (mediaRecorderRef.current.state !== "inactive") {
         mediaRecorderRef.current.stop();
@@ -184,7 +174,7 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
   const toggle = useCallback(() => {
     if (state.status === "recording") {
       stopRecording();
-    } else if (state.status === "idle" || state.status === "error") {
+    } else if (state.status === "idle") {
       startRecording();
     }
   }, [state.status, startRecording, stopRecording]);
@@ -195,19 +185,4 @@ export function useVoiceInput(onTranscription: (text: string) => void) {
     toggle,
     cancel: cancelRecording,
   };
-}
-
-// Get the API key from Supabase edge function to avoid exposing it client-side
-async function getApiKey(): Promise<string> {
-  // We call a small edge function that returns the key, or use the anon key for the gateway
-  // The Lovable AI gateway accepts the LOVABLE_API_KEY which is a server secret.
-  // We need to proxy through an edge function.
-  const { supabase } = await import("@/integrations/supabase/client");
-  const { data, error } = await supabase.functions.invoke("voice-transcribe-proxy", {
-    body: { action: "get-token" },
-  });
-  if (error || !data?.token) {
-    throw new Error("Could not get transcription token");
-  }
-  return data.token;
 }

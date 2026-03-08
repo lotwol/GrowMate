@@ -11,6 +11,7 @@ import {
   useCalendarEvents,
   useSwedishCropTips,
 } from "@/hooks/useCalendarData";
+import { useWeather } from "@/hooks/useWeather";
 
 const MONTH_NAMES_SV = [
   "Januari", "Februari", "Mars", "April", "Maj", "Juni",

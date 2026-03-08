@@ -54,6 +54,7 @@ const QUICK_ACTIONS = [
   { icon: BookOpen, label: "Dagbok", desc: "Logga aktivitet", tab: "diary" as const },
   { icon: ShoppingCart, label: "Inköpslista", desc: "Vad behöver du?", tab: "shopping" as const },
   { icon: CalendarDays, label: "Kalender", desc: "Såningsschema", tab: "calendar" as const },
+  { icon: Users, label: "Community", desc: "Odlartips & fröbyte", tab: "community" as const },
 ];
 
 const SCHOOL_META: Record<GrowingSchool, { emoji: string; label: string; badgeColor: string }> = {

@@ -138,7 +138,7 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       );
 
       const { data, error } = await supabase.functions.invoke("growmate-chat", {
-        body: { messages: history, zone: zone || undefined, profiles, school: school || undefined },
+        body: { messages: history, zone: zone || undefined, profiles, school: school || undefined, userContext },
       });
 
       if (error) throw error;

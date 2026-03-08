@@ -14,6 +14,9 @@ import { CommunityScreen } from "@/components/CommunityScreen";
 import { AdminScreen } from "@/components/AdminScreen";
 import { SeasonSummaryScreen } from "@/components/SeasonSummaryScreen";
 import { OnboardingData } from "@/types/onboarding";
+import { useNotificationPermissionAsked, requestNotificationPermission, getNotificationPermission } from "@/hooks/useNotifications";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin" | "season-summary";
 

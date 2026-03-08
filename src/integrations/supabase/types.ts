@@ -67,6 +67,7 @@ export type Database = {
           category: Database["public"]["Enums"]["crop_category"]
           cost: number | null
           created_at: string
+          emoji: string | null
           garden_id: string | null
           harvest_date: string | null
           id: string
@@ -82,6 +83,7 @@ export type Database = {
           category?: Database["public"]["Enums"]["crop_category"]
           cost?: number | null
           created_at?: string
+          emoji?: string | null
           garden_id?: string | null
           harvest_date?: string | null
           id?: string
@@ -97,6 +99,7 @@ export type Database = {
           category?: Database["public"]["Enums"]["crop_category"]
           cost?: number | null
           created_at?: string
+          emoji?: string | null
           garden_id?: string | null
           harvest_date?: string | null
           id?: string

@@ -56,7 +56,7 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       );
 
       const { data, error } = await supabase.functions.invoke("growmate-chat", {
-        body: { messages: history, zone: zone || undefined, profiles },
+        body: { messages: history, zone: zone || undefined, profiles, school: school || undefined },
       });
 
       if (error) throw error;

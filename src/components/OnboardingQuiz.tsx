@@ -93,14 +93,49 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
 
   const zones = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
 
+  // Levenshtein distance for fuzzy matching
+  const levenshtein = (a: string, b: string): number => {
+    const m = a.length, n = b.length;
+    const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+      Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+    );
+    for (let i = 1; i <= m; i++)
+      for (let j = 1; j <= n; j++)
+        dp[i][j] = a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    return dp[m][n];
+  };
+
+  const locationSuggestions = useMemo(() => {
+    const loc = location.toLowerCase().trim();
+    if (!loc || loc.length < 2) return [];
+    const cities = Object.keys(LOCATION_ZONES);
+
+    // Exact match → no suggestions needed
+    if (LOCATION_ZONES[loc]) return [];
+
+    // Score each city: prefix match, contains, or fuzzy distance
+    const scored = cities.map((city) => {
+      let score = 100;
+      if (city.startsWith(loc)) score = 0;
+      else if (city.includes(loc) || loc.includes(city)) score = 1;
+      else score = levenshtein(loc, city.substring(0, Math.max(loc.length, 3)));
+      return { city, score };
+    });
+
+    return scored
+      .filter((s) => s.score <= 3)
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 3)
+      .map((s) => s.city);
+  }, [location]);
+
   const suggestedZone = useMemo(() => {
     const loc = location.toLowerCase().trim();
     if (!loc) return null;
-    // Exact match first
-    if (LOCATION_ZONES[loc]) return LOCATION_ZONES[loc];
-    // Partial match
-    const match = Object.entries(LOCATION_ZONES).find(([key]) => key.includes(loc) || loc.includes(key));
-    return match ? match[1] : null;
+    if (LOCATION_ZONES[loc]) return { ...LOCATION_ZONES[loc], city: loc };
+    return null;
   }, [location]);
 
   if (step === 0) {

@@ -181,6 +181,9 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
           </div>
         </div>
 
+        {/* Badges */}
+        <BadgeGrid earned={earned} notYetEarned={notYetEarned} />
+
         {/* Season comparison */}
         <SeasonComparisonSection />
 

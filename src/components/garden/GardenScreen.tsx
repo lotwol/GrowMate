@@ -756,6 +756,38 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Start crop from seed sheet */}
+        {startCropSeedId && (() => {
+          const seedForSheet = seeds.find(s => s.id === startCropSeedId);
+          if (!seedForSheet) return null;
+          return (
+            <StartCropFromSeedSheet
+              open={!!startCropSeedId}
+              onClose={() => setStartCropSeedId(null)}
+              seed={seedForSheet as any}
+              gardens={gardens}
+              onSubmit={(data) => {
+                addCrop.mutate(
+                  { ...data, season_year: seasonYear } as any,
+                  {
+                    onSuccess: () => {
+                      // Decrement seed quantity
+                      const qty = seedForSheet.quantity ? parseInt(seedForSheet.quantity, 10) : NaN;
+                      if (!isNaN(qty) && qty > 0) {
+                        decrementSeedQty.mutate(seedForSheet.id);
+                      }
+                      toast.success(`🌱 ${data.name} tillagd i Min Odling!`);
+                      setStartCropSeedId(null);
+                      setTab("grödor");
+                    },
+                  }
+                );
+              }}
+              isLoading={addCrop.isPending}
+            />
+          );
+        })()}
       </div>
     </div>
   );

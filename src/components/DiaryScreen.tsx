@@ -9,6 +9,7 @@ import { format, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import { sv } from "date-fns/locale";
 import { useDiaryEntries, useAddDiaryEntry, useUpdateDiaryEntry, useDeleteDiaryEntry } from "@/hooks/useDiary";
 import type { DiaryEntry } from "@/hooks/useDiary";
+import { PhotoStrip } from "@/components/PhotoStrip";
 
 // ── Constants ──
 
@@ -40,8 +41,8 @@ function DiaryEntryForm({
   onCancel,
   isSaving,
 }: {
-  initial?: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] };
-  onSave: (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] }) => void;
+  initial?: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls?: string[] };
+  onSave: (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls: string[] }) => void;
   onCancel: () => void;
   isSaving: boolean;
 }) {
@@ -50,6 +51,7 @@ function DiaryEntryForm({
   const [content, setContent] = useState(initial?.content || "");
   const [mood, setMood] = useState<number | null>(initial?.mood_garden ?? null);
   const [activities, setActivities] = useState<string[]>(initial?.activities || []);
+  const [photoUrls, setPhotoUrls] = useState<string[]>(initial?.photo_urls || []);
 
   const toggleActivity = (a: string) =>
     setActivities((prev) => prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]);
@@ -121,12 +123,22 @@ function DiaryEntryForm({
         </div>
       </div>
 
+      {/* Photo strip */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground mb-2 block">Foton</label>
+        <PhotoStrip
+          photos={photoUrls}
+          onPhotosChange={setPhotoUrls}
+          storagePath={`diary/${date}`}
+        />
+      </div>
+
       <div className="flex gap-2 pt-1">
         <Button
           variant="growmate"
           className="flex-1"
           disabled={isSaving}
-          onClick={() => onSave({ entry_date: date, title, content, mood_garden: mood, activities })}
+          onClick={() => onSave({ entry_date: date, title, content, mood_garden: mood, activities, photo_urls: photoUrls })}
         >
           <Save className="w-4 h-4 mr-1.5" />
           {isSaving ? "Sparar..." : "Spara"}
@@ -479,7 +491,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
   // Filter diary entries (no wellbeing scores) vs wellbeing entries
   const diaryEntries = entries.filter((e) => e.wellbeing_physical === null);
 
-  const handleAdd = (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] }) => {
+  const handleAdd = (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls: string[] }) => {
     addEntry.mutate(
       {
         entry_date: data.entry_date,
@@ -487,13 +499,14 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
         content: data.content || null,
         mood_garden: data.mood_garden,
         activities: data.activities,
+        photo_urls: data.photo_urls,
         season_year: seasonYear,
       },
       { onSuccess: () => setShowAdd(false) }
     );
   };
 
-  const handleUpdate = (id: string, data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] }) => {
+  const handleUpdate = (id: string, data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls: string[] }) => {
     updateEntry.mutate(
       {
         id,
@@ -502,6 +515,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
         content: data.content || null,
         mood_garden: data.mood_garden,
         activities: data.activities,
+        photo_urls: data.photo_urls,
       },
       { onSuccess: () => setEditingId(null) }
     );
@@ -601,6 +615,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
                     content: entry.content || "",
                     mood_garden: entry.mood_garden,
                     activities: entry.activities || [],
+                    photo_urls: (entry as any).photo_urls || [],
                   }}
                   onSave={(data) => handleUpdate(entry.id, data)}
                   onCancel={() => setEditingId(null)}
@@ -640,6 +655,13 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
                         <span key={a} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
                           {a}
                         </span>
+                      ))}
+                    </div>
+                  )}
+                  {(entry as any).photo_urls && (entry as any).photo_urls.length > 0 && (
+                    <div className="flex gap-1.5 mt-2 overflow-x-auto">
+                      {(entry as any).photo_urls.map((url: string, i: number) => (
+                        <img key={i} src={url} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
                       ))}
                     </div>
                   )}

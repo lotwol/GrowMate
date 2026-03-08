@@ -306,6 +306,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          photo_urls: string[]
           season_year: number | null
           sow_date: string | null
           status: Database["public"]["Enums"]["crop_status"]
@@ -322,6 +323,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          photo_urls?: string[]
           season_year?: number | null
           sow_date?: string | null
           status?: Database["public"]["Enums"]["crop_status"]
@@ -338,6 +340,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          photo_urls?: string[]
           season_year?: number | null
           sow_date?: string | null
           status?: Database["public"]["Enums"]["crop_status"]
@@ -362,6 +365,7 @@ export type Database = {
           entry_date: string
           id: string
           mood_garden: number | null
+          photo_urls: string[]
           season_year: number | null
           title: string | null
           updated_at: string
@@ -377,6 +381,7 @@ export type Database = {
           entry_date?: string
           id?: string
           mood_garden?: number | null
+          photo_urls?: string[]
           season_year?: number | null
           title?: string | null
           updated_at?: string
@@ -392,6 +397,7 @@ export type Database = {
           entry_date?: string
           id?: string
           mood_garden?: number | null
+          photo_urls?: string[]
           season_year?: number | null
           title?: string | null
           updated_at?: string

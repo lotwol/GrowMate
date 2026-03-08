@@ -5,6 +5,7 @@ import { X, Save } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { Garden, Crop } from "@/hooks/useGarden";
 import { EmojiPicker } from "./EmojiPicker";
+import { PhotoStrip } from "@/components/PhotoStrip";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -19,7 +20,7 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
 interface EditCropFormProps {
   crop: Crop;
   gardens: Garden[];
-  onSave: (updates: { id: string; name?: string; category?: CropCategory; emoji?: string | null; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null }) => void;
+  onSave: (updates: { id: string; name?: string; category?: CropCategory; emoji?: string | null; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null; photo_urls?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -34,6 +35,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
   const [harvestDate, setHarvestDate] = useState(crop.harvest_date || "");
   const [notes, setNotes] = useState(crop.notes || "");
   const [cost, setCost] = useState(crop.cost ? String(crop.cost) : "");
+  const [photoUrls, setPhotoUrls] = useState<string[]>((crop as any).photo_urls || []);
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -47,6 +49,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
       harvest_date: harvestDate || null,
       notes: notes.trim() || null,
       cost: cost ? Number(cost) : null,
+      photo_urls: photoUrls,
     });
   };
 
@@ -124,6 +127,16 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
           className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body resize-none mt-1"
+        />
+      </div>
+
+      {/* Photos */}
+      <div>
+        <label className="text-xs text-muted-foreground mb-2 block">Foton</label>
+        <PhotoStrip
+          photos={photoUrls}
+          onPhotosChange={setPhotoUrls}
+          storagePath={`crops/${crop.id}`}
         />
       </div>
 

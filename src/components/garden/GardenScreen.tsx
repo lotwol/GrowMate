@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star } from "lucide-react";
+import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera } from "lucide-react";
 import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
 import { AddSeedForm } from "@/components/garden/AddSeedForm";
 import { EditCropForm } from "@/components/garden/EditCropForm";
 import { GardenLayoutEditor } from "@/components/garden/GardenLayoutEditor";
+import { PhotoStrip } from "@/components/PhotoStrip";
 import type { Database } from "@/integrations/supabase/types";
 import { Constants } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -127,6 +128,7 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
   const [contributingCropId, setContributingCropId] = useState<string | null>(null);
   const [dismissedContributions, setDismissedContributions] = useState<Set<string>>(new Set());
+  const [photoCropId, setPhotoCropId] = useState<string | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
@@ -347,7 +349,16 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
                   <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
+                        {/* Most recent photo thumbnail */}
+                        {(crop as any).photo_urls?.length > 0 ? (
+                          <img
+                            src={(crop as any).photo_urls[(crop as any).photo_urls.length - 1]}
+                            alt=""
+                            className="w-10 h-10 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <span className="text-xl">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
+                        )}
                         <div>
                           <p className="font-medium text-foreground">{crop.name}</p>
                           <p className="text-xs text-muted-foreground">
@@ -358,6 +369,9 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
+                        <button onClick={() => setPhotoCropId(photoCropId === crop.id ? null : crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
+                          <Camera className="w-4 h-4" />
+                        </button>
                         <button onClick={() => setEditingCropId(crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
                           <Pencil className="w-4 h-4" />
                         </button>
@@ -389,6 +403,17 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
                     </div>
 
                     {crop.notes && <p className="text-xs text-muted-foreground italic">{crop.notes}</p>}
+
+                    {/* Inline photo strip for this crop */}
+                    {photoCropId === crop.id && (
+                      <PhotoStrip
+                        photos={(crop as any).photo_urls || []}
+                        onPhotosChange={(urls) => {
+                          updateCrop.mutate({ id: crop.id, photo_urls: urls } as any);
+                        }}
+                        storagePath={`crops/${crop.id}`}
+                      />
+                    )}
                   </div>
 
                   {/* Harvest contribution card */}

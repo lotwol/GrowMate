@@ -353,11 +353,13 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             {showAddCrop ? (
               <AddCropForm
                 gardens={gardens}
+                seeds={seeds}
                 zone={zone}
                 school={school}
-                onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear }, { onSuccess: () => setShowAddCrop(false) }); }}
+                onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear } as any, { onSuccess: () => setShowAddCrop(false) }); }}
                 onCancel={() => setShowAddCrop(false)}
                 isLoading={addCrop.isPending}
+                onSeedLinked={(seedId) => decrementSeedQty.mutate(seedId)}
               />
             ) : (
               <Button variant="growmate-outline" className="w-full" onClick={() => setShowAddCrop(true)}>

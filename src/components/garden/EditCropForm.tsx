@@ -41,6 +41,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
       id: crop.id,
       name: name.trim(),
       category,
+      emoji,
       garden_id: gardenId || null,
       sow_date: sowDate || null,
       harvest_date: harvestDate || null,

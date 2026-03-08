@@ -9,6 +9,7 @@ import { format, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import { sv } from "date-fns/locale";
 import { useDiaryEntries, useAddDiaryEntry, useUpdateDiaryEntry, useDeleteDiaryEntry } from "@/hooks/useDiary";
 import type { DiaryEntry } from "@/hooks/useDiary";
+import { PhotoStrip } from "@/components/PhotoStrip";
 
 // ── Constants ──
 

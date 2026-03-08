@@ -5,6 +5,7 @@ import { GrowMateChat } from "@/components/GrowMateChat";
 import { BottomNav } from "@/components/BottomNav";
 import { PlaceholderScreen } from "@/components/PlaceholderScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
+import { GardenScreen } from "@/components/garden/GardenScreen";
 import { OnboardingData } from "@/types/onboarding";
 
 type Tab = "home" | "garden" | "chat" | "diary" | "profile";
@@ -32,9 +33,7 @@ const Index = () => {
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} onNavigateChat={() => setActiveTab("chat")} />
       )}
-      {activeTab === "garden" && (
-        <PlaceholderScreen emoji="🌱" title="Min Odling" description="Här kommer du kunna se alla dina grödor, fröinventarie och odlingsplan. Kommer snart!" />
-      )}
+      {activeTab === "garden" && <GardenScreen />}
       {activeTab === "chat" && (
         <div className="h-screen"><GrowMateChat /></div>
       )}

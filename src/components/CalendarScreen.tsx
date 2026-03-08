@@ -95,7 +95,17 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
   const diaryMap = useMemo(() => {
     const map = new Map<string, { mood: number | null; title: string | null }>();
     (diaryEntries || []).forEach((e) => {
-      map.set(e.entry_date, { mood: e.mood_garden, title: e.title });
+      // Use mood_garden if set, otherwise derive from wellbeing averages
+      let mood = e.mood_garden;
+      if (mood == null) {
+        const scores = [e.wellbeing_physical, e.wellbeing_mental, e.wellbeing_social].filter(
+          (s): s is number => s != null
+        );
+        if (scores.length > 0) {
+          mood = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        }
+      }
+      map.set(e.entry_date, { mood, title: e.title });
     });
     return map;
   }, [diaryEntries]);

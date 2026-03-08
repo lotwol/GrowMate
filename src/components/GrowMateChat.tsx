@@ -79,6 +79,8 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const saveChatMessage = useSaveChatMessage();
   const updateTitle = useUpdateConversationTitle();
   const deleteConversation = useDeleteConversation();
+  const addCrop = useAddCrop();
+  const addDiaryEntry = useAddDiaryEntry();
 
   // Fetch user's garden data for AI context
   const [userContext, setUserContext] = useState<any>(null);

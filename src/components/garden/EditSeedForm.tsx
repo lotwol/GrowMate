@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X, Archive, CheckCircle2 } from "lucide-react";
+import { X } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { PhotoStrip } from "@/components/PhotoStrip";
+import { EmojiPicker } from "./EmojiPicker";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 

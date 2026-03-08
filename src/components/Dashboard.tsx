@@ -79,6 +79,7 @@ export function Dashboard({ profile, onNavigateChat, onNavigate }: DashboardProp
           {QUICK_ACTIONS.map((action) => (
             <button
               key={action.label}
+              onClick={() => onNavigate(action.tab)}
               className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all"
             >
               <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">

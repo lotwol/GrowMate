@@ -61,9 +61,12 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
         </button>
       </div>
 
-      <div>
-        <label className="text-xs text-muted-foreground">Namn</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCn} />
+      <div className="flex items-center gap-2">
+        <EmojiPicker value={emoji} onChange={setEmoji} />
+        <div className="flex-1">
+          <label className="text-xs text-muted-foreground">Namn</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCn} />
+        </div>
       </div>
 
       <div>

@@ -101,6 +101,7 @@ const Index = () => {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
+      <OfflineIndicator />
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} zone={onboardingData.zone} school={onboardingData.school} name={onboardingData.name} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}

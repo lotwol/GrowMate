@@ -164,10 +164,10 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const deleteGarden = useDeleteGarden();
   const decrementSeedQty = useDecrementSeedQuantity();
 
-  const tabs: { id: Tab; label: string; icon: typeof Leaf; count: number }[] = [
-    { id: "ytor", label: "Ytor", icon: Sprout, count: gardens.length },
-    { id: "grödor", label: "Grödor", icon: Leaf, count: crops.length },
-    { id: "frön", label: "Frön", icon: Package, count: seeds.length },
+  const tabs: { id: Tab; label: string; subtitle: string; icon: typeof Leaf; count: number }[] = [
+    { id: "ytor", label: "Ytor", subtitle: "", icon: Sprout, count: gardens.length },
+    { id: "grödor", label: "Grödor", subtitle: "Aktivt odlade", icon: Leaf, count: crops.length },
+    { id: "frön", label: "Frön", subtitle: "Lager & påsar", icon: Package, count: seeds.length },
   ];
 
   const statuses = Constants.public.Enums.crop_status;

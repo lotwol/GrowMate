@@ -11,7 +11,7 @@ import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "profile";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();

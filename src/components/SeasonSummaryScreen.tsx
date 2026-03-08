@@ -95,6 +95,8 @@ interface SeasonSummaryScreenProps {
 export function SeasonSummaryScreen({ year, name, zone, school, onBack }: SeasonSummaryScreenProps) {
   const { data: crops = [] } = useCropsForCalendar(year);
   const { data: diary = [] } = useDiaryEntriesForCalendar(year);
+  const [harvestsExpanded, setHarvestsExpanded] = useState(false);
+  const [recipeCrop, setRecipeCrop] = useState<string | null>(null);
 
   const stats = useMemo(() => {
     const totalCrops = crops.length;

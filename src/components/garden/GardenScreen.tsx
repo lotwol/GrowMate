@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera } from "lucide-react";
+import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera, Flower2, X, AlertTriangle } from "lucide-react";
+import { findCompanionData, findBadNeighbors } from "@/data/companionPlanting";
 import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";

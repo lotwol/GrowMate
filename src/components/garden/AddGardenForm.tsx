@@ -27,13 +27,19 @@ export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormPr
   const [notes, setNotes] = useState("");
 
   const handleSubmit = () => {
-    if (!name.trim()) return;
+    if (!name.trim() || types.length === 0) return;
     onSubmit({
       name: name.trim(),
-      type,
+      type: types,
       size_sqm: size ? Number(size) : undefined,
       notes: notes.trim() || undefined,
     });
+  };
+
+  const toggleType = (t: GardenType) => {
+    setTypes((prev) =>
+      prev.includes(t) ? prev.filter((v) => v !== t) : [...prev, t]
+    );
   };
 
   return (

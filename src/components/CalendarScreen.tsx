@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   useCropsForCalendar,
   useDiaryEntriesForCalendar,
+  useCalendarEvents,
   useSwedishCropTips,
 } from "@/hooks/useCalendarData";
 
@@ -63,9 +64,21 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
 
   const { data: crops, isLoading: cropsLoading } = useCropsForCalendar(viewYear);
   const { data: diaryEntries, isLoading: diaryLoading } = useDiaryEntriesForCalendar(viewYear);
+  const { data: calendarEvents, isLoading: eventsLoading } = useCalendarEvents(viewYear);
   const { data: tips, isLoading: tipsLoading } = useSwedishCropTips(zone);
 
-  const isLoading = cropsLoading || diaryLoading || tipsLoading;
+  const isLoading = cropsLoading || diaryLoading || tipsLoading || eventsLoading;
+
+  // Calendar events map
+  const eventDates = useMemo(() => {
+    const map = new Map<string, { title: string; emoji: string }[]>();
+    (calendarEvents || []).forEach((e) => {
+      const arr = map.get(e.event_date) || [];
+      arr.push({ title: e.title, emoji: e.emoji });
+      map.set(e.event_date, arr);
+    });
+    return map;
+  }, [calendarEvents]);
 
   // Build lookup maps
   const sowDates = useMemo(() => {
@@ -407,9 +420,10 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
           </div>
           <div className="grid grid-cols-7">
             {calendarCells.map((cell, idx) => {
-              const isToday = cell.dateStr === todayStr && cell.inMonth;
+               const isToday = cell.dateStr === todayStr && cell.inMonth;
               const hasSow = cell.inMonth && sowDates.has(cell.dateStr);
               const hasHarvest = cell.inMonth && harvestDates.has(cell.dateStr);
+              const hasEvent = cell.inMonth && eventDates.has(cell.dateStr);
               const diary = cell.inMonth ? diaryMap.get(cell.dateStr) : undefined;
               const hasDiary = !!diary;
               const moodColor = diary?.mood ? MOOD_COLORS[diary.mood] : undefined;
@@ -449,6 +463,12 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                         <span
                           className="block w-1.5 h-1.5 rounded-full"
                           style={{ backgroundColor: "#3b82f6" }}
+                        />
+                      )}
+                      {hasEvent && (
+                        <span
+                          className="block w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: "#a855f7" }}
                         />
                       )}
                     </div>
@@ -520,6 +540,42 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
             )}
           </div>
         </div>
+
+        {/* Calendar events from GrowMate */}
+        {calendarEvents && calendarEvents.length > 0 && (
+          <div>
+            <h2 className="font-display text-lg mb-3">Kommande händelser 📅</h2>
+            <div className="space-y-2">
+              {calendarEvents
+                .filter((e) => {
+                  const m = parseInt(e.event_date.split("-")[1]);
+                  return m === viewMonth;
+                })
+                .map((e) => (
+                  <div
+                    key={e.id}
+                    className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3"
+                  >
+                    <span className="text-xl">{e.emoji || "📅"}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{e.title}</p>
+                      {e.description && (
+                        <p className="text-xs text-muted-foreground">{e.description}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {formatSwedishDate(e.event_date)}
+                      </p>
+                    </div>
+                    {e.event_type === "growmate" && (
+                      <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">
+                        🤖 GrowMate
+                      </span>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* Wellbeing sparkline */}
         <div>

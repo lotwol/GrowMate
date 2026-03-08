@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Mic, MicOff, Leaf, Plus, ChevronLeft, Trash2, MessageSquare, Sparkles } from "lucide-react";
+import { Send, Mic, MicOff, Leaf, Plus, ChevronLeft, Trash2, MessageSquare, Sparkles, CalendarPlus, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useChatConversations,
   useChatMessages,
@@ -16,10 +18,19 @@ import {
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 
+interface CalendarAction {
+  title: string;
+  event_date: string;
+  description?: string;
+  emoji?: string;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  calendarActions?: CalendarAction[];
+  calendarSaved?: boolean;
 }
 
 interface GrowMateChatProps {
@@ -37,6 +48,7 @@ const WELCOME_MESSAGE: Message = {
 
 export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
@@ -58,21 +70,43 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   useEffect(() => {
     if (!user) return;
     const fetchContext = async () => {
-      const [cropsRes, gardensRes, diaryRes, seedsRes] = await Promise.all([
+      const [cropsRes, gardensRes, diaryRes, seedsRes, eventsRes] = await Promise.all([
         supabase.from("crops").select("name, status, category, sow_date, harvest_date, emoji, notes, garden_id").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
         supabase.from("gardens").select("name, type, size_sqm, notes").eq("user_id", user.id),
         supabase.from("diary_entries").select("title, content, activities, entry_date, mood_garden").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(10),
         supabase.from("seed_inventory").select("name, category, quantity, notes").eq("user_id", user.id),
+        supabase.from("calendar_events" as any).select("title, event_date, description, emoji").eq("user_id", user.id).gte("event_date", new Date().toISOString().split("T")[0]).order("event_date", { ascending: true }).limit(20),
       ]);
       setUserContext({
         crops: cropsRes.data || [],
         gardens: gardensRes.data || [],
         recent_diary: diaryRes.data || [],
         seeds: seedsRes.data || [],
+        calendar_events: eventsRes.data || [],
       });
     };
     fetchContext();
   }, [user]);
+
+  const saveCalendarEvents = async (actions: CalendarAction[]) => {
+    if (!user || actions.length === 0) return;
+    const events = actions.map((a) => ({
+      user_id: user.id,
+      title: a.title,
+      event_date: a.event_date,
+      description: a.description || null,
+      emoji: a.emoji || "📅",
+      event_type: "growmate",
+    }));
+    const { error } = await supabase.from("calendar_events" as any).insert(events as any);
+    if (error) {
+      console.error("Failed to save calendar events:", error);
+      toast({ title: "Kunde inte spara kalenderhändelser", variant: "destructive" });
+    } else {
+      toast({ title: `📅 ${actions.length} händelse${actions.length > 1 ? "r" : ""} tillagd${actions.length > 1 ? "a" : ""} i kalendern!` });
+      queryClient.invalidateQueries({ queryKey: ["calendar_events"] });
+    }
+  };
 
   // When loading a saved conversation, populate messages
   useEffect(() => {
@@ -145,12 +179,24 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       if (data?.error) throw new Error(data.error);
 
       const botContent = data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!";
+      const calendarActions: CalendarAction[] = data?.calendar_actions || [];
+      
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: botContent,
+        calendarActions: calendarActions.length > 0 ? calendarActions : undefined,
+        calendarSaved: false,
       };
       setMessages((prev) => [...prev, botMsg]);
+
+      // Auto-save calendar events
+      if (calendarActions.length > 0) {
+        await saveCalendarEvents(calendarActions);
+        setMessages((prev) =>
+          prev.map((m) => m.id === botMsg.id ? { ...m, calendarSaved: true } : m)
+        );
+      }
 
       // Save assistant message
       await saveChatMessage.mutateAsync({
@@ -303,6 +349,24 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
                 msg.content
               )}
             </div>
+            {/* Calendar actions card */}
+            {msg.calendarActions && msg.calendarActions.length > 0 && (
+              <div className="mt-2 rounded-xl bg-accent/60 border border-border p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                  <CalendarPlus className="w-3.5 h-3.5 text-primary" />
+                  {msg.calendarSaved ? "Tillagt i kalendern" : "Lägger till i kalendern..."}
+                  {msg.calendarSaved && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                </div>
+                {msg.calendarActions.map((a, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{a.emoji || "📅"}</span>
+                    <span className="font-medium text-foreground">{a.title}</span>
+                    <span>·</span>
+                    <span>{a.event_date}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
         {isLoading && (

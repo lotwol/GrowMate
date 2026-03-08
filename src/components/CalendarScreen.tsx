@@ -1,6 +1,10 @@
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { TipDetailSheet } from "@/components/calendar/TipDetailSheet";
 import {
   useCropsForCalendar,
   useDiaryEntriesForCalendar,

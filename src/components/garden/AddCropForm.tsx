@@ -64,6 +64,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
     onSubmit({
       name: name.trim(),
       category,
+      emoji,
       garden_id: gardenId || undefined,
       sow_date: sowDate || undefined,
       notes: notes.trim() || undefined,

@@ -51,7 +51,7 @@ interface OnboardingQuizProps {
 
 export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
   const [step, setStep] = useState(0);
-  const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
+  const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [zone, setZone] = useState<string | null>(null);
 

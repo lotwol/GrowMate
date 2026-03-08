@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MapPin, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const PROFILES = [
   {

@@ -102,6 +102,19 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
     return map;
   }, [calendarEvents]);
 
+  // Frost forecast map (date -> minTemp)
+  const frostDates = useMemo(() => {
+    const map = new Map<string, number>();
+    if (weatherData?.frostForecast) {
+      weatherData.frostForecast.forEach((f) => {
+        if (f.minTemp <= 0) {
+          map.set(f.date, f.minTemp);
+        }
+      });
+    }
+    return map;
+  }, [weatherData]);
+
   // Build lookup maps
   const sowDates = useMemo(() => {
     const map = new Map<string, string[]>();

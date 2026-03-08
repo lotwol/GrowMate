@@ -74,7 +74,7 @@ export type Database = {
           name: string
           notes: string | null
           size_sqm: number | null
-          type: Database["public"]["Enums"]["garden_type"]
+          type: Database["public"]["Enums"]["garden_type"][]
           updated_at: string
           user_id: string
         }
@@ -84,7 +84,7 @@ export type Database = {
           name: string
           notes?: string | null
           size_sqm?: number | null
-          type?: Database["public"]["Enums"]["garden_type"]
+          type?: Database["public"]["Enums"]["garden_type"][]
           updated_at?: string
           user_id: string
         }
@@ -94,7 +94,7 @@ export type Database = {
           name?: string
           notes?: string | null
           size_sqm?: number | null
-          type?: Database["public"]["Enums"]["garden_type"]
+          type?: Database["public"]["Enums"]["garden_type"][]
           updated_at?: string
           user_id?: string
         }

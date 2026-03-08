@@ -59,6 +59,10 @@ interface DashboardProps {
 
 export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: DashboardProps) {
   const { data: weather, isLoading: weatherLoading } = useWeather(zone);
+  const currentYear = new Date().getFullYear();
+  const { data: crops = [] } = useCropsForCalendar(currentYear);
+  const { data: diary = [] } = useDiaryEntriesForCalendar(currentYear);
+  const diaryDays = diary.filter((d) => d.mood_garden !== null || d.title).length;
   const month = new Date().getMonth() + 1;
   const monthTip = MONTH_TIPS[month] || MONTH_TIPS[3];
   const sowTip = zone ? (ZONE_SOW_TIPS[zone] || "Sallad kan direktsås snart") : "Sallad kan direktsås om 4 veckor";

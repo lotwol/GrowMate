@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      algorithm_learning_log: {
+        Row: {
+          confidence_level: string | null
+          created_at: string | null
+          crop_name: string
+          deviation_description: string | null
+          event_type: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          sample_count: number | null
+          zone: string
+        }
+        Insert: {
+          confidence_level?: string | null
+          created_at?: string | null
+          crop_name: string
+          deviation_description?: string | null
+          event_type: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          sample_count?: number | null
+          zone: string
+        }
+        Update: {
+          confidence_level?: string | null
+          created_at?: string | null
+          crop_name?: string
+          deviation_description?: string | null
+          event_type?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          sample_count?: number | null
+          zone?: string
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           created_at: string
@@ -115,11 +154,18 @@ export type Database = {
       community_insights: {
         Row: {
           avg_success_rating: number | null
+          baseline_harvest_end: number | null
+          baseline_harvest_start: number | null
+          baseline_sow_end: number | null
+          baseline_sow_start: number | null
           common_notes: string[] | null
+          confidence_level: string | null
           crop_name: string
+          harvest_deviation_weeks: number | null
           id: string
           last_updated: string | null
           sample_count: number | null
+          sow_deviation_weeks: number | null
           typical_harvest_month_end: number | null
           typical_harvest_month_start: number | null
           typical_sow_month_end: number | null
@@ -128,11 +174,18 @@ export type Database = {
         }
         Insert: {
           avg_success_rating?: number | null
+          baseline_harvest_end?: number | null
+          baseline_harvest_start?: number | null
+          baseline_sow_end?: number | null
+          baseline_sow_start?: number | null
           common_notes?: string[] | null
+          confidence_level?: string | null
           crop_name: string
+          harvest_deviation_weeks?: number | null
           id?: string
           last_updated?: string | null
           sample_count?: number | null
+          sow_deviation_weeks?: number | null
           typical_harvest_month_end?: number | null
           typical_harvest_month_start?: number | null
           typical_sow_month_end?: number | null
@@ -141,11 +194,18 @@ export type Database = {
         }
         Update: {
           avg_success_rating?: number | null
+          baseline_harvest_end?: number | null
+          baseline_harvest_start?: number | null
+          baseline_sow_end?: number | null
+          baseline_sow_start?: number | null
           common_notes?: string[] | null
+          confidence_level?: string | null
           crop_name?: string
+          harvest_deviation_weeks?: number | null
           id?: string
           last_updated?: string | null
           sample_count?: number | null
+          sow_deviation_weeks?: number | null
           typical_harvest_month_end?: number | null
           typical_harvest_month_start?: number | null
           typical_sow_month_end?: number | null

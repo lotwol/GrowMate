@@ -277,23 +277,30 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
             </div>
 
             {/* Time per week */}
-            <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
-              <p className="text-sm font-medium text-foreground">Hur mycket tid har du för odling i veckan?</p>
-              <div className="space-y-2">
-                <input
-                  type="range" min={0} max={100} value={data.timeScore}
-                  onChange={(e) => update({ timeScore: Number(e.target.value) })}
-                  className="w-full accent-primary"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span className={cn(data.timeScore < 40 && "text-foreground font-medium")}>⏱️ Några minuter</span>
-                  <span className={cn(data.timeScore > 60 && "text-foreground font-medium")}>🌻 Timmar & timmar</span>
+            {(() => {
+              const timeSteps = [1, 2, 3, 5, 8, 10, 15, 20, 30, 40];
+              const stepIndex = timeSteps.findIndex((t) => t >= data.timeScore) === -1 ? timeSteps.length - 1 : timeSteps.findIndex((t) => t >= data.timeScore);
+              const displayHours = data.timeScore;
+              const timeLabel = displayHours <= 2 ? "Perfekt för balkonglådor och krukor – varje stund räknas!" : displayHours <= 5 ? "Några timmar ger mycket – vi hjälper dig prioritera." : displayHours <= 10 ? "Bra utrymme – du kan ha en fin liten köksträdgård." : displayHours <= 20 ? "Du kan odla på riktigt – köksträdgård med variation!" : "Wow, nästan heltid! Du kan bygga något fantastiskt.";
+              return (
+                <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Hur mycket tid har du för odling i veckan?</p>
+                  <div className="space-y-2">
+                    <input
+                      type="range" min={1} max={40} step={1} value={data.timeScore}
+                      onChange={(e) => update({ timeScore: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                      <span>⏱️ 1h</span>
+                      <span className="text-base font-medium text-foreground">{displayHours}h / vecka</span>
+                      <span>🌻 40h</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">{timeLabel}</p>
                 </div>
-              </div>
-              <p className="text-xs text-muted-foreground italic">
-                {data.timeScore < 30 ? "Helt okej! Varje minut i jorden räknas." : data.timeScore > 70 ? "Fantastiskt – du har utrymme att verkligen experimentera." : "Lagom är bäst – vi anpassar efter det."}
-              </p>
-            </div>
+              );
+            })()}
 
             {/* Result vs Joy */}
             <div className="rounded-2xl bg-card border border-border p-4 space-y-3">

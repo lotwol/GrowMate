@@ -88,6 +88,7 @@ const Index = () => {
         <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
       )}
       {activeTab === "diary" && <DiaryScreen />}
+      {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" />}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}

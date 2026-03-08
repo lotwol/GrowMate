@@ -110,10 +110,14 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
             {PROFILES.map((profile) => (
               <button
                 key={profile.id}
-                onClick={() => setSelectedProfile(profile.id)}
+                onClick={() => setSelectedProfiles((prev) =>
+                  prev.includes(profile.id)
+                    ? prev.filter((p) => p !== profile.id)
+                    : [...prev, profile.id]
+                )}
                 className={cn(
                   "w-full text-left rounded-2xl p-4 border-2 transition-all duration-200",
-                  selectedProfile === profile.id
+                  selectedProfiles.includes(profile.id)
                     ? "border-primary bg-accent shadow-md"
                     : "border-transparent bg-card hover:border-primary/30"
                 )}

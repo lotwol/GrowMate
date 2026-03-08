@@ -520,7 +520,7 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
           <h2 className="font-display text-lg mb-3">
             Välmående de senaste 30 dagarna 💚
           </h2>
-          {wellbeingData.length >= 3 && sparklinePath ? (
+          {sparklineData ? (
             <div className="rounded-2xl bg-card border border-border p-4">
               <svg viewBox="0 0 300 50" className="w-full" style={{ height: 60 }}>
                 <defs>
@@ -529,23 +529,35 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                     <stop offset="100%" className="[stop-color:hsl(var(--primary))]" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <path d={sparklinePath.area} fill="url(#sparkFill)" />
-                <polyline
-                  points={sparklinePath.points.map((p) => `${p.x},${p.y}`).join(" ")}
-                  fill="none"
-                  className="stroke-primary"
-                  strokeWidth={2}
-                  strokeLinejoin="round"
-                />
-                {sparklinePath.points.map((p, i) => (
+                {sparklineData.area && (
+                  <path d={sparklineData.area} fill="url(#sparkFill)" />
+                )}
+                {sparklineData.line && (
+                  <polyline
+                    points={sparklineData.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                    fill="none"
+                    className="stroke-primary"
+                    strokeWidth={2}
+                    strokeLinejoin="round"
+                  />
+                )}
+                {sparklineData.points.map((p, i) => (
                   <circle
                     key={i}
                     cx={p.x}
                     cy={p.y}
-                    r={3}
+                    r={sparklineData.points.length === 1 ? 5 : 3}
                     className="fill-primary"
                   />
                 ))}
+                {sparklineData.points.length === 1 && (
+                  <circle
+                    cx={sparklineData.points[0].x}
+                    cy={sparklineData.points[0].y}
+                    r={9}
+                    className="fill-primary/20 animate-pulse"
+                  />
+                )}
               </svg>
             </div>
           ) : (

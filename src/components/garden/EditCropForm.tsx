@@ -130,6 +130,16 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
         />
       </div>
 
+      {/* Photos */}
+      <div>
+        <label className="text-xs text-muted-foreground mb-2 block">Foton</label>
+        <PhotoStrip
+          photos={photoUrls}
+          onPhotosChange={setPhotoUrls}
+          storagePath={`crops/${crop.id}`}
+        />
+      </div>
+
       <Button variant="growmate" className="w-full" onClick={handleSave} disabled={!name.trim() || isLoading}>
         <Save className="w-4 h-4 mr-1.5" />
         {isLoading ? "Sparar..." : "Spara ändringar"}

@@ -403,6 +403,17 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
                     </div>
 
                     {crop.notes && <p className="text-xs text-muted-foreground italic">{crop.notes}</p>}
+
+                    {/* Inline photo strip for this crop */}
+                    {photoCropId === crop.id && (
+                      <PhotoStrip
+                        photos={(crop as any).photo_urls || []}
+                        onPhotosChange={(urls) => {
+                          updateCrop.mutate({ id: crop.id, photo_urls: urls } as any);
+                        }}
+                        storagePath={`crops/${crop.id}`}
+                      />
+                    )}
                   </div>
 
                   {/* Harvest contribution card */}

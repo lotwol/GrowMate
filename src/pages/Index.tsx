@@ -96,6 +96,7 @@ const Index = () => {
       )}
       {activeTab === "diary" && <DiaryScreen />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" />}
+      {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}

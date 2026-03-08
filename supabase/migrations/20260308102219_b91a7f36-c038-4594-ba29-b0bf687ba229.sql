@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN share_growing_data boolean NOT NULL DEFAULT false;

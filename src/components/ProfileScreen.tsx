@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
-import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut } from "lucide-react";
+import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   sinnesron: { emoji: "🌿", title: "Sinnesron" },
@@ -22,14 +27,38 @@ const SCHOOL_DISPLAY: Record<string, { emoji: string; title: string; desc: strin
 
 interface ProfileScreenProps {
   data: OnboardingData;
+  shareGrowingData?: boolean;
   onEdit: () => void;
   onSignOut?: () => void;
   onOpenAdmin?: () => void;
 }
 
-export function ProfileScreen({ data, onEdit, onSignOut, onOpenAdmin }: ProfileScreenProps) {
+export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOut, onOpenAdmin }: ProfileScreenProps) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const [logoTaps, setLogoTaps] = useState(0);
+  const [sharing, setSharing] = useState(shareGrowingData);
+  const [savingShare, setSavingShare] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => { setSharing(shareGrowingData); }, [shareGrowingData]);
+
+  const toggleSharing = async (checked: boolean) => {
+    if (!user) return;
+    setSavingShare(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ share_growing_data: checked } as any)
+      .eq("user_id", user.id);
+    setSavingShare(false);
+    if (error) {
+      toast.error("Kunde inte spara inställningen");
+      return;
+    }
+    setSharing(checked);
+    qc.invalidateQueries({ queryKey: ["profile"] });
+    toast.success(checked ? "Din odlingsdata delas nu automatiskt" : "Automatisk delning avstängd");
+  };
 
   useEffect(() => {
     if (logoTaps > 0) {
@@ -119,6 +148,26 @@ export function ProfileScreen({ data, onEdit, onSignOut, onOpenAdmin }: ProfileS
             <SliderDisplay label="Odlingsstil" value={plannerLabel} emoji={data.plannerScore < 35 ? "🎲" : data.plannerScore > 65 ? "📋" : "⚖️"} score={data.plannerScore} />
             <SliderDisplay label="Tid" value={timeLabel} emoji="⏱️" score={(data.timeScore / 40) * 100} />
             <SliderDisplay label="Fokus" value={resultLabel} emoji={data.resultVsJoyScore < 35 ? "🧘" : data.resultVsJoyScore > 65 ? "🥕" : "⚖️"} score={data.resultVsJoyScore} />
+          </div>
+        </div>
+
+        {/* Community sharing */}
+        <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+          <p className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" /> Community-delning
+          </p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-foreground">Dela odlingsdata automatiskt</p>
+              <p className="text-xs text-muted-foreground">
+                Dina grödor, sådd- och skördedatum delas anonymt för att hjälpa andra odlare. Ingen personlig info delas.
+              </p>
+            </div>
+            <Switch
+              checked={sharing}
+              onCheckedChange={toggleSharing}
+              disabled={savingShare}
+            />
           </div>
         </div>
 

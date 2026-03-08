@@ -156,12 +156,12 @@ export function SeedPacketScanner({ onScanComplete, onSkip }: SeedPacketScannerP
           ) : (
             <>
               <ScanLine className="w-4 h-4 mr-1.5" />
-              Skanna ({images.length}/2 bilder)
+              Läs av fröpåse ({images.length}/2)
             </>
           )}
         </Button>
         <Button variant="outline" onClick={onSkip} className="text-muted-foreground">
-          Manuellt
+          Hoppa över
         </Button>
       </div>
     </div>

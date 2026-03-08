@@ -10,6 +10,7 @@ export interface NotificationSettings {
   wellbeingMinute: number;
   sowingEnabled: boolean;
   harvestEnabled: boolean;
+  frostEnabled: boolean;
   permissionAsked: boolean;
 }
 

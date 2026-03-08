@@ -29,6 +29,7 @@ type DiaryTab = "dagbok" | "wellbeing";
 
 interface DiaryScreenProps {
   initialTab?: "dagbok" | "wellbeing";
+  onNavigate?: (tab: string) => void;
 }
 
 // ── Diary Entry Form ──

@@ -112,7 +112,47 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
       setLoading(false);
     }
     load();
-  }, [zone]);
+  }, [zone, user]);
+
+  const selectCrop = (crop: { name: string; sow_date: string | null; harvest_date: string | null }) => {
+    setCropName(crop.name);
+    if (crop.sow_date) setSowDate(crop.sow_date);
+    if (crop.harvest_date) setHarvestDate(crop.harvest_date);
+  };
+
+  const handleSubmit = async () => {
+    if (!cropName.trim() || !zone) return;
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("community_growing_data" as any)
+        .insert({
+          crop_name: cropName.trim(),
+          zone,
+          season_year: new Date().getFullYear(),
+          sow_date: sowDate || null,
+          harvest_date: harvestDate || null,
+          garden_type: gardenType || null,
+          success_rating: successRating,
+          notes_public: notesPublic.trim() || null,
+        } as any);
+      if (error) throw error;
+      setSubmitted(true);
+      setCropName("");
+      setSowDate("");
+      setHarvestDate("");
+      setGardenType("");
+      setSuccessRating(null);
+      setNotesPublic("");
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (err) {
+      console.error("Submit error:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const GARDEN_TYPES = ["friland", "balkong", "växthus", "pallkrage", "kruka"];
 
   return (
     <div className="min-h-screen pb-24">

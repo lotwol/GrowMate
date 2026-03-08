@@ -78,6 +78,13 @@ export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
           <Settings className="w-4 h-4 mr-2" />
           Ändra mina inställningar
         </Button>
+
+        {onSignOut && (
+          <Button variant="ghost" size="lg" className="w-full text-muted-foreground" onClick={onSignOut}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Logga ut
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -15,12 +15,13 @@ import { AdminScreen } from "@/components/AdminScreen";
 import { SeasonSummaryScreen } from "@/components/SeasonSummaryScreen";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { ShoppingListScreen } from "@/components/ShoppingListScreen";
 import { OnboardingData } from "@/types/onboarding";
 import { useNotificationPermissionAsked, requestNotificationPermission, getNotificationPermission } from "@/hooks/useNotifications";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin" | "season-summary";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin" | "season-summary" | "shopping";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -115,6 +116,7 @@ const Index = () => {
       {activeTab === "diary" && <DiaryScreen onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
+      {activeTab === "shopping" && <ShoppingListScreen onBack={() => setActiveTab("home")} />}
       {activeTab === "season-summary" && (
         <SeasonSummaryScreen year={new Date().getFullYear()} name={onboardingData.name} zone={onboardingData.zone} school={onboardingData.school} onBack={() => setActiveTab("home")} />
       )}
@@ -124,7 +126,7 @@ const Index = () => {
       {activeTab === "admin" && (
         <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
-      <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+      <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary", "shopping"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       <InstallPrompt />
 
       {/* Notification permission modal */}

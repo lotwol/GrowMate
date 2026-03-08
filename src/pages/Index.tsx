@@ -26,6 +26,16 @@ const Index = () => {
   const saveProfile = useSaveProfile();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [editingProfile, setEditingProfile] = useState(false);
+  const [permAsked, markPermAsked] = useNotificationPermissionAsked();
+  const [showNotifModal, setShowNotifModal] = useState(false);
+
+  // Show permission modal after first onboarding completion
+  useEffect(() => {
+    if (profile?.onboarding_completed && !permAsked && getNotificationPermission() === "default") {
+      const timer = setTimeout(() => setShowNotifModal(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [profile?.onboarding_completed, permAsked]);
 
   // Loading
   if (authLoading || (user && profileLoading)) {

@@ -13,6 +13,7 @@ interface Message {
 interface GrowMateChatProps {
   zone?: string | null;
   profiles?: string[];
+  school?: string | null;
 }
 
 const INITIAL_MESSAGE: Message = {

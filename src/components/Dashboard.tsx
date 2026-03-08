@@ -172,6 +172,28 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
     setCompanionDismissed(true);
   };
 
+  // Frost alert logic
+  const activeCropNames = useMemo(
+    () => crops.filter((c) => ["sådd", "grodd", "utplanterad"].includes(c.status)).map((c) => c.name),
+    [crops]
+  );
+  const frostAffectedCrops = useFrostAffectedCrops(activeCropNames, weather?.minTempTonight ?? null);
+  const showFrostAlert = weather && (weather.frostRisk === "possible" || weather.frostRisk === "likely") && frostAffectedCrops.length > 0;
+  const [frostDismissed, setFrostDismissed] = useState(() => {
+    try {
+      const stored = localStorage.getItem("growmate_frost_dismissed");
+      if (stored) {
+        const { date } = JSON.parse(stored);
+        return date === new Date().toISOString().split("T")[0];
+      }
+    } catch {}
+    return false;
+  });
+  const dismissFrost = () => {
+    localStorage.setItem("growmate_frost_dismissed", JSON.stringify({ date: new Date().toISOString().split("T")[0] }));
+    setFrostDismissed(true);
+  };
+
 
   const tips = [
     // Tip 1: Weather (real or fallback)

@@ -24,9 +24,20 @@ interface ProfileScreenProps {
   data: OnboardingData;
   onEdit: () => void;
   onSignOut?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
+export function ProfileScreen({ data, onEdit, onSignOut, onOpenAdmin }: ProfileScreenProps) {
+  const [logoTaps, setLogoTaps] = useState(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (logoTaps > 0) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setLogoTaps(0), 3000);
+    }
+    return () => clearTimeout(timeoutRef.current);
+  }, [logoTaps]);
   const plannerLabel = data.plannerScore < 35 ? "Spontan" : data.plannerScore > 65 ? "Planerare" : "Balanserad";
   const timeLabel = `${data.timeScore}h / vecka`;
   const resultLabel = data.resultVsJoyScore < 35 ? "Glädjen i processen" : data.resultVsJoyScore > 65 ? "Resultatet" : "Balans";

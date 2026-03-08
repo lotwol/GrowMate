@@ -54,6 +54,8 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
   const [step, setStep] = useState(0);
   const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [name, setName] = useState("");
+  const [customReason, setCustomReason] = useState("");
+  const [showCustom, setShowCustom] = useState(false);
   const [zone, setZone] = useState<string | null>(null);
   const [location, setLocation] = useState("");
   const [manualZone, setManualZone] = useState(false);

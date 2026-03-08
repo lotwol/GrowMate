@@ -1,12 +1,18 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Send, Mic, MicOff, Leaf } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+}
+
+interface GrowMateChatProps {
+  zone?: string | null;
+  profiles?: string[];
 }
 
 const INITIAL_MESSAGE: Message = {
@@ -16,12 +22,18 @@ const INITIAL_MESSAGE: Message = {
     "Hej! 🌱 Jag är GrowMate – din odlingskompis. Fråga mig om sådd, skadegörare, gödning, eller bara berätta vad du har på gång i trädgården. Du kan också tala in din fråga!",
 };
 
-export function GrowMateChat() {
+export function GrowMateChat({ zone, profiles }: GrowMateChatProps) {
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -36,27 +48,45 @@ export function GrowMateChat() {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response (will be replaced with real AI later)
-    setTimeout(() => {
-      const responses = [
-        `Bra fråga! 🌿 Baserat på din odlingszon rekommenderar jag att du börjar förså inomhus nu i mars. Tomater, paprika och chili behöver en tidig start. Direktsådd av morötter och sallad kan vänta till april-maj beroende på din zon.`,
-        `Det låter som ett spännande projekt! 🥕 Med den ytan du beskriver skulle jag föreslå att dela upp i fyra bäddar med rotation. Det ger dig bra variation och hjälper jordhälsan. Vill du att jag tar fram en detaljerad plan?`,
-        `Ah, bladmögel – det klassiska! 😊 Det händer de bästa. Några tips: Se till att tomaterna har god luftcirkulation, vattna vid basen (aldrig på bladen), och ta bort drabbade blad direkt. Kopparbaserat svampmedel kan hjälpa förebyggande.`,
-      ];
+    try {
+      // Build conversation history (exclude welcome message)
+      const history = [...messages.filter((m) => m.id !== "welcome"), userMsg].map(
+        ({ role, content }) => ({ role, content })
+      );
+
+      const { data, error } = await supabase.functions.invoke("growmate-chat", {
+        body: { messages: history, zone: zone || undefined, profiles },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content: data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!",
       };
       setMessages((prev) => [...prev, botMsg]);
+    } catch (err: any) {
+      console.error("Chat error:", err);
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          "Oj, något gick fel! 😔 Jag kunde inte nå AI-tjänsten just nu. Försök igen om en liten stund.",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const toggleRecording = () => {
     if (isRecording) {
       setIsRecording(false);
-      // Simulate voice-to-text
       setInput(
         "Jag har tomater och basilika som frön, och en balkong på ca 6 kvm. Har du tips?"
       );

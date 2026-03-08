@@ -126,7 +126,7 @@ const Index = () => {
       {activeTab === "admin" && (
         <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
-      <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+      <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary", "shopping"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       <InstallPrompt />
 
       {/* Notification permission modal */}

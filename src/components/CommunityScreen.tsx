@@ -98,6 +98,17 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
         .limit(5);
       setLogEntries((logData as any) || []);
 
+      // Load user's crops for easy selection
+      if (user) {
+        const { data: crops } = await supabase
+          .from("crops" as any)
+          .select("name, sow_date, harvest_date")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+        setUserCrops((crops as any) || []);
+      }
+
       setLoading(false);
     }
     load();

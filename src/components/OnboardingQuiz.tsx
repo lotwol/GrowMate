@@ -191,14 +191,64 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
                 </div>
               </button>
             ))}
+            {/* "Annat" option */}
+            <button
+              onClick={() => {
+                setShowCustom(!showCustom);
+                if (showCustom) {
+                  setSelectedProfiles((prev) => prev.filter((p) => p !== "annat"));
+                  setCustomReason("");
+                }
+              }}
+              className={cn(
+                "w-full text-left rounded-2xl p-4 border-2 transition-all duration-200 border-dashed",
+                showCustom
+                  ? "border-primary bg-accent shadow-md"
+                  : "border-border bg-card hover:border-primary/30"
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-2xl w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">
+                  ✨
+                </span>
+                <div>
+                  <p className="font-medium text-foreground">Annat</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    "Jag odlar för att..." – berätta med egna ord!
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Hjälp oss förstå fler anledningar till odling
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            {showCustom && (
+              <div className="animate-fade-in pl-2">
+                <textarea
+                  value={customReason}
+                  onChange={(e) => {
+                    setCustomReason(e.target.value);
+                    if (e.target.value.trim() && !selectedProfiles.includes("annat")) {
+                      setSelectedProfiles((prev) => [...prev, "annat"]);
+                    } else if (!e.target.value.trim()) {
+                      setSelectedProfiles((prev) => prev.filter((p) => p !== "annat"));
+                    }
+                  }}
+                  placeholder="Berätta varför du odlar – allt räknas! 🌱"
+                  rows={3}
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body resize-none"
+                />
+              </div>
+            )}
           </div>
 
           <Button
             variant="growmate"
             size="lg"
             className="w-full"
-            onClick={() => selectedProfiles.length > 0 && setStep(2)}
-            disabled={selectedProfiles.length === 0}
+            onClick={() => (selectedProfiles.length > 0 || (showCustom && customReason.trim())) && setStep(2)}
+            disabled={selectedProfiles.length === 0 && !(showCustom && customReason.trim())}
           >
             Nästa
           </Button>

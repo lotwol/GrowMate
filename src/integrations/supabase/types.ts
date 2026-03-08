@@ -121,6 +121,51 @@ export type Database = {
           },
         ]
       }
+      diary_entries: {
+        Row: {
+          activities: string[] | null
+          content: string | null
+          created_at: string
+          entry_date: string
+          id: string
+          mood: number | null
+          photo_urls: string[] | null
+          season_year: number | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          weather_note: string | null
+        }
+        Insert: {
+          activities?: string[] | null
+          content?: string | null
+          created_at?: string
+          entry_date?: string
+          id?: string
+          mood?: number | null
+          photo_urls?: string[] | null
+          season_year?: number | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          weather_note?: string | null
+        }
+        Update: {
+          activities?: string[] | null
+          content?: string | null
+          created_at?: string
+          entry_date?: string
+          id?: string
+          mood?: number | null
+          photo_urls?: string[] | null
+          season_year?: number | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          weather_note?: string | null
+        }
+        Relationships: []
+      }
       garden_layouts: {
         Row: {
           cols: number | null

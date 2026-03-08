@@ -6,7 +6,7 @@ import { OnboardingQuiz } from "@/components/OnboardingQuiz";
 import { Dashboard } from "@/components/Dashboard";
 import { GrowMateChat } from "@/components/GrowMateChat";
 import { BottomNav } from "@/components/BottomNav";
-import { PlaceholderScreen } from "@/components/PlaceholderScreen";
+import { DiaryScreen } from "@/components/DiaryScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
 import { OnboardingData } from "@/types/onboarding";
@@ -87,9 +87,7 @@ const Index = () => {
       {activeTab === "chat" && (
         <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
       )}
-      {activeTab === "diary" && (
-        <PlaceholderScreen emoji="📔" title="Odlingsdagbok" description="Logga din odlingsresa med foton, anteckningar och säsongsbetyg. Kommer snart!" />
-      )}
+      {activeTab === "diary" && <DiaryScreen />}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}

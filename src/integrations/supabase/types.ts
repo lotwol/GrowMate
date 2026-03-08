@@ -128,13 +128,14 @@ export type Database = {
           created_at: string
           entry_date: string
           id: string
-          mood: number | null
-          photo_urls: string[] | null
+          mood_garden: number | null
           season_year: number | null
           title: string | null
           updated_at: string
           user_id: string
-          weather_note: string | null
+          wellbeing_mental: number | null
+          wellbeing_physical: number | null
+          wellbeing_social: number | null
         }
         Insert: {
           activities?: string[] | null
@@ -142,13 +143,14 @@ export type Database = {
           created_at?: string
           entry_date?: string
           id?: string
-          mood?: number | null
-          photo_urls?: string[] | null
+          mood_garden?: number | null
           season_year?: number | null
           title?: string | null
           updated_at?: string
           user_id: string
-          weather_note?: string | null
+          wellbeing_mental?: number | null
+          wellbeing_physical?: number | null
+          wellbeing_social?: number | null
         }
         Update: {
           activities?: string[] | null
@@ -156,13 +158,14 @@ export type Database = {
           created_at?: string
           entry_date?: string
           id?: string
-          mood?: number | null
-          photo_urls?: string[] | null
+          mood_garden?: number | null
           season_year?: number | null
           title?: string | null
           updated_at?: string
           user_id?: string
-          weather_note?: string | null
+          wellbeing_mental?: number | null
+          wellbeing_physical?: number | null
+          wellbeing_social?: number | null
         }
         Relationships: []
       }

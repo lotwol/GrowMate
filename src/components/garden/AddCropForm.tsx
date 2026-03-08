@@ -35,6 +35,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [gardenId, setGardenId] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [sowDate, setSowDate] = useState("");
 
   const handleScanComplete = (data: ScannedSeedData) => {
     const filled = new Set<string>();

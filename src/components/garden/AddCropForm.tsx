@@ -83,6 +83,7 @@ interface CommunityInsight {
   typical_sow_month_end: number | null;
   typical_harvest_month_start: number | null;
   typical_harvest_month_end: number | null;
+  confidence_level: string | null;
 }
 
 export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoading }: AddCropFormProps) {

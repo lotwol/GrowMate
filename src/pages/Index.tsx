@@ -33,9 +33,7 @@ const Index = () => {
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} onNavigateChat={() => setActiveTab("chat")} />
       )}
-      {activeTab === "garden" && (
-        <PlaceholderScreen emoji="🌱" title="Min Odling" description="Här kommer du kunna se alla dina grödor, fröinventarie och odlingsplan. Kommer snart!" />
-      )}
+      {activeTab === "garden" && <GardenScreen />}
       {activeTab === "chat" && (
         <div className="h-screen"><GrowMateChat /></div>
       )}

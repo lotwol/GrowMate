@@ -102,7 +102,6 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
   // Previous year's crops for rotation check
   const lastYear = new Date().getFullYear() - 1;
   const { data: lastYearCrops = [] } = useAllCrops(lastYear);
-  const [sowDate, setSowDate] = useState("");
 
   // Knowledge layer state
   const [openFarmSuggestions, setOpenFarmSuggestions] = useState<OpenFarmSuggestion[]>([]);

@@ -427,14 +427,13 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
         </button>
       </div>
 
-      {/* Back to seed chooser if seeds exist */}
-      {activeSeeds.length > 0 && !seedId && (
+      {/* Back to entry picker */}
+      {!seedId && (
         <button
-          onClick={() => setEntryMode("choose")}
+          onClick={() => setEntryMode("pick")}
           className="flex items-center gap-2 text-xs text-primary hover:text-primary/80 transition-colors"
         >
-          <Package className="w-3.5 h-3.5" />
-          Har du frön i lager? Välj härifrån istället
+          ← Tillbaka till val
         </button>
       )}
 

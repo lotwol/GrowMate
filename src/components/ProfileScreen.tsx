@@ -67,7 +67,7 @@ export function ProfileScreen({ data, onEdit }: ProfileScreenProps) {
           </p>
           <div className="space-y-3">
             <SliderDisplay label="Odlingsstil" value={plannerLabel} emoji={data.plannerScore < 35 ? "🎲" : data.plannerScore > 65 ? "📋" : "⚖️"} score={data.plannerScore} />
-            <SliderDisplay label="Tid" value={timeLabel} emoji={data.timeScore < 35 ? "⏱️" : data.timeScore > 65 ? "🌻" : "⚖️"} score={data.timeScore} />
+            <SliderDisplay label="Tid" value={timeLabel} emoji="⏱️" score={(data.timeScore / 40) * 100} />
             <SliderDisplay label="Fokus" value={resultLabel} emoji={data.resultVsJoyScore < 35 ? "🧘" : data.resultVsJoyScore > 65 ? "🥕" : "⚖️"} score={data.resultVsJoyScore} />
           </div>
         </div>

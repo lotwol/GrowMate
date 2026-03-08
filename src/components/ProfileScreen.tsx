@@ -392,6 +392,18 @@ function NotificationSettings({
               onCheckedChange={(c) => handleEnableToggle("harvestEnabled", c)}
             />
           </div>
+
+          {/* Frost */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-foreground">Frostlarm</p>
+              <p className="text-xs text-muted-foreground">Varning vid risk för nattfrost</p>
+            </div>
+            <Switch
+              checked={settings.frostEnabled}
+              onCheckedChange={(c) => handleEnableToggle("frostEnabled", c)}
+            />
+          </div>
         </>
       )}
     </div>

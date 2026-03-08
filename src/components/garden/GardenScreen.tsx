@@ -128,6 +128,7 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
   const [contributingCropId, setContributingCropId] = useState<string | null>(null);
   const [dismissedContributions, setDismissedContributions] = useState<Set<string>>(new Set());
+  const [photoCropId, setPhotoCropId] = useState<string | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);

@@ -90,7 +90,7 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
         const res = await fetch(base64);
         const blob = await res.blob();
         const ext = blob.type.includes("png") ? "png" : "jpg";
-        const path = `seeds/${user.id}/${Date.now()}_${i}.${ext}`;
+        const path = `${user.id}/seeds/${Date.now()}_${i}.${ext}`;
         const { error } = await supabase.storage.from("growmate-photos").upload(path, blob);
         if (error) continue;
         const { data: urlData } = supabase.storage.from("growmate-photos").getPublicUrl(path);

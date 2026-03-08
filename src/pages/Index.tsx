@@ -5,6 +5,7 @@ import { GrowMateChat } from "@/components/GrowMateChat";
 import { BottomNav } from "@/components/BottomNav";
 import { PlaceholderScreen } from "@/components/PlaceholderScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
+import { GardenScreen } from "@/components/garden/GardenScreen";
 import { OnboardingData } from "@/types/onboarding";
 
 type Tab = "home" | "garden" | "chat" | "diary" | "profile";

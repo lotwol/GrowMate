@@ -16,7 +16,7 @@ import {
   Lightbulb,
   ShoppingCart,
 } from "lucide-react";
-import { useWeather } from "@/hooks/useWeather";
+import { useWeather, useFrostAffectedCrops } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { supabase } from "@/integrations/supabase/client";

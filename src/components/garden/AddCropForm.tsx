@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, Package, ArrowRight } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { Garden, SeedItem } from "@/hooks/useGarden";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
@@ -93,9 +93,15 @@ interface CommunityInsight {
   confidence_level: string | null;
 }
 
+const CATEGORY_EMOJI_MAP: Record<string, string> = {
+  grönsak: "🥕", ört: "🌿", frukt: "🍎", bär: "🫐", blomma: "🌸",
+};
+
 export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, isLoading, onSeedLinked }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
+  const activeSeeds = seeds.filter((s: any) => !s.status || s.status === "active");
+  const [entryMode, setEntryMode] = useState<"choose" | "manual">(activeSeeds.length > 0 ? "choose" : "manual");
   const [name, setName] = useState("");
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [emoji, setEmoji] = useState("🥕");
@@ -105,6 +111,7 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
   const [seedId, setSeedId] = useState<string | null>(null);
   const [showDepletionPrompt, setShowDepletionPrompt] = useState(false);
   const [pendingSubmit, setPendingSubmit] = useState(false);
+  const [seedSearchQuery, setSeedSearchQuery] = useState("");
 
   // Previous year's crops for rotation check
   const lastYear = new Date().getFullYear() - 1;
@@ -272,6 +279,90 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
     return Array.from({ length: 5 }, (_, i) => (i + 1 <= rounded ? "⭐" : "☆")).join("");
   };
 
+  // Helper to select a seed and switch to manual mode with pre-filled fields
+  const selectSeedEntry = (seed: SeedItem) => {
+    setSeedId(seed.id);
+    setName(seed.name);
+    setCategory(seed.category);
+    setEmoji((seed as any).emoji || CATEGORY_EMOJI_MAP[seed.category] || "🥕");
+    setEntryMode("manual");
+  };
+
+  const filteredActiveSeeds = activeSeeds.filter(s =>
+    !seedSearchQuery || s.name.toLowerCase().includes(seedSearchQuery.toLowerCase())
+  );
+
+  // Entry mode chooser
+  if (entryMode === "choose") {
+    return (
+      <div className="rounded-2xl bg-card border border-border p-4 space-y-4 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-foreground">Ny gröda</h3>
+          <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Seed entry – prominent */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Package className="w-4 h-4 text-primary" />
+            <p className="text-sm font-medium text-foreground">Starta från fröförrådet</p>
+          </div>
+          <p className="text-xs text-muted-foreground -mt-1">
+            Välj ett frö du redan har hemma – namn och kategori fylls i automatiskt.
+          </p>
+
+          {activeSeeds.length > 4 && (
+            <input
+              type="text"
+              placeholder="Sök frö..."
+              value={seedSearchQuery}
+              onChange={(e) => setSeedSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          )}
+
+          <div className="grid grid-cols-1 gap-2 max-h-[40vh] overflow-y-auto">
+            {filteredActiveSeeds.map((seed) => (
+              <button
+                key={seed.id}
+                onClick={() => selectSeedEntry(seed)}
+                className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-accent/30 transition-all text-left group"
+              >
+                <span className="text-2xl">{(seed as any).emoji || CATEGORY_EMOJI_MAP[seed.category] || "🌱"}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{seed.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {seed.quantity ? `${seed.quantity} i lager` : "I lager"}
+                    {seed.purchased_from ? ` · ${seed.purchased_from}` : ""}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground">eller</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        {/* Manual entry */}
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setEntryMode("manual")}
+        >
+          ✏️ Fyll i manuellt
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-2xl bg-card border border-border p-4 space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -280,6 +371,38 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
           <X className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Back to seed chooser if seeds exist */}
+      {activeSeeds.length > 0 && !seedId && (
+        <button
+          onClick={() => setEntryMode("choose")}
+          className="flex items-center gap-2 text-xs text-primary hover:text-primary/80 transition-colors"
+        >
+          <Package className="w-3.5 h-3.5" />
+          Har du frön i lager? Välj härifrån istället
+        </button>
+      )}
+
+      {/* Linked seed badge */}
+      {seedId && (() => {
+        const linked = seeds.find(s => s.id === seedId);
+        if (!linked) return null;
+        return (
+          <div className="flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-3 py-2">
+            <span className="text-lg">{(linked as any).emoji || CATEGORY_EMOJI_MAP[linked.category] || "🌱"}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground">Från fröförrådet</p>
+              <p className="text-sm font-medium text-foreground truncate">{linked.name}{linked.quantity ? ` · ${linked.quantity} kvar` : ""}</p>
+            </div>
+            <button
+              onClick={() => { setSeedId(null); setName(""); setCategory("grönsak"); setEmoji("🥕"); }}
+              className="text-muted-foreground hover:text-foreground p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      })()}
 
       {scannedFields.size > 0 && (
         <div className="flex items-center gap-1.5 text-xs text-primary bg-primary/10 rounded-lg px-3 py-2">
@@ -466,13 +589,15 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
        </div>
       )}
 
-      {/* Seed selector */}
-      <SeedSelector
-        seeds={seeds}
-        selectedSeedId={seedId}
-        onSelect={setSeedId}
-        cropName={name}
-      />
+      {/* Seed selector – only show if no seed linked via entry mode */}
+      {!seedId && (
+        <SeedSelector
+          seeds={seeds}
+          selectedSeedId={seedId}
+          onSelect={setSeedId}
+          cropName={name}
+        />
+      )}
 
       {showDepletionPrompt && seedId && (
         <SeedDepletionPrompt

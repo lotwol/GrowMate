@@ -19,7 +19,7 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
 interface EditCropFormProps {
   crop: Crop;
   gardens: Garden[];
-  onSave: (updates: { id: string; name?: string; category?: CropCategory; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null }) => void;
+  onSave: (updates: { id: string; name?: string; category?: CropCategory; emoji?: string | null; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }

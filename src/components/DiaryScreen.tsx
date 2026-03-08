@@ -658,6 +658,13 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
                       ))}
                     </div>
                   )}
+                  {(entry as any).photo_urls && (entry as any).photo_urls.length > 0 && (
+                    <div className="flex gap-1.5 mt-2 overflow-x-auto">
+                      {(entry as any).photo_urls.map((url: string, i: number) => (
+                        <img key={i} src={url} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )
             )}

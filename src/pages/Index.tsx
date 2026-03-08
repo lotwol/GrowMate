@@ -116,6 +116,7 @@ const Index = () => {
       {activeTab === "diary" && <DiaryScreen onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
+      {activeTab === "shopping" && <ShoppingListScreen onBack={() => setActiveTab("home")} />}
       {activeTab === "season-summary" && (
         <SeasonSummaryScreen year={new Date().getFullYear()} name={onboardingData.name} zone={onboardingData.zone} school={onboardingData.school} onBack={() => setActiveTab("home")} />
       )}

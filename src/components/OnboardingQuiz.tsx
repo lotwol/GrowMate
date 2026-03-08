@@ -151,8 +151,8 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
             variant="growmate"
             size="lg"
             className="w-full"
-            onClick={() => selectedProfile && setStep(2)}
-            disabled={!selectedProfile}
+            onClick={() => selectedProfiles.length > 0 && setStep(2)}
+            disabled={selectedProfiles.length === 0}
           >
             Nästa
           </Button>

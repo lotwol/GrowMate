@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star } from "lucide-react";
+import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera } from "lucide-react";
 import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
 import { AddSeedForm } from "@/components/garden/AddSeedForm";
 import { EditCropForm } from "@/components/garden/EditCropForm";
 import { GardenLayoutEditor } from "@/components/garden/GardenLayoutEditor";
+import { PhotoStrip } from "@/components/PhotoStrip";
 import type { Database } from "@/integrations/supabase/types";
 import { Constants } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";

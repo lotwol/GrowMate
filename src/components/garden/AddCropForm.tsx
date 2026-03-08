@@ -206,7 +206,7 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
     }
   };
 
-  const handleSubmit = () => {
+  const doSubmit = () => {
     if (!name.trim()) return;
     onSubmit({
       name: name.trim(),
@@ -215,7 +215,34 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
       garden_id: gardenId || undefined,
       sow_date: sowDate || undefined,
       notes: notes.trim() || undefined,
+      seed_id: seedId || undefined,
     });
+  };
+
+  const handleSubmit = () => {
+    if (!name.trim()) return;
+    // Check if seed has numeric quantity for depletion prompt
+    if (seedId) {
+      const seed = seeds.find(s => s.id === seedId);
+      const qty = seed?.quantity ? parseInt(seed.quantity, 10) : NaN;
+      if (!isNaN(qty) && qty > 0) {
+        setPendingSubmit(true);
+        setShowDepletionPrompt(true);
+        return;
+      }
+    }
+    doSubmit();
+  };
+
+  const handleDepletionConfirm = () => {
+    if (seedId) onSeedLinked?.(seedId);
+    setShowDepletionPrompt(false);
+    doSubmit();
+  };
+
+  const handleDepletionSkip = () => {
+    setShowDepletionPrompt(false);
+    doSubmit();
   };
 
   if (showScanner) {

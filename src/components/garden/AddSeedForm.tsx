@@ -26,6 +26,7 @@ interface AddSeedFormProps {
 export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
+  const [scannedPhotos, setScannedPhotos] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [quantity, setQuantity] = useState("");

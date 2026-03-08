@@ -253,8 +253,8 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [diaryEntries, today]);
 
-  const sparklinePath = useMemo(() => {
-    if (wellbeingData.length < 2) return null;
+  const sparklineData = useMemo(() => {
+    if (wellbeingData.length === 0) return null;
     const w = 300;
     const h = 50;
     const thirtyDaysAgo = today.getTime() - 30 * 86400000;
@@ -262,8 +262,11 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
     const points = wellbeingData.map((d) => {
       const x = ((new Date(d.date).getTime() - thirtyDaysAgo) / range) * w;
       const y = h - ((d.mood - 1) / 4) * h;
-      return { x, y };
+      return { x, y, mood: d.mood };
     });
+    if (points.length === 1) {
+      return { points, line: null, area: null };
+    }
     const line = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
     const area =
       line +
@@ -517,7 +520,7 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
           <h2 className="font-display text-lg mb-3">
             Välmående de senaste 30 dagarna 💚
           </h2>
-          {wellbeingData.length >= 3 && sparklinePath ? (
+          {sparklineData ? (
             <div className="rounded-2xl bg-card border border-border p-4">
               <svg viewBox="0 0 300 50" className="w-full" style={{ height: 60 }}>
                 <defs>
@@ -526,23 +529,35 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                     <stop offset="100%" className="[stop-color:hsl(var(--primary))]" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <path d={sparklinePath.area} fill="url(#sparkFill)" />
-                <polyline
-                  points={sparklinePath.points.map((p) => `${p.x},${p.y}`).join(" ")}
-                  fill="none"
-                  className="stroke-primary"
-                  strokeWidth={2}
-                  strokeLinejoin="round"
-                />
-                {sparklinePath.points.map((p, i) => (
+                {sparklineData.area && (
+                  <path d={sparklineData.area} fill="url(#sparkFill)" />
+                )}
+                {sparklineData.line && (
+                  <polyline
+                    points={sparklineData.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                    fill="none"
+                    className="stroke-primary"
+                    strokeWidth={2}
+                    strokeLinejoin="round"
+                  />
+                )}
+                {sparklineData.points.map((p, i) => (
                   <circle
                     key={i}
                     cx={p.x}
                     cy={p.y}
-                    r={3}
+                    r={sparklineData.points.length === 1 ? 5 : 3}
                     className="fill-primary"
                   />
                 ))}
+                {sparklineData.points.length === 1 && (
+                  <circle
+                    cx={sparklineData.points[0].x}
+                    cy={sparklineData.points[0].y}
+                    r={9}
+                    className="fill-primary/20 animate-pulse"
+                  />
+                )}
               </svg>
             </div>
           ) : (

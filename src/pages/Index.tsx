@@ -19,7 +19,7 @@ const Index = () => {
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       {activeTab === "home" && (
         <Dashboard
-          profile={profile}
+          profile={profiles[0]}
           onNavigateChat={() => setActiveTab("chat")}
         />
       )}

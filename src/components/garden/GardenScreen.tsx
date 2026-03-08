@@ -118,9 +118,10 @@ function HarvestContribution({
 interface GardenScreenProps {
   zone?: string | null;
   school?: string | null;
+  onNavigate?: (tab: string) => void;
 }
 
-export function GardenScreen({ zone, school }: GardenScreenProps) {
+export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const [tab, setTab] = useState<Tab>("ytor");
   const [showAddGarden, setShowAddGarden] = useState(false);
   const [showAddCrop, setShowAddCrop] = useState(false);
@@ -132,6 +133,7 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [dismissedContributions, setDismissedContributions] = useState<Set<string>>(new Set());
   const [photoCropId, setPhotoCropId] = useState<string | null>(null);
   const [companionCropId, setCompanionCropId] = useState<string | null>(null);
+  const [harvestCrop, setHarvestCrop] = useState<{ id: string; name: string; emoji?: string } | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);

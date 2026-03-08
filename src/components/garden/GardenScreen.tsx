@@ -611,7 +611,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
               return (
                 <div key={seed.id} className={cn("rounded-2xl bg-card border border-border p-4 space-y-2", isInactive && "opacity-60")}>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{CATEGORY_EMOJI[seed.category] || "🌱"}</span>
+                    <span className="text-xl">{(seed as any).emoji || CATEGORY_EMOJI[seed.category] || "🌱"}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-foreground">{seed.name}</p>

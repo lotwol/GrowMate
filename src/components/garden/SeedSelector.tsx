@@ -45,11 +45,8 @@ export function SeedSelector({ seeds, selectedSeedId, onSelect, cropName, allowC
   }
 
   const seedLabel = (seed: SeedItem) => {
-    const emoji = CATEGORY_EMOJI[seed.category] || "🌱";
+    const emoji = (seed as any).emoji || CATEGORY_EMOJI[seed.category] || "🌱";
     let label = `${emoji} ${seed.name}`;
-    if (seed.notes?.includes("Sort:")) {
-      // try to extract variety from notes
-    }
     if (seed.quantity) label += ` · ${seed.quantity}`;
     return label;
   };

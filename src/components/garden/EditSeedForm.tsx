@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X, Archive, CheckCircle2 } from "lucide-react";
+import { X } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { PhotoStrip } from "@/components/PhotoStrip";
+import { EmojiPicker } from "./EmojiPicker";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -27,6 +28,7 @@ interface EditSeedFormProps {
     id: string;
     name: string;
     category: CropCategory;
+    emoji?: string | null;
     quantity?: string | null;
     best_before?: string | null;
     purchased_from?: string | null;
@@ -35,13 +37,14 @@ interface EditSeedFormProps {
     status?: string | null;
     photo_urls?: string[] | null;
   };
-  onSave: (updates: { id: string; name: string; category: CropCategory; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; status?: string; photo_urls?: string[] }) => void;
+  onSave: (updates: { id: string; name: string; category: CropCategory; emoji?: string; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; status?: string; photo_urls?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedFormProps) {
   const [name, setName] = useState(seed.name);
+  const [emoji, setEmoji] = useState(seed.emoji || "🌱");
   const [category, setCategory] = useState<CropCategory>(seed.category);
   const [quantity, setQuantity] = useState(seed.quantity || "");
   const [bestBefore, setBestBefore] = useState(seed.best_before || "");
@@ -57,6 +60,7 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
       id: seed.id,
       name: name.trim(),
       category,
+      emoji,
       quantity: quantity.trim() || undefined,
       best_before: bestBefore || undefined,
       purchased_from: purchasedFrom.trim() || undefined,
@@ -100,8 +104,11 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
       </div>
 
       <div>
-        <label className="text-xs text-muted-foreground">Namn</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCn} />
+        <label className="text-xs text-muted-foreground">Namn & ikon</label>
+        <div className="flex items-center gap-2 mt-1">
+          <EmojiPicker value={emoji} onChange={setEmoji} size="sm" />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="flex-1 rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body" />
+        </div>
       </div>
 
       <div>

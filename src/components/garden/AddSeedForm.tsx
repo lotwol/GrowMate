@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { X, Sparkles } from "lucide-react";
@@ -6,6 +6,8 @@ import type { Database } from "@/integrations/supabase/types";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { EmojiPicker } from "./EmojiPicker";
+import { suggestSeedEmoji } from "./seedEmojiSuggestion";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -20,7 +22,7 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
 const VALID_CATEGORIES: CropCategory[] = ["grönsak", "ört", "frukt", "bär", "blomma"];
 
 interface AddSeedFormProps {
-  onSubmit: (seed: { name: string; category: CropCategory; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; photo_urls?: string[] }) => void;
+  onSubmit: (seed: { name: string; category: CropCategory; emoji?: string; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; photo_urls?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -30,12 +32,21 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [scannedPhotos, setScannedPhotos] = useState<string[]>([]);
   const [name, setName] = useState("");
+  const [emoji, setEmoji] = useState("🌱");
+  const [emojiManuallySet, setEmojiManuallySet] = useState(false);
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [quantity, setQuantity] = useState("");
   const [bestBefore, setBestBefore] = useState("");
   const [purchasedFrom, setPurchasedFrom] = useState("");
   const [cost, setCost] = useState("");
   const [notes, setNotes] = useState("");
+
+  // Auto-suggest emoji when name changes (unless manually set)
+  useEffect(() => {
+    if (!emojiManuallySet && name.trim().length >= 2) {
+      setEmoji(suggestSeedEmoji(name, category));
+    }
+  }, [name, category, emojiManuallySet]);
 
   const handleScanComplete = (data: ScannedSeedData, images: string[]) => {
     const filled = new Set<string>();
@@ -97,6 +108,7 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
     onSubmit({
       name: name.trim(),
       category,
+      emoji,
       quantity: quantity.trim() || undefined,
       best_before: bestBefore || undefined,
       purchased_from: purchasedFrom.trim() || undefined,
@@ -145,14 +157,20 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
       )}
 
       <div>
-        <label className="text-xs text-muted-foreground">Namn</label>
-        <input
-          type="text"
-          placeholder="Namn, t.ex. Basilika Genovese"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className={inputCn("name")}
-        />
+        <label className="text-xs text-muted-foreground">Namn & ikon</label>
+        <div className="flex items-center gap-2 mt-1">
+          <EmojiPicker value={emoji} onChange={(e) => { setEmoji(e); setEmojiManuallySet(true); }} size="sm" />
+          <input
+            type="text"
+            placeholder="Namn, t.ex. Basilika Genovese"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={cn(
+              "flex-1 rounded-xl border px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body",
+              scannedFields.has("name") ? "border-primary/50 bg-primary/5" : "border-input bg-background"
+            )}
+          />
+        </div>
       </div>
 
       <div>

@@ -267,6 +267,18 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {showLearningBanner && messages.length <= 1 && (
+          <div className="rounded-2xl bg-accent/60 border border-border px-4 py-3 flex items-start gap-2.5 animate-fade-in">
+            <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-foreground font-medium">GrowMate lär sig av dig 🌱</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Ju mer du loggar – grödor, dagbok, fröer – desto bättre råd får du. Din data stannar hos dig och gör GrowMate smartare för varje säsong.
+              </p>
+            </div>
+            <button onClick={() => setShowLearningBanner(false)} className="text-muted-foreground text-xs shrink-0 hover:text-foreground">✕</button>
+          </div>
+        )}
         {messages.map((msg) => (
           <div
             key={msg.id}

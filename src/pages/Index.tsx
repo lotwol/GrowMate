@@ -9,9 +9,10 @@ import { BottomNav } from "@/components/BottomNav";
 import { DiaryScreen } from "@/components/DiaryScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
+import { CalendarScreen } from "@/components/CalendarScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -84,6 +85,9 @@ const Index = () => {
         <Dashboard profile={onboardingData.profiles[0]} zone={onboardingData.zone} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}
       {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} />}
+      {activeTab === "calendar" && (
+        <CalendarScreen zone={onboardingData.zone} onBack={() => setActiveTab("home")} />
+      )}
       {activeTab === "chat" && (
         <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
       )}
@@ -92,7 +96,7 @@ const Index = () => {
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}
-      <BottomNav active={activeTab === "diary-wellbeing" ? "diary" : activeTab} onNavigate={setActiveTab} />
+      <BottomNav active={activeTab === "diary-wellbeing" || activeTab === "calendar" ? "home" : activeTab} onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>
   );
 };

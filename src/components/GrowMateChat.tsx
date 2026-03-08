@@ -444,6 +444,19 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
                 ))}
               </div>
             )}
+            {/* Structured action cards */}
+            {msg.chatActions && msg.chatActions.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {msg.chatActions.map((action, i) => (
+                  <ActionCard
+                    key={i}
+                    action={action}
+                    onConfirm={handleActionConfirm}
+                    onDismiss={() => {}}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ))}
         {isLoading && (

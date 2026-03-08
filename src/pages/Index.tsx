@@ -15,12 +15,13 @@ import { AdminScreen } from "@/components/AdminScreen";
 import { SeasonSummaryScreen } from "@/components/SeasonSummaryScreen";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { ShoppingListScreen } from "@/components/ShoppingListScreen";
 import { OnboardingData } from "@/types/onboarding";
 import { useNotificationPermissionAsked, requestNotificationPermission, getNotificationPermission } from "@/hooks/useNotifications";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin" | "season-summary";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin" | "season-summary" | "shopping";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();

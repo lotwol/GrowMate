@@ -327,7 +327,11 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
             {communityInsight.avg_success_rating && (
               <p>{renderStars(communityInsight.avg_success_rating)} ({communityInsight.avg_success_rating.toFixed(1)}/5)</p>
             )}
-            <p>{communityInsight.sample_count} odlare har delat data</p>
+            <ConfidenceBadge
+              level={communityInsight.confidence_level as any}
+              sampleCount={communityInsight.sample_count}
+              showCount={true}
+            />
             {communityInsight.typical_sow_month_start && (
               <p>Typisk sådd: {monthRange(communityInsight.typical_sow_month_start, communityInsight.typical_sow_month_end)}</p>
             )}
@@ -335,6 +339,11 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
               <p>Typisk skörd: {monthRange(communityInsight.typical_harvest_month_start, communityInsight.typical_harvest_month_end)}</p>
             )}
           </div>
+          {communityInsight.confidence_level === "tidig" && (
+            <p className="text-xs text-muted-foreground italic mt-1">
+              Tidig data – rekommendationen stärks i takt med att fler odlare bidrar.
+            </p>
+          )}
         </div>
       )}
 

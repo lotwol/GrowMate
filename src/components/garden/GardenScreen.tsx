@@ -587,9 +587,12 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             {seedsLoading && <p className="text-center text-muted-foreground text-sm py-8">Laddar...</p>}
 
             {!seedsLoading && seeds.length === 0 && !showAddSeed && (
-              <div className="text-center py-12 space-y-2">
+              <div className="text-center py-12 space-y-3">
                 <span className="text-4xl">🌰</span>
-                <p className="text-muted-foreground text-sm">Inget i fröinventariet ännu.</p>
+                <p className="font-medium text-foreground">Ditt fröförråd är tomt</p>
+                <p className="text-muted-foreground text-sm">
+                  Lägg till fröpåsar du har hemma – när du är redo att odla startar du en gröda härifrån med ett tryck.
+                </p>
               </div>
             )}
 

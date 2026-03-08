@@ -46,7 +46,7 @@ const PROFILES = [
 ] as const;
 
 interface OnboardingQuizProps {
-  onComplete: (profile: string) => void;
+  onComplete: (profiles: string[]) => void;
 }
 
 export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {

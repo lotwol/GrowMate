@@ -590,6 +590,80 @@ export type Database = {
         }
         Relationships: []
       }
+      seed_share_interests: {
+        Row: {
+          created_at: string | null
+          id: string
+          interested_user_id: string
+          message: string | null
+          seed_share_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interested_user_id: string
+          message?: string | null
+          seed_share_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interested_user_id?: string
+          message?: string | null
+          seed_share_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_share_interests_seed_share_id_fkey"
+            columns: ["seed_share_id"]
+            isOneToOne: false
+            referencedRelation: "seed_shares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seed_shares: {
+        Row: {
+          created_at: string | null
+          crop_name: string
+          harvest_year: number | null
+          id: string
+          notes: string | null
+          quantity_description: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+          variety: string | null
+          zone: string
+        }
+        Insert: {
+          created_at?: string | null
+          crop_name: string
+          harvest_year?: number | null
+          id?: string
+          notes?: string | null
+          quantity_description?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+          variety?: string | null
+          zone: string
+        }
+        Update: {
+          created_at?: string | null
+          crop_name?: string
+          harvest_year?: number | null
+          id?: string
+          notes?: string | null
+          quantity_description?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+          variety?: string | null
+          zone?: string
+        }
+        Relationships: []
+      }
       swedish_crop_tips: {
         Row: {
           category: string

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow, format } from "date-fns";
 import { sv } from "date-fns/locale";
 import { Send, Check } from "lucide-react";
+import { FrobyteTab } from "@/components/community/FrobyteTab";
 
 interface CommunityInsight {
   id: string;
@@ -57,7 +58,7 @@ interface CommunityScreenProps {
   zone?: string | null;
 }
 
-type CommunityTab = "bidra" | "zon";
+type CommunityTab = "bidra" | "zon" | "frobyte";
 
 export function CommunityScreen({ zone }: CommunityScreenProps) {
   const { user } = useAuth();
@@ -164,6 +165,7 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
           {([
             { id: "zon" as CommunityTab, label: "Din zon 🗺️" },
             { id: "bidra" as CommunityTab, label: "Bidra 🤝" },
+            { id: "frobyte" as CommunityTab, label: "Fröbyte 🌱" },
           ]).map((t) => (
             <button
               key={t.id}
@@ -182,7 +184,9 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
       </div>
 
       <div className="px-4 space-y-4">
-        {tab === "zon" ? (
+        {tab === "frobyte" ? (
+          <FrobyteTab zone={zone} />
+        ) : tab === "zon" ? (
           <>
             {loading ? (
               <div className="text-center py-8">

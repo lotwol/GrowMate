@@ -165,6 +165,7 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
           {([
             { id: "zon" as CommunityTab, label: "Din zon 🗺️" },
             { id: "bidra" as CommunityTab, label: "Bidra 🤝" },
+            { id: "frobyte" as CommunityTab, label: "Fröbyte 🌱" },
           ]).map((t) => (
             <button
               key={t.id}

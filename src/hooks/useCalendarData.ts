@@ -58,7 +58,7 @@ export function useCalendarEvents(year: number) {
         .lte("event_date", endDate)
         .order("event_date", { ascending: true });
       if (error) throw error;
-      return (data || []) as {
+      return (data || []) as unknown as {
         id: string;
         title: string;
         description: string | null;

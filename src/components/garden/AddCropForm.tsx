@@ -8,6 +8,7 @@ import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
 import { EmojiPicker } from "./EmojiPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
+import { findCompanionData } from "@/data/companionPlanting";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera } from "lucide-react";
+import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera, Flower2, X, AlertTriangle } from "lucide-react";
+import { findCompanionData, findBadNeighbors } from "@/data/companionPlanting";
 import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
@@ -129,10 +130,13 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [contributingCropId, setContributingCropId] = useState<string | null>(null);
   const [dismissedContributions, setDismissedContributions] = useState<Set<string>>(new Set());
   const [photoCropId, setPhotoCropId] = useState<string | null>(null);
+  const [companionCropId, setCompanionCropId] = useState<string | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
   const { data: seeds = [], isLoading: seedsLoading } = useSeedInventory();
+
+  const allCropNames = useMemo(() => crops.map((c: any) => c.name as string), [crops]);
 
   const layoutGarden = gardens.find(g => g.id === layoutGardenId);
   const { data: currentLayout } = useGardenLayout(layoutGardenId, seasonYear);
@@ -403,6 +407,61 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
                     </div>
 
                     {crop.notes && <p className="text-xs text-muted-foreground italic">{crop.notes}</p>}
+
+                    {/* Companion planting badge */}
+                    {crops.length >= 2 && findCompanionData(crop.name) && (
+                      <button
+                        onClick={() => setCompanionCropId(companionCropId === crop.id ? null : crop.id)}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors"
+                      >
+                        <Flower2 className="w-3 h-3" /> Grannar 🌿
+                      </button>
+                    )}
+
+                    {/* Companion planting sheet */}
+                    {companionCropId === crop.id && (() => {
+                      const data = findCompanionData(crop.name);
+                      if (!data) return null;
+                      const badWithExisting = data.avoid.filter((a) =>
+                        allCropNames.some((n) => n !== crop.name && n.toLowerCase().includes(a.toLowerCase()))
+                      );
+                      return (
+                        <div className="rounded-xl bg-card border border-border p-3 space-y-2 animate-fade-in">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-foreground">Bra grannar till {crop.name}</p>
+                            <button onClick={() => setCompanionCropId(null)} className="text-muted-foreground hover:text-foreground">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {badWithExisting.length > 0 && (
+                            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                              <p className="text-xs text-destructive">
+                                Du har {badWithExisting.join(", ")} nära {crop.name} – de trivs inte ihop
+                              </p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">✅ Bra grannar</p>
+                            <div className="flex flex-wrap gap-1">
+                              {data.good.map((g) => (
+                                <span key={g} className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">🌱 {g}</span>
+                              ))}
+                            </div>
+                          </div>
+                          {data.avoid.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">❌ Undvik</p>
+                              <div className="flex flex-wrap gap-1">
+                                {data.avoid.map((a) => (
+                                  <span key={a} className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">⚠️ {a}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {/* Inline photo strip for this crop */}
                     {photoCropId === crop.id && (

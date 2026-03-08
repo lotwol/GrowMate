@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import heroImage from "@/assets/hero-garden.jpg";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { supabase } from "@/integrations/supabase/client";
 import type { GrowingSchool } from "@/types/onboarding";
+import { findBadNeighbors } from "@/data/companionPlanting";
 
 const MONTH_TIPS: Record<number, { title: string; description: string }> = {
   1: { title: "Januaritips", description: "Planera årets odling och beställ fröer" },
@@ -151,6 +152,25 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
     fetchTip();
   }, [zone, school, currentYear]);
 
+  // Companion planting warnings
+  const badNeighbors = useMemo(() => findBadNeighbors(crops.map((c) => c.name)), [crops]);
+  const [companionDismissed, setCompanionDismissed] = useState(() => {
+    try {
+      const stored = localStorage.getItem("growmate_companion_dismissed");
+      if (stored) {
+        const { week } = JSON.parse(stored);
+        const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+        return week === currentWeek;
+      }
+    } catch {}
+    return false;
+  });
+  const dismissCompanion = () => {
+    const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+    localStorage.setItem("growmate_companion_dismissed", JSON.stringify({ week: currentWeek }));
+    setCompanionDismissed(true);
+  };
+
 
   const tips = [
     // Tip 1: Weather (real or fallback)
@@ -273,6 +293,24 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
             ))}
           </div>
         </div>
+
+        {/* Companion planting warning */}
+        {badNeighbors.length > 0 && !companionDismissed && (
+          <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">🌿</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">Odlingstips</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {badNeighbors[0][0]} och {badNeighbors[0][1]} trivs inte ihop – överväg att flytta dem i din planering
+                </p>
+              </div>
+              <button onClick={dismissCompanion} className="text-muted-foreground hover:text-foreground shrink-0">
+                <span className="text-xs">✕</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Daily School Tip */}
         {dailyTip && schoolMeta && (

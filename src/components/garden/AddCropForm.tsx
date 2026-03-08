@@ -8,6 +8,7 @@ import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
 import { EmojiPicker } from "./EmojiPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
+import { findCompanionData } from "@/data/companionPlanting";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -257,6 +258,21 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
           className={cn(inputCn("name"), "flex-1")}
         />
       </div>
+
+      {/* Companion planting tip */}
+      {(() => {
+        const cd = name.trim().length >= 3 ? findCompanionData(name.trim()) : null;
+        if (!cd) return null;
+        return (
+          <div className="flex items-start gap-2 rounded-lg bg-accent/50 px-3 py-2">
+            <span className="text-sm">💡</span>
+            <p className="text-xs text-foreground">
+              <span className="font-medium">{name.trim()}</span> trivs nära{" "}
+              {cd.good.slice(0, 2).join(" och ")}
+            </p>
+          </div>
+        );
+      })()}
 
       {/* OpenFarm suggestions */}
       {openFarmSuggestions.length > 0 && (

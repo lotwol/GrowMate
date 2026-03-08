@@ -238,16 +238,21 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all",
+                "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg text-sm font-medium transition-all",
                 tab === t.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
               )}
             >
-              <t.icon className="w-4 h-4" />
-              {t.label}
-              {t.count > 0 && (
-                <span className={cn("text-xs px-1.5 py-0.5 rounded-full", tab === t.id ? "bg-primary text-primary-foreground" : "bg-border text-muted-foreground")}>
-                  {t.count}
-                </span>
+              <div className="flex items-center gap-1.5">
+                <t.icon className="w-4 h-4" />
+                {t.label}
+                {t.count > 0 && (
+                  <span className={cn("text-xs px-1.5 py-0.5 rounded-full", tab === t.id ? "bg-primary text-primary-foreground" : "bg-border text-muted-foreground")}>
+                    {t.count}
+                  </span>
+                )}
+              </div>
+              {t.subtitle && tab === t.id && (
+                <span className="text-[10px] text-muted-foreground leading-none">{t.subtitle}</span>
               )}
             </button>
           ))}

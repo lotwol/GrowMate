@@ -20,7 +20,7 @@ const VALID_CATEGORIES: CropCategory[] = ["grönsak", "ört", "frukt", "bär", "
 
 interface AddCropFormProps {
   gardens: Garden[];
-  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; notes?: string }) => void;
+  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -32,6 +32,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [gardenId, setGardenId] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [sowDate, setSowDate] = useState("");
 
   const handleScanComplete = (data: ScannedSeedData) => {
     const filled = new Set<string>();
@@ -62,6 +63,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
       name: name.trim(),
       category,
       garden_id: gardenId || undefined,
+      sow_date: sowDate || undefined,
       notes: notes.trim() || undefined,
     });
   };
@@ -147,6 +149,16 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
           </select>
         </div>
       )}
+
+      <div>
+        <label className="text-xs text-muted-foreground">Sådd-/planteringsdatum</label>
+        <input
+          type="date"
+          value={sowDate}
+          onChange={(e) => setSowDate(e.target.value)}
+          className={cn(inputCn("sow_date"), "mt-1")}
+        />
+      </div>
 
       <div>
         <label className="text-xs text-muted-foreground">Anteckningar & odlingstips</label>

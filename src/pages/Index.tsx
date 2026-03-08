@@ -11,9 +11,10 @@ import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
 import { CalendarScreen } from "@/components/CalendarScreen";
 import { CommunityScreen } from "@/components/CommunityScreen";
+import { AdminScreen } from "@/components/AdminScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -98,7 +99,10 @@ const Index = () => {
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
       {activeTab === "profile" && (
-        <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
+        <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} onOpenAdmin={() => setActiveTab("admin")} />
+      )}
+      {activeTab === "admin" && (
+        <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
       <BottomNav active={["diary-wellbeing", "calendar", "community"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>

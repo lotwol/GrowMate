@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
@@ -23,9 +24,20 @@ interface ProfileScreenProps {
   data: OnboardingData;
   onEdit: () => void;
   onSignOut?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
+export function ProfileScreen({ data, onEdit, onSignOut, onOpenAdmin }: ProfileScreenProps) {
+  const [logoTaps, setLogoTaps] = useState(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (logoTaps > 0) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setLogoTaps(0), 3000);
+    }
+    return () => clearTimeout(timeoutRef.current);
+  }, [logoTaps]);
   const plannerLabel = data.plannerScore < 35 ? "Spontan" : data.plannerScore > 65 ? "Planerare" : "Balanserad";
   const timeLabel = `${data.timeScore}h / vecka`;
   const resultLabel = data.resultVsJoyScore < 35 ? "Glädjen i processen" : data.resultVsJoyScore > 65 ? "Resultatet" : "Balans";
@@ -36,9 +48,22 @@ export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto">
+          <div
+            className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto cursor-pointer select-none"
+            onClick={() => {
+              const next = logoTaps + 1;
+              setLogoTaps(next);
+              if (next >= 5) {
+                onOpenAdmin?.();
+                setLogoTaps(0);
+              }
+            }}
+          >
             <User className="w-8 h-8 text-accent-foreground" />
           </div>
+          {logoTaps >= 3 && logoTaps < 5 && (
+            <p className="text-xs text-muted-foreground text-center">🔓</p>
+          )}
           <h1 className="text-2xl font-display text-foreground">{data.name}</h1>
           {data.zone && (
             <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">

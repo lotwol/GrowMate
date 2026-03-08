@@ -41,6 +41,7 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
   const [logoTaps, setLogoTaps] = useState(0);
   const [sharing, setSharing] = useState(shareGrowingData);
   const [savingShare, setSavingShare] = useState(false);
+  const { settings: notifSettings, updateSettings: updateNotifSettings } = useNotifications(data.zone);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => { setSharing(shareGrowingData); }, [shareGrowingData]);

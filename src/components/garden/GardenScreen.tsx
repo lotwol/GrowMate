@@ -11,6 +11,8 @@ import { Constants } from "@/integrations/supabase/types";
 
 type Tab = "ytor" | "grödor" | "frön";
 
+import { GARDEN_TYPES } from "@/components/garden/AddGardenForm";
+
 const GARDEN_TYPE_EMOJI: Record<string, string> = {
   friland: "🌾", balkong: "🏙️", växthus: "🏡", pallkrage: "📦", kruka: "🪴",
 };
@@ -110,11 +112,15 @@ export function GardenScreen() {
                 <div key={garden.id} className="rounded-2xl bg-card border border-border p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{GARDEN_TYPE_EMOJI[garden.type] || "🌱"}</span>
+                      <span className="text-xl">
+                        {Array.isArray(garden.type)
+                          ? garden.type.map((t) => GARDEN_TYPE_EMOJI[t] || "🌱").join("")
+                          : GARDEN_TYPE_EMOJI[garden.type as string] || "🌱"}
+                      </span>
                       <div>
                         <p className="font-medium text-foreground">{garden.name}</p>
                         <p className="text-xs text-muted-foreground capitalize">
-                          {garden.type}{garden.size_sqm ? ` · ${garden.size_sqm} m²` : ""}
+                          {Array.isArray(garden.type) ? garden.type.join(", ") : garden.type}{garden.size_sqm ? ` · ${garden.size_sqm} m²` : ""}
                         </p>
                       </div>
                     </div>

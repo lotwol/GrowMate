@@ -6,7 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type GardenType = Database["public"]["Enums"]["garden_type"];
 
-const GARDEN_TYPES: { value: GardenType; emoji: string; label: string }[] = [
+export const GARDEN_TYPES: { value: GardenType; emoji: string; label: string }[] = [
   { value: "friland", emoji: "🌾", label: "Friland" },
   { value: "balkong", emoji: "🏙️", label: "Balkong" },
   { value: "växthus", emoji: "🏡", label: "Växthus" },
@@ -15,25 +15,31 @@ const GARDEN_TYPES: { value: GardenType; emoji: string; label: string }[] = [
 ];
 
 interface AddGardenFormProps {
-  onSubmit: (garden: { name: string; type: GardenType; size_sqm?: number; notes?: string }) => void;
+  onSubmit: (garden: { name: string; type: GardenType[]; size_sqm?: number; notes?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormProps) {
   const [name, setName] = useState("");
-  const [type, setType] = useState<GardenType>("friland");
+  const [types, setTypes] = useState<GardenType[]>(["friland"]);
   const [size, setSize] = useState("");
   const [notes, setNotes] = useState("");
 
   const handleSubmit = () => {
-    if (!name.trim()) return;
+    if (!name.trim() || types.length === 0) return;
     onSubmit({
       name: name.trim(),
-      type,
+      type: types,
       size_sqm: size ? Number(size) : undefined,
       notes: notes.trim() || undefined,
     });
+  };
+
+  const toggleType = (t: GardenType) => {
+    setTypes((prev) =>
+      prev.includes(t) ? prev.filter((v) => v !== t) : [...prev, t]
+    );
   };
 
   return (
@@ -59,10 +65,10 @@ export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormPr
           {GARDEN_TYPES.map((gt) => (
             <button
               key={gt.value}
-              onClick={() => setType(gt.value)}
+              onClick={() => toggleType(gt.value)}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all",
-                type === gt.value
+                types.includes(gt.value)
                   ? "border-primary bg-accent text-accent-foreground"
                   : "border-border bg-card text-muted-foreground hover:border-primary/40"
               )}
@@ -94,7 +100,7 @@ export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormPr
         className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body resize-none"
       />
 
-      <Button variant="growmate" className="w-full" onClick={handleSubmit} disabled={!name.trim() || isLoading}>
+      <Button variant="growmate" className="w-full" onClick={handleSubmit} disabled={!name.trim() || types.length === 0 || isLoading}>
         {isLoading ? "Sparar..." : "Lägg till yta"}
       </Button>
     </div>

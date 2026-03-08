@@ -678,6 +678,30 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             onNavigate?.("diary");
           }}
         />
+
+        {/* Delete crop confirmation */}
+        <AlertDialog open={!!confirmDeleteCropId} onOpenChange={(open) => { if (!open) setConfirmDeleteCropId(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ta bort gröda?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Är du säker på att du vill ta bort den här grödan? Det går inte att ångra.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  if (confirmDeleteCropId) deleteCrop.mutate(confirmDeleteCropId);
+                  setConfirmDeleteCropId(null);
+                }}
+              >
+                Ta bort
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

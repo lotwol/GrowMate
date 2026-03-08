@@ -6,7 +6,7 @@ import { OnboardingQuiz } from "@/components/OnboardingQuiz";
 import { Dashboard } from "@/components/Dashboard";
 import { GrowMateChat } from "@/components/GrowMateChat";
 import { BottomNav } from "@/components/BottomNav";
-import { PlaceholderScreen } from "@/components/PlaceholderScreen";
+import { DiaryScreen } from "@/components/DiaryScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
 import { OnboardingData } from "@/types/onboarding";

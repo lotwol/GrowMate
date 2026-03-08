@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Leaf, Package, Sprout, Trash2 } from "lucide-react";
-import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed } from "@/hooks/useGarden";
-import { AddGardenForm } from "@/components/garden/AddGardenForm";
+import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map } from "lucide-react";
+import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
+import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
 import { AddSeedForm } from "@/components/garden/AddSeedForm";
+import { EditCropForm } from "@/components/garden/EditCropForm";
+import { GardenLayoutEditor } from "@/components/garden/GardenLayoutEditor";
 import type { Database } from "@/integrations/supabase/types";
 import { Constants } from "@/integrations/supabase/types";
 
 type Tab = "ytor" | "grödor" | "frön";
-
-import { GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 
 const GARDEN_TYPE_EMOJI: Record<string, string> = {
   friland: "🌾", balkong: "🏙️", växthus: "🏡", pallkrage: "📦", kruka: "🪴",
@@ -35,14 +35,21 @@ export function GardenScreen() {
   const [showAddGarden, setShowAddGarden] = useState(false);
   const [showAddCrop, setShowAddCrop] = useState(false);
   const [showAddSeed, setShowAddSeed] = useState(false);
+  const [editingCropId, setEditingCropId] = useState<string | null>(null);
+  const [layoutGardenId, setLayoutGardenId] = useState<string | null>(null);
+  const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
-  const { data: crops = [], isLoading: cropsLoading } = useAllCrops();
+  const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
   const { data: seeds = [], isLoading: seedsLoading } = useSeedInventory();
+
+  const layoutGarden = gardens.find(g => g.id === layoutGardenId);
+  const { data: currentLayout } = useGardenLayout(layoutGardenId, seasonYear);
 
   const addGarden = useAddGarden();
   const addCrop = useAddCrop();
   const addSeed = useAddSeed();
+  const updateCrop = useUpdateCrop();
   const updateStatus = useUpdateCropStatus();
   const deleteCrop = useDeleteCrop();
   const deleteGarden = useDeleteGarden();
@@ -55,10 +62,40 @@ export function GardenScreen() {
 
   const statuses = Constants.public.Enums.crop_status;
 
+  // Layout editor view
+  if (layoutGardenId && layoutGarden) {
+    return (
+      <div className="min-h-screen pb-24 px-4 pt-6">
+        <div className="max-w-md mx-auto">
+          <GardenLayoutEditor
+            gardenId={layoutGardenId}
+            gardenName={layoutGarden.name}
+            seasonYear={seasonYear}
+            layout={currentLayout || null}
+            crops={crops as any}
+            onClose={() => setLayoutGardenId(null)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
       <div className="max-w-md mx-auto space-y-4">
-        <h1 className="text-2xl font-display text-foreground">Min Odling 🌱</h1>
+        {/* Header with year selector */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-display text-foreground">Min Odling 🌱</h1>
+          <div className="flex items-center gap-1 bg-muted rounded-lg px-1 py-0.5">
+            <button onClick={() => setSeasonYear(y => y - 1)} className="p-1 text-muted-foreground hover:text-foreground">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium text-foreground px-1 min-w-[3rem] text-center">{seasonYear}</span>
+            <button onClick={() => setSeasonYear(y => y + 1)} className="p-1 text-muted-foreground hover:text-foreground">
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
         {/* Tab bar */}
         <div className="flex gap-1 bg-muted rounded-xl p-1">
@@ -124,9 +161,14 @@ export function GardenScreen() {
                         </p>
                       </div>
                     </div>
-                    <button onClick={() => deleteGarden.mutate(garden.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setLayoutGardenId(garden.id)} className="text-muted-foreground hover:text-primary transition-colors p-1" title="Visa layout">
+                        <Map className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => deleteGarden.mutate(garden.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   {garden.notes && <p className="text-xs text-muted-foreground italic">{garden.notes}</p>}
                   {gardenCrops.length > 0 && (
@@ -150,7 +192,7 @@ export function GardenScreen() {
             {showAddCrop ? (
               <AddCropForm
                 gardens={gardens}
-                onSubmit={(c) => { addCrop.mutate(c, { onSuccess: () => setShowAddCrop(false) }); }}
+                onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear }, { onSuccess: () => setShowAddCrop(false) }); }}
                 onCancel={() => setShowAddCrop(false)}
                 isLoading={addCrop.isPending}
               />
@@ -165,11 +207,26 @@ export function GardenScreen() {
             {!cropsLoading && crops.length === 0 && !showAddCrop && (
               <div className="text-center py-12 space-y-2">
                 <span className="text-4xl">🌱</span>
-                <p className="text-muted-foreground text-sm">Inga grödor ännu. Lägg till din första!</p>
+                <p className="text-muted-foreground text-sm">Inga grödor för {seasonYear}. Lägg till din första!</p>
               </div>
             )}
 
             {crops.map((crop: any) => {
+              if (editingCropId === crop.id) {
+                return (
+                  <EditCropForm
+                    key={crop.id}
+                    crop={crop}
+                    gardens={gardens}
+                    onSave={(updates) => {
+                      updateCrop.mutate(updates as any, { onSuccess: () => setEditingCropId(null) });
+                    }}
+                    onCancel={() => setEditingCropId(null)}
+                    isLoading={updateCrop.isPending}
+                  />
+                );
+              }
+
               const statusConf = STATUS_CONFIG[crop.status] || STATUS_CONFIG.planerad;
               return (
                 <div key={crop.id} className="rounded-2xl bg-card border border-border p-4 space-y-3">
@@ -179,13 +236,20 @@ export function GardenScreen() {
                       <div>
                         <p className="font-medium text-foreground">{crop.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {crop.gardens?.name || "Ingen yta"}{crop.cost ? ` · ${crop.cost} kr` : ""}
+                          {crop.gardens?.name || "Ingen yta"}
+                          {crop.sow_date ? ` · Sådd ${crop.sow_date}` : ""}
+                          {crop.cost ? ` · ${crop.cost} kr` : ""}
                         </p>
                       </div>
                     </div>
-                    <button onClick={() => deleteCrop.mutate(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setEditingCropId(crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => deleteCrop.mutate(crop.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Status selector */}

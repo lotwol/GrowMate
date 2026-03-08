@@ -589,13 +589,15 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
        </div>
       )}
 
-      {/* Seed selector */}
-      <SeedSelector
-        seeds={seeds}
-        selectedSeedId={seedId}
-        onSelect={setSeedId}
-        cropName={name}
-      />
+      {/* Seed selector – only show if no seed linked via entry mode */}
+      {!seedId && (
+        <SeedSelector
+          seeds={seeds}
+          selectedSeedId={seedId}
+          onSelect={setSeedId}
+          cropName={name}
+        />
+      )}
 
       {showDepletionPrompt && seedId && (
         <SeedDepletionPrompt

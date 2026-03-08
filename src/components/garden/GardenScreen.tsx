@@ -382,6 +382,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                     key={crop.id}
                     crop={crop}
                     gardens={gardens}
+                    seeds={seeds}
                     onSave={(updates) => {
                       updateCrop.mutate(updates as any, { onSuccess: () => setEditingCropId(null) });
                     }}

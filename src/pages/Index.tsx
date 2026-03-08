@@ -100,7 +100,7 @@ const Index = () => {
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}
-      <BottomNav active={activeTab === "diary-wellbeing" || activeTab === "calendar" ? "home" : activeTab} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+      <BottomNav active={["diary-wellbeing", "calendar", "community"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>
   );
 };

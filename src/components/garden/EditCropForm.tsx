@@ -108,7 +108,15 @@ export function EditCropForm({ crop, gardens, seeds, onSave, onCancel, isLoading
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Seed selector */}
+      <SeedSelector
+        seeds={seeds}
+        selectedSeedId={seedId}
+        onSelect={setSeedId}
+        cropName={name}
+        allowClear={true}
+      />
+
         <div>
           <label className="text-xs text-muted-foreground">Sådd-datum</label>
           <input type="date" value={sowDate} onChange={(e) => setSowDate(e.target.value)} className={inputCn} />

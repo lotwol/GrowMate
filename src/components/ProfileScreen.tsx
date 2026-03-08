@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
-import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut } from "lucide-react";
+import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   sinnesron: { emoji: "🌿", title: "Sinnesron" },

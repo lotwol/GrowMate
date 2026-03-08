@@ -174,6 +174,9 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
           </div>
         </div>
 
+        {/* Notification settings */}
+        <NotificationSettings settings={notifSettings} onUpdate={updateNotifSettings} />
+
         {/* Edit button */}
         <Button variant="growmate-outline" size="lg" className="w-full" onClick={onEdit}>
           <Settings className="w-4 h-4 mr-2" />

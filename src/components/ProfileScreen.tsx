@@ -33,9 +33,32 @@ interface ProfileScreenProps {
   onOpenAdmin?: () => void;
 }
 
-export function ProfileScreen({ data, onEdit, onSignOut, onOpenAdmin }: ProfileScreenProps) {
+export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOut, onOpenAdmin }: ProfileScreenProps) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const [logoTaps, setLogoTaps] = useState(0);
+  const [sharing, setSharing] = useState(shareGrowingData);
+  const [savingShare, setSavingShare] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => { setSharing(shareGrowingData); }, [shareGrowingData]);
+
+  const toggleSharing = async (checked: boolean) => {
+    if (!user) return;
+    setSavingShare(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ share_growing_data: checked } as any)
+      .eq("user_id", user.id);
+    setSavingShare(false);
+    if (error) {
+      toast.error("Kunde inte spara inställningen");
+      return;
+    }
+    setSharing(checked);
+    qc.invalidateQueries({ queryKey: ["profile"] });
+    toast.success(checked ? "Din odlingsdata delas nu automatiskt" : "Automatisk delning avstängd");
+  };
 
   useEffect(() => {
     if (logoTaps > 0) {

@@ -471,6 +471,8 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
               const diary = cell.inMonth ? diaryMap.get(cell.dateStr) : undefined;
               const hasDiary = !!diary;
               const moodColor = diary?.mood ? MOOD_COLORS[diary.mood] : undefined;
+              const frostTemp = cell.inMonth ? frostDates.get(cell.dateStr) : undefined;
+              const hasFrost = frostTemp !== undefined;
 
               return (
                 <div

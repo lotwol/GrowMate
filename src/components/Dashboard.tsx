@@ -54,6 +54,7 @@ const QUICK_ACTIONS = [
   { icon: BookOpen, label: "Dagbok", desc: "Logga aktivitet", tab: "diary" as const },
   { icon: ShoppingCart, label: "Inköpslista", desc: "Vad behöver du?", tab: "shopping" as const },
   { icon: CalendarDays, label: "Kalender", desc: "Såningsschema", tab: "calendar" as const },
+  { icon: Users, label: "Community", desc: "Odlartips & fröbyte", tab: "community" as const },
 ];
 
 const SCHOOL_META: Record<GrowingSchool, { emoji: string; label: string; badgeColor: string }> = {
@@ -259,7 +260,7 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
 
       <div className="px-4 space-y-6 mt-3">
         {/* Quick Actions */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           {QUICK_ACTIONS.map((action) => (
             <button
               key={action.label}

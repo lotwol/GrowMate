@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      community_growing_data: {
+        Row: {
+          created_at: string | null
+          crop_name: string
+          garden_type: string | null
+          harvest_date: string | null
+          id: string
+          notes_public: string | null
+          season_year: number
+          sow_date: string | null
+          success_rating: number | null
+          zone: string
+        }
+        Insert: {
+          created_at?: string | null
+          crop_name: string
+          garden_type?: string | null
+          harvest_date?: string | null
+          id?: string
+          notes_public?: string | null
+          season_year: number
+          sow_date?: string | null
+          success_rating?: number | null
+          zone: string
+        }
+        Update: {
+          created_at?: string | null
+          crop_name?: string
+          garden_type?: string | null
+          harvest_date?: string | null
+          id?: string
+          notes_public?: string | null
+          season_year?: number
+          sow_date?: string | null
+          success_rating?: number | null
+          zone?: string
+        }
+        Relationships: []
+      }
+      community_insights: {
+        Row: {
+          avg_success_rating: number | null
+          common_notes: string[] | null
+          crop_name: string
+          id: string
+          last_updated: string | null
+          sample_count: number | null
+          typical_harvest_month_end: number | null
+          typical_harvest_month_start: number | null
+          typical_sow_month_end: number | null
+          typical_sow_month_start: number | null
+          zone: string
+        }
+        Insert: {
+          avg_success_rating?: number | null
+          common_notes?: string[] | null
+          crop_name: string
+          id?: string
+          last_updated?: string | null
+          sample_count?: number | null
+          typical_harvest_month_end?: number | null
+          typical_harvest_month_start?: number | null
+          typical_sow_month_end?: number | null
+          typical_sow_month_start?: number | null
+          zone: string
+        }
+        Update: {
+          avg_success_rating?: number | null
+          common_notes?: string[] | null
+          crop_name?: string
+          id?: string
+          last_updated?: string | null
+          sample_count?: number | null
+          typical_harvest_month_end?: number | null
+          typical_harvest_month_start?: number | null
+          typical_sow_month_end?: number | null
+          typical_sow_month_start?: number | null
+          zone?: string
+        }
+        Relationships: []
+      }
       crop_placements: {
         Row: {
           cell_col: number | null
@@ -342,6 +423,63 @@ export type Database = {
           quantity?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      swedish_crop_tips: {
+        Row: {
+          category: string
+          created_at: string | null
+          crop_name: string
+          crop_name_latin: string | null
+          days_to_harvest: number | null
+          difficulty: string | null
+          harvest_end: number | null
+          harvest_start: number | null
+          id: string
+          sow_indoor_end: number | null
+          sow_indoor_start: number | null
+          sow_outdoor_end: number | null
+          sow_outdoor_start: number | null
+          spacing_cm: number | null
+          tips: string | null
+          zone: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          crop_name: string
+          crop_name_latin?: string | null
+          days_to_harvest?: number | null
+          difficulty?: string | null
+          harvest_end?: number | null
+          harvest_start?: number | null
+          id?: string
+          sow_indoor_end?: number | null
+          sow_indoor_start?: number | null
+          sow_outdoor_end?: number | null
+          sow_outdoor_start?: number | null
+          spacing_cm?: number | null
+          tips?: string | null
+          zone: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          crop_name?: string
+          crop_name_latin?: string | null
+          days_to_harvest?: number | null
+          difficulty?: string | null
+          harvest_end?: number | null
+          harvest_start?: number | null
+          id?: string
+          sow_indoor_end?: number | null
+          sow_indoor_start?: number | null
+          sow_outdoor_end?: number | null
+          sow_outdoor_start?: number | null
+          spacing_cm?: number | null
+          tips?: string | null
+          zone?: string
         }
         Relationships: []
       }

@@ -155,7 +155,6 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const deleteCrop = useDeleteCrop();
   const deleteGarden = useDeleteGarden();
   const decrementSeedQty = useDecrementSeedQuantity();
-  const deleteGarden = useDeleteGarden();
 
   const tabs: { id: Tab; label: string; icon: typeof Leaf; count: number }[] = [
     { id: "ytor", label: "Ytor", icon: Sprout, count: gardens.length },

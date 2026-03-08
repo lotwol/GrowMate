@@ -318,6 +318,29 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
             }}
             className="w-full rounded-full border border-input bg-background pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body"
           />
+
+          {/* Fuzzy suggestions */}
+          {locationSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-10 animate-fade-in">
+              <p className="text-xs text-muted-foreground px-4 pt-2 pb-1">Menade du:</p>
+              {locationSuggestions.map((city) => (
+                <button
+                  key={city}
+                  onClick={() => {
+                    setLocation(city.charAt(0).toUpperCase() + city.slice(1));
+                    setManualZone(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors flex items-center gap-2"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="capitalize">{city}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    Zon {LOCATION_ZONES[city].zone}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Suggested zone */}

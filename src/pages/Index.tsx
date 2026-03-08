@@ -96,7 +96,7 @@ const Index = () => {
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}
-      <BottomNav active={activeTab === "diary-wellbeing" ? "diary" : activeTab} onNavigate={setActiveTab} />
+      <BottomNav active={activeTab === "diary-wellbeing" || activeTab === "calendar" ? "home" : activeTab} onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>
   );
 };

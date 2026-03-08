@@ -58,7 +58,7 @@ interface CommunityScreenProps {
   zone?: string | null;
 }
 
-type CommunityTab = "bidra" | "zon";
+type CommunityTab = "bidra" | "zon" | "frobyte";
 
 export function CommunityScreen({ zone }: CommunityScreenProps) {
   const { user } = useAuth();

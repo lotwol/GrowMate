@@ -368,7 +368,7 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
               title={[zone?.name, crop?.name].filter(Boolean).join(" · ")}
             >
               {crop ? (
-                <span className="text-sm">{CATEGORY_EMOJI[crop.category] || "🌱"}</span>
+                <span className="text-sm">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
               ) : zone ? (
                 <span className="text-[8px] text-muted-foreground leading-tight truncate px-0.5">{zone.name}</span>
               ) : null}

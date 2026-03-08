@@ -232,7 +232,7 @@ export function GardenScreen() {
                 <div key={crop.id} className="rounded-2xl bg-card border border-border p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{CATEGORY_EMOJI[crop.category] || "🌱"}</span>
+                      <span className="text-xl">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
                       <div>
                         <p className="font-medium text-foreground">{crop.name}</p>
                         <p className="text-xs text-muted-foreground">

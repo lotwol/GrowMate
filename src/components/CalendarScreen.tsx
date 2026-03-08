@@ -480,6 +480,9 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                     Dags att så {t.crop_name}
                   </p>
                   <p className="text-xs text-muted-foreground">{t.sowType}</p>
+                  <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5 inline-flex items-center gap-1 mt-1">
+                    📖 Standardråd
+                  </span>
                 </div>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${diffBadgeClass(t.difficulty)}`}
@@ -501,6 +504,9 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                   <p className="text-xs text-muted-foreground">
                     Sådd {formatSwedishDate(t.sowDate)}, ~{t.daysToHarvest} dagar
                   </p>
+                  <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5 inline-flex items-center gap-1 mt-1">
+                    📖 Standardråd
+                  </span>
                 </div>
               </div>
             ))}

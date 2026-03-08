@@ -10,9 +10,10 @@ import { DiaryScreen } from "@/components/DiaryScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
 import { CalendarScreen } from "@/components/CalendarScreen";
+import { CommunityScreen } from "@/components/CommunityScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -95,10 +96,11 @@ const Index = () => {
       )}
       {activeTab === "diary" && <DiaryScreen />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" />}
+      {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}
-      <BottomNav active={activeTab === "diary-wellbeing" || activeTab === "calendar" ? "home" : activeTab} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+      <BottomNav active={["diary-wellbeing", "calendar", "community"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>
   );
 };

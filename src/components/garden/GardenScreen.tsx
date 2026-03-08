@@ -114,9 +114,10 @@ function HarvestContribution({
 
 interface GardenScreenProps {
   zone?: string | null;
+  school?: string | null;
 }
 
-export function GardenScreen({ zone }: GardenScreenProps) {
+export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [tab, setTab] = useState<Tab>("ytor");
   const [showAddGarden, setShowAddGarden] = useState(false);
   const [showAddCrop, setShowAddCrop] = useState(false);
@@ -299,6 +300,7 @@ export function GardenScreen({ zone }: GardenScreenProps) {
               <AddCropForm
                 gardens={gardens}
                 zone={zone}
+                school={school}
                 onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear }, { onSuccess: () => setShowAddCrop(false) }); }}
                 onCancel={() => setShowAddCrop(false)}
                 isLoading={addCrop.isPending}

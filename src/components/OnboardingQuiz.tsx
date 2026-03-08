@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MapPin, Info, ArrowLeft } from "lucide-react";
-import { OnboardingData, DEFAULT_ONBOARDING } from "@/types/onboarding";
+import { OnboardingData, DEFAULT_ONBOARDING, GrowingSchool } from "@/types/onboarding";
 
 const PROFILES = [
   { id: "sinnesron", emoji: "🌿", title: "Sinnesron", reason: "...stänga av hjärnan och arbeta med händerna", description: "Du odlar för att hitta lugn och närvaro", color: "bg-growmate-leaf-light" },
@@ -11,6 +11,21 @@ const PROFILES = [
   { id: "experimenteraren", emoji: "🧪", title: "Experimenteraren", reason: "...testa nytt varje säsong", description: "Du odlar för nyfikenhetens skull", color: "bg-growmate-sun/30" },
   { id: "självhushållaren", emoji: "🏡", title: "Självhushållaren", reason: "...bli mer självförsörjande", description: "Du odlar för oberoende och hållbarhet", color: "bg-growmate-bloom/20" },
 ] as const;
+
+const SCHOOLS: { id: GrowingSchool; emoji: string; title: string; tagline: string; description: string }[] = [
+  { id: "naturens-vag", emoji: "🌾", title: "Naturens väg", tagline: "Enkelt, tåligt och avslappnat", description: "Låt naturen göra jobbet. Kallsådd, minimal inblandning, stresståliga plantor. Perfekt om du vill odla utan stress." },
+  { id: "precisionsodlaren", emoji: "🔬", title: "Precisionsodlaren", tagline: "Detaljerat, noggrant, maximalt", description: "Djupkunskap om varje gröda. Sorturval, optimala såddfönster, maximal skörd per kvadratmeter." },
+  { id: "hackaren", emoji: "⚡", title: "Hackaren", tagline: "Smarta genvägar, mer skörd", description: "Praktiska shortcuts och beprövade hacks för att spara tid och skala upp. Effektivitet framför perfektion." },
+  { id: "traditionalisten", emoji: "📖", title: "Traditionalisten", tagline: "Beprövat och tidlöst", description: "Klassiska svenska odlingsråd som fungerat i generationer. Tryggt, välbeprövat, pålitligt." },
+];
+
+const PROFILE_TO_SCHOOL: Record<string, GrowingSchool> = {
+  sinnesron: "naturens-vag",
+  "skordeglädjen": "precisionsodlaren",
+  experimenteraren: "precisionsodlaren",
+  lararen: "traditionalisten",
+  "självhushållaren": "hackaren",
+};
 
 const LOCATION_ZONES: Record<string, { zone: string; desc: string }> = {
   "malmö": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
@@ -57,7 +72,7 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
   const update = (partial: Partial<OnboardingData>) => setData((d) => ({ ...d, ...partial }));
 
   const zones = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   // Levenshtein
   const levenshtein = (a: string, b: string): number => {
@@ -90,6 +105,14 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
     if (!loc || !LOCATION_ZONES[loc]) return null;
     return { ...LOCATION_ZONES[loc], city: loc };
   }, [data.location]);
+
+  // Suggested school based on profiles
+  const suggestedSchool = useMemo((): GrowingSchool | null => {
+    for (const p of data.profiles) {
+      if (PROFILE_TO_SCHOOL[p]) return PROFILE_TO_SCHOOL[p];
+    }
+    return null;
+  }, [data.profiles]);
 
   // Philosophical reflection based on slider combo
   const getReflection = () => {
@@ -268,8 +291,6 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
 
             {/* Time per week */}
             {(() => {
-              const timeSteps = [1, 2, 3, 5, 8, 10, 15, 20, 30, 40];
-              const stepIndex = timeSteps.findIndex((t) => t >= data.timeScore) === -1 ? timeSteps.length - 1 : timeSteps.findIndex((t) => t >= data.timeScore);
               const displayHours = data.timeScore;
               const timeLabel = displayHours <= 2 ? "Perfekt för balkonglådor och krukor – varje stund räknas!" : displayHours <= 5 ? "Några timmar ger mycket – vi hjälper dig prioritera." : displayHours <= 10 ? "Bra utrymme – du kan ha en fin liten köksträdgård." : displayHours <= 20 ? "Du kan odla på riktigt – köksträdgård med variation!" : "Wow, nästan heltid! Du kan bygga något fantastiskt.";
               return (
@@ -338,12 +359,77 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
     );
   }
 
-  // Step 3: Zone
+  // Step 3: Growing school
+  if (step === 3) {
+    // Auto-select suggested school if none selected yet
+    const effectiveSchool = data.school || suggestedSchool;
+
+    return (
+      <div className="min-h-screen flex flex-col px-6 py-8">
+        <div className="max-w-md w-full mx-auto space-y-5 animate-fade-in">
+          <BackButton onClick={() => setStep(2)} />
+          <StepIndicator current={2} />
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-display text-foreground">Hur vill du ha dina tips? 🌱</h2>
+            <p className="text-muted-foreground text-sm">Det finns inget rätt sätt att odla. Välj den filosofi som känns rätt för dig – du kan alltid byta senare.</p>
+          </div>
+
+          <div className="space-y-3">
+            {SCHOOLS.map((school) => {
+              const isSelected = (data.school || suggestedSchool) === school.id;
+              const isSuggested = suggestedSchool === school.id && !data.school;
+              return (
+                <button
+                  key={school.id}
+                  onClick={() => update({ school: school.id })}
+                  className={cn(
+                    "w-full text-left rounded-2xl p-4 border-2 transition-all duration-200",
+                    isSelected ? "border-primary bg-accent shadow-md" : "border-transparent bg-card hover:border-primary/30"
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">{school.emoji}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-foreground">{school.title}</p>
+                        {isSuggested && (
+                          <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">Föreslagen för dig</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium">{school.tagline}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{school.description}</p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="text-xs text-muted-foreground italic text-center">
+            Inspirerat av den rika svenska odlingstraditionen. GrowMates rekommendationer formas av din skola – och förfinas av data från svenska odlare.
+          </p>
+
+          <Button
+            variant="growmate" size="lg" className="w-full"
+            onClick={() => {
+              if (!data.school && suggestedSchool) update({ school: suggestedSchool });
+              setStep(4);
+            }}
+            disabled={!effectiveSchool}
+          >
+            Nästa
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 4: Zone
   return (
     <div className="min-h-screen flex flex-col px-6 py-8">
       <div className="max-w-md w-full mx-auto space-y-5 animate-fade-in">
-        <BackButton onClick={() => setStep(2)} />
-        <StepIndicator current={2} />
+        <BackButton onClick={() => setStep(3)} />
+        <StepIndicator current={3} />
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-display text-foreground">Var odlar du?</h2>
           <p className="text-muted-foreground text-sm">Vi föreslår en odlingszon baserat på var du bor</p>
@@ -429,7 +515,13 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
           </div>
         )}
 
-        <Button variant="growmate" size="lg" className="w-full" onClick={() => data.zone && onComplete(data)} disabled={!data.zone}>
+        <Button variant="growmate" size="lg" className="w-full" onClick={() => {
+          if (!data.school && suggestedSchool) {
+            onComplete({ ...data, school: suggestedSchool });
+          } else {
+            onComplete(data);
+          }
+        }} disabled={!data.zone}>
           Starta min odling 🌱
         </Button>
       </div>

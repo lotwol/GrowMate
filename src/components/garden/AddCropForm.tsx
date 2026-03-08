@@ -37,6 +37,7 @@ const DIFFICULTY_BADGE: Record<string, string> = {
 interface AddCropFormProps {
   gardens: Garden[];
   zone?: string | null;
+  school?: string | null;
   onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -66,6 +67,10 @@ interface SwedishTip {
   spacing_cm: number | null;
   difficulty: string | null;
   tips: string | null;
+  school_naturens_vag_tip: string | null;
+  school_precisionsodlaren_tip: string | null;
+  school_hackaren_tip: string | null;
+  school_traditionalisten_tip: string | null;
 }
 
 interface CommunityInsight {
@@ -79,7 +84,7 @@ interface CommunityInsight {
   typical_harvest_month_end: number | null;
 }
 
-export function AddCropForm({ gardens, zone, onSubmit, onCancel, isLoading }: AddCropFormProps) {
+export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoading }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");
@@ -289,6 +294,26 @@ export function AddCropForm({ gardens, zone, onSubmit, onCancel, isLoading }: Ad
             {swedishTip.difficulty && <p>{DIFFICULTY_BADGE[swedishTip.difficulty] || swedishTip.difficulty}</p>}
             {swedishTip.tips && <p className="italic mt-1">{swedishTip.tips}</p>}
           </div>
+          {(() => {
+            const schoolTipMap: Record<string, string | null | undefined> = {
+              "naturens-vag": swedishTip.school_naturens_vag_tip,
+              "precisionsodlaren": swedishTip.school_precisionsodlaren_tip,
+              "hackaren": swedishTip.school_hackaren_tip,
+              "traditionalisten": swedishTip.school_traditionalisten_tip,
+            };
+            const schoolEmojis: Record<string, string> = { "naturens-vag": "🌾", precisionsodlaren: "🔬", hackaren: "⚡", traditionalisten: "📖" };
+            const schoolNames: Record<string, string> = { "naturens-vag": "Naturens väg", precisionsodlaren: "Precisionsodlaren", hackaren: "Hackaren", traditionalisten: "Traditionalisten" };
+            const tip = school ? schoolTipMap[school] : null;
+            if (!tip) return null;
+            return (
+              <div className="mt-2 pt-2 border-t border-green-500/20">
+                <span className="text-xs bg-accent text-accent-foreground rounded-full px-2 py-0.5 inline-flex items-center gap-1">
+                  {schoolEmojis[school!]} {schoolNames[school!]}
+                </span>
+                <p className="text-sm text-foreground mt-1">{tip}</p>
+              </div>
+            );
+          })()}
         </div>
       )}
 

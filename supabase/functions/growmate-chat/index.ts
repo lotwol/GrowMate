@@ -5,6 +5,13 @@ const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 const SYSTEM_PROMPT = `Du är GrowMate – en varm, kunnig odlingskompis. Du hjälper svenska odlare med odlingstips, såddscheman, skadegörare, gödning och allt som rör trädgård och odling. Du anpassar dina råd efter användarens odlingszon (I–VIII) och profil. Svara alltid på svenska, med en varm och uppmuntrande ton. Håll svaren kortfattade men informativa. Om du ger specifika råd, nämn alltid att klimat och mikromiljö kan påverka resultaten.`;
 
+const schoolDescriptions: Record<string, string> = {
+  'naturens-vag': 'Naturens väg (kallsådd, minimal inblandning, enkelt och tåligt)',
+  'precisionsodlaren': 'Precisionsodlaren (detaljerade råd, sorturval, maximerad skörd)',
+  'hackaren': 'Hackaren (praktiska genvägar, tidseffektivitet, smarta lösningar)',
+  'traditionalisten': 'Traditionalisten (klassiska beprövade svenska odlingsmetoder)',
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -17,7 +24,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages, zone, profiles } = await req.json();
+    const { messages, zone, profiles, school } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "No messages provided" }), {
@@ -31,6 +38,9 @@ Deno.serve(async (req) => {
     if (zone) contextNote += `Användarens odlingszon: ${zone}. `;
     if (profiles && profiles.length > 0)
       contextNote += `Användarprofil: ${profiles.join(", ")}. `;
+    if (school && schoolDescriptions[school]) {
+      contextNote += `Användarens odlingsskola är: ${schoolDescriptions[school]}. Anpassa dina råd och din ton efter denna filosofi. För Naturens väg: håll det enkelt, undvik onödig komplexitet. För Precisionsodlaren: ge specifika detaljer, sorter, mått. För Hackaren: fokusera på tidsbesparande metoder. För Traditionalisten: referera till beprövade metoder. `;
+    }
 
     const systemMessages: { role: string; content: string }[] = [
       { role: "system", content: SYSTEM_PROMPT },

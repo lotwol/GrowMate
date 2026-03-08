@@ -50,6 +50,7 @@ const Index = () => {
           plannerScore: profile.planner_score || 50,
           timeScore: profile.time_score || 5,
           resultVsJoyScore: profile.result_vs_joy_score || 50,
+          school: (profile as any).school || null,
         }
       : undefined;
 
@@ -77,6 +78,7 @@ const Index = () => {
     plannerScore: profile.planner_score || 50,
     timeScore: profile.time_score || 5,
     resultVsJoyScore: profile.result_vs_joy_score || 50,
+    school: (profile as any).school || null,
   };
 
   return (
@@ -84,12 +86,12 @@ const Index = () => {
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} zone={onboardingData.zone} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}
-      {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} />}
+      {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} school={onboardingData.school} />}
       {activeTab === "calendar" && (
         <CalendarScreen zone={onboardingData.zone} onBack={() => setActiveTab("home")} />
       )}
       {activeTab === "chat" && (
-        <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
+        <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} school={onboardingData.school} /></div>
       )}
       {activeTab === "diary" && <DiaryScreen />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" />}

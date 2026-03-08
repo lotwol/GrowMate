@@ -36,8 +36,9 @@ export function useSaveProfile() {
           planner_score: onboarding.plannerScore,
           time_score: onboarding.timeScore,
           result_vs_joy_score: onboarding.resultVsJoyScore,
+          school: onboarding.school,
           onboarding_completed: true,
-        })
+        } as any)
         .eq("user_id", user!.id);
       if (error) throw error;
     },

@@ -589,6 +589,21 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
 
             {seeds.map((seed) => {
               const linkedCrops = crops.filter((c: any) => c.seed_id === seed.id);
+
+              if (editingSeedId === seed.id) {
+                return (
+                  <EditSeedForm
+                    key={seed.id}
+                    seed={seed}
+                    onSave={(updates) => {
+                      updateSeed.mutate(updates as any, { onSuccess: () => setEditingSeedId(null) });
+                    }}
+                    onCancel={() => setEditingSeedId(null)}
+                    isLoading={updateSeed.isPending}
+                  />
+                );
+              }
+
               return (
                 <div key={seed.id} className="rounded-2xl bg-card border border-border p-4 space-y-2">
                   <div className="flex items-center gap-2">
@@ -602,6 +617,9 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                         <p className="text-xs text-muted-foreground">Bäst före: {seed.best_before}</p>
                       )}
                     </div>
+                    <button onClick={() => setEditingSeedId(seed.id)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                      <Pencil className="w-4 h-4" />
+                    </button>
                   </div>
                   {linkedCrops.length > 0 && (
                     <div className="pt-1">

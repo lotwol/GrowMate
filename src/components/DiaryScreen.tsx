@@ -491,7 +491,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
   // Filter diary entries (no wellbeing scores) vs wellbeing entries
   const diaryEntries = entries.filter((e) => e.wellbeing_physical === null);
 
-  const handleAdd = (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] }) => {
+  const handleAdd = (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls: string[] }) => {
     addEntry.mutate(
       {
         entry_date: data.entry_date,
@@ -499,6 +499,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
         content: data.content || null,
         mood_garden: data.mood_garden,
         activities: data.activities,
+        photo_urls: data.photo_urls,
         season_year: seasonYear,
       },
       { onSuccess: () => setShowAdd(false) }

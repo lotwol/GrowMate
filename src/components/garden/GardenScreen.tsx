@@ -130,6 +130,9 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
   const [contributingCropId, setContributingCropId] = useState<string | null>(null);
   const [dismissedContributions, setDismissedContributions] = useState<Set<string>>(new Set());
   const [photoCropId, setPhotoCropId] = useState<string | null>(null);
+  const [companionCropId, setCompanionCropId] = useState<string | null>(null);
+
+  const allCropNames = useMemo(() => crops.map((c: any) => c.name as string), [crops]);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);

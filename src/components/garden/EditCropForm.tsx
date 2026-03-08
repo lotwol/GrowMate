@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { X, Save } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { Garden, Crop } from "@/hooks/useGarden";
+import { EmojiPicker } from "./EmojiPicker";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -18,14 +19,16 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
 interface EditCropFormProps {
   crop: Crop;
   gardens: Garden[];
-  onSave: (updates: { id: string; name?: string; category?: CropCategory; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null }) => void;
+  onSave: (updates: { id: string; name?: string; category?: CropCategory; emoji?: string | null; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: EditCropFormProps) {
+  const defaultEmoji = CATEGORIES.find(c => c.value === crop.category)?.emoji || "🌱";
   const [name, setName] = useState(crop.name);
   const [category, setCategory] = useState<CropCategory>(crop.category);
+  const [emoji, setEmoji] = useState((crop as any).emoji || defaultEmoji);
   const [gardenId, setGardenId] = useState(crop.garden_id || "");
   const [sowDate, setSowDate] = useState(crop.sow_date || "");
   const [harvestDate, setHarvestDate] = useState(crop.harvest_date || "");
@@ -38,6 +41,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
       id: crop.id,
       name: name.trim(),
       category,
+      emoji,
       garden_id: gardenId || null,
       sow_date: sowDate || null,
       harvest_date: harvestDate || null,
@@ -57,9 +61,12 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
         </button>
       </div>
 
-      <div>
-        <label className="text-xs text-muted-foreground">Namn</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCn} />
+      <div className="flex items-center gap-2">
+        <EmojiPicker value={emoji} onChange={setEmoji} />
+        <div className="flex-1">
+          <label className="text-xs text-muted-foreground">Namn</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCn} />
+        </div>
       </div>
 
       <div>
@@ -68,7 +75,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
           {CATEGORIES.map((c) => (
             <button
               key={c.value}
-              onClick={() => setCategory(c.value)}
+              onClick={() => { setCategory(c.value); setEmoji(c.emoji); }}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all",
                 category === c.value

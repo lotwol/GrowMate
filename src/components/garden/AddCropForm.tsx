@@ -5,6 +5,7 @@ import { X, Sparkles } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { Garden } from "@/hooks/useGarden";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
+import { EmojiPicker } from "./EmojiPicker";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 
@@ -20,7 +21,7 @@ const VALID_CATEGORIES: CropCategory[] = ["grönsak", "ört", "frukt", "bär", "
 
 interface AddCropFormProps {
   gardens: Garden[];
-  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string }) => void;
+  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -30,6 +31,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");
   const [category, setCategory] = useState<CropCategory>("grönsak");
+  const [emoji, setEmoji] = useState("🥕");
   const [gardenId, setGardenId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [sowDate, setSowDate] = useState("");
@@ -62,6 +64,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
     onSubmit({
       name: name.trim(),
       category,
+      emoji,
       garden_id: gardenId || undefined,
       sow_date: sowDate || undefined,
       notes: notes.trim() || undefined,
@@ -106,13 +109,16 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
         </div>
       )}
 
-      <input
-        type="text"
-        placeholder="Namn, t.ex. Tomat San Marzano"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className={inputCn("name")}
-      />
+      <div className="flex items-center gap-2">
+        <EmojiPicker value={emoji} onChange={setEmoji} />
+        <input
+          type="text"
+          placeholder="Namn, t.ex. Tomat San Marzano"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className={cn(inputCn("name"), "flex-1")}
+        />
+      </div>
 
       <div>
         <p className="text-xs text-muted-foreground mb-2">Kategori</p>
@@ -120,7 +126,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
           {CATEGORIES.map((c) => (
             <button
               key={c.value}
-              onClick={() => setCategory(c.value)}
+              onClick={() => { setCategory(c.value); setEmoji(c.emoji); }}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all",
                 category === c.value

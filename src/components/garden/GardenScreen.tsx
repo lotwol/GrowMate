@@ -384,7 +384,10 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             {!cropsLoading && crops.length === 0 && !showAddCrop && (
               <div className="text-center py-12 space-y-2">
                 <span className="text-4xl">🌱</span>
-                <p className="text-muted-foreground text-sm">Inga grödor för {seasonYear}. Lägg till din första!</p>
+                <p className="font-medium text-foreground">Inget odlas just nu</p>
+                <p className="text-muted-foreground text-sm">
+                  Har du frön i lager? Gå till <button onClick={() => setTab("frön")} className="text-primary underline">Frön-tabben</button> och tryck "Börja odla" för att komma igång.
+                </p>
               </div>
             )}
 

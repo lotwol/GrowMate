@@ -93,9 +93,15 @@ interface CommunityInsight {
   confidence_level: string | null;
 }
 
+const CATEGORY_EMOJI_MAP: Record<string, string> = {
+  grönsak: "🥕", ört: "🌿", frukt: "🍎", bär: "🫐", blomma: "🌸",
+};
+
 export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, isLoading, onSeedLinked }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
+  const activeSeeds = seeds.filter((s: any) => !s.status || s.status === "active");
+  const [entryMode, setEntryMode] = useState<"choose" | "manual">(activeSeeds.length > 0 ? "choose" : "manual");
   const [name, setName] = useState("");
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [emoji, setEmoji] = useState("🥕");
@@ -105,6 +111,7 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
   const [seedId, setSeedId] = useState<string | null>(null);
   const [showDepletionPrompt, setShowDepletionPrompt] = useState(false);
   const [pendingSubmit, setPendingSubmit] = useState(false);
+  const [seedSearchQuery, setSeedSearchQuery] = useState("");
 
   // Previous year's crops for rotation check
   const lastYear = new Date().getFullYear() - 1;

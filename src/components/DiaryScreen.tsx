@@ -41,8 +41,8 @@ function DiaryEntryForm({
   onCancel,
   isSaving,
 }: {
-  initial?: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] };
-  onSave: (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] }) => void;
+  initial?: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls?: string[] };
+  onSave: (data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls: string[] }) => void;
   onCancel: () => void;
   isSaving: boolean;
 }) {
@@ -51,6 +51,7 @@ function DiaryEntryForm({
   const [content, setContent] = useState(initial?.content || "");
   const [mood, setMood] = useState<number | null>(initial?.mood_garden ?? null);
   const [activities, setActivities] = useState<string[]>(initial?.activities || []);
+  const [photoUrls, setPhotoUrls] = useState<string[]>(initial?.photo_urls || []);
 
   const toggleActivity = (a: string) =>
     setActivities((prev) => prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]);

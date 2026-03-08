@@ -252,7 +252,62 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
     doSubmit();
   };
 
-  if (showScanner) {
+  // Entry point picker – 3 clear options
+  if (entryMode === "pick") {
+    return (
+      <div className="rounded-2xl bg-card border border-border p-4 space-y-4 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-foreground">Ny gröda</h3>
+          <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="text-sm text-muted-foreground">Hur vill du lägga till?</p>
+        <div className="grid gap-2">
+          <button
+            onClick={() => setEntryMode("scanner")}
+            className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-accent/30 transition-all text-left group"
+          >
+            <span className="text-2xl">📸</span>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Skanna fröpåse</p>
+              <p className="text-xs text-muted-foreground">Fota din fröpåse – AI fyller i åt dig</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          </button>
+
+          {activeSeeds.length > 0 && (
+            <button
+              onClick={() => setEntryMode("choose")}
+              className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-accent/30 transition-all text-left group"
+            >
+              <span className="text-2xl">🌰</span>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Från fröförrådet</p>
+                <p className="text-xs text-muted-foreground">Välj bland dina {activeSeeds.length} frön i lager</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </button>
+          )}
+
+          <button
+            onClick={() => setEntryMode("manual")}
+            className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-accent/30 transition-all text-left group"
+          >
+            <span className="text-2xl">✏️</span>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Fyll i manuellt</p>
+              <p className="text-xs text-muted-foreground">Skriv in namn och detaljer själv</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Scanner mode
+  if (entryMode === "scanner") {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -262,8 +317,8 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
           </button>
         </div>
         <SeedPacketScanner
-          onScanComplete={handleScanComplete}
-          onSkip={() => setShowScanner(false)}
+          onScanComplete={(data) => { handleScanComplete(data); setEntryMode("manual"); }}
+          onSkip={() => setEntryMode("manual")}
         />
       </div>
     );

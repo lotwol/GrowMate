@@ -28,6 +28,7 @@ interface EditSeedFormProps {
     id: string;
     name: string;
     category: CropCategory;
+    emoji?: string | null;
     quantity?: string | null;
     best_before?: string | null;
     purchased_from?: string | null;
@@ -36,13 +37,14 @@ interface EditSeedFormProps {
     status?: string | null;
     photo_urls?: string[] | null;
   };
-  onSave: (updates: { id: string; name: string; category: CropCategory; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; status?: string; photo_urls?: string[] }) => void;
+  onSave: (updates: { id: string; name: string; category: CropCategory; emoji?: string; quantity?: string; best_before?: string; purchased_from?: string; cost?: number; notes?: string; status?: string; photo_urls?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedFormProps) {
   const [name, setName] = useState(seed.name);
+  const [emoji, setEmoji] = useState(seed.emoji || "🌱");
   const [category, setCategory] = useState<CropCategory>(seed.category);
   const [quantity, setQuantity] = useState(seed.quantity || "");
   const [bestBefore, setBestBefore] = useState(seed.best_before || "");

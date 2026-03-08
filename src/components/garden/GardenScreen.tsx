@@ -349,7 +349,16 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
                   <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
+                        {/* Most recent photo thumbnail */}
+                        {(crop as any).photo_urls?.length > 0 ? (
+                          <img
+                            src={(crop as any).photo_urls[(crop as any).photo_urls.length - 1]}
+                            alt=""
+                            className="w-10 h-10 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <span className="text-xl">{(crop as any).emoji || CATEGORY_EMOJI[crop.category] || "🌱"}</span>
+                        )}
                         <div>
                           <p className="font-medium text-foreground">{crop.name}</p>
                           <p className="text-xs text-muted-foreground">
@@ -360,6 +369,9 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
+                        <button onClick={() => setPhotoCropId(photoCropId === crop.id ? null : crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
+                          <Camera className="w-4 h-4" />
+                        </button>
                         <button onClick={() => setEditingCropId(crop.id)} className="text-muted-foreground hover:text-primary transition-colors p-1">
                           <Pencil className="w-4 h-4" />
                         </button>

@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { supabase } from "@/integrations/supabase/client";
 import type { GrowingSchool } from "@/types/onboarding";
+import { findBadNeighbors } from "@/data/companionPlanting";
 
 const MONTH_TIPS: Record<number, { title: string; description: string }> = {
   1: { title: "Januaritips", description: "Planera årets odling och beställ fröer" },

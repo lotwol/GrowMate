@@ -66,6 +66,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
       name: name.trim(),
       category,
       garden_id: gardenId || undefined,
+      sow_date: sowDate || undefined,
       notes: notes.trim() || undefined,
     });
   };

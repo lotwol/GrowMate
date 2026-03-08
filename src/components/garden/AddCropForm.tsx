@@ -93,7 +93,7 @@ interface CommunityInsight {
   confidence_level: string | null;
 }
 
-export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoading }: AddCropFormProps) {
+export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, isLoading, onSeedLinked }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");
@@ -102,6 +102,9 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
   const [gardenId, setGardenId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [sowDate, setSowDate] = useState("");
+  const [seedId, setSeedId] = useState<string | null>(null);
+  const [showDepletionPrompt, setShowDepletionPrompt] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   // Previous year's crops for rotation check
   const lastYear = new Date().getFullYear() - 1;

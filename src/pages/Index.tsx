@@ -99,6 +99,9 @@ const Index = () => {
       {activeTab === "diary" && <DiaryScreen onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
+      {activeTab === "season-summary" && (
+        <SeasonSummaryScreen year={new Date().getFullYear()} name={onboardingData.name} zone={onboardingData.zone} school={onboardingData.school} onBack={() => setActiveTab("home")} />
+      )}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} shareGrowingData={(profile as any).share_growing_data || false} onEdit={() => setEditingProfile(true)} onSignOut={signOut} onOpenAdmin={() => setActiveTab("admin")} />
       )}

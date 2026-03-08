@@ -188,11 +188,17 @@ function getReflection(avg: number) {
 
 function WellbeingTab({ entries, year }: { entries: DiaryEntry[]; year: number }) {
   const addEntry = useAddDiaryEntry();
+  const updateEntry = useUpdateDiaryEntry();
   const [physical, setPhysical] = useState(3);
   const [mental, setMental] = useState(3);
   const [social, setSocial] = useState(3);
   const [note, setNote] = useState("");
   const [saved, setSaved] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editPhysical, setEditPhysical] = useState(3);
+  const [editMental, setEditMental] = useState(3);
+  const [editSocial, setEditSocial] = useState(3);
+  const [editNote, setEditNote] = useState("");
 
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -227,6 +233,32 @@ function WellbeingTab({ entries, year }: { entries: DiaryEntry[]; year: number }
     );
   };
 
+  const handleEdit = (entry: DiaryEntry) => {
+    setEditingId(entry.id);
+    setEditPhysical(entry.wellbeing_physical || 3);
+    setEditMental(entry.wellbeing_mental || 3);
+    setEditSocial(entry.wellbeing_social || 3);
+    setEditNote(entry.content || "");
+  };
+
+  const handleUpdateEntry = () => {
+    if (!editingId) return;
+    updateEntry.mutate(
+      {
+        id: editingId,
+        wellbeing_physical: editPhysical,
+        wellbeing_mental: editMental,
+        wellbeing_social: editSocial,
+        content: editNote || null,
+      },
+      { onSuccess: () => setEditingId(null) }
+    );
+  };
+
+  const handleEditCurrentWeek = () => {
+    if (thisWeekEntry) handleEdit(thisWeekEntry);
+  };
+
   const showEntry = thisWeekEntry || (saved ? null : undefined);
   const displayedEntry = thisWeekEntry;
   const avg = displayedEntry
@@ -234,6 +266,44 @@ function WellbeingTab({ entries, year }: { entries: DiaryEntry[]; year: number }
     : saved
       ? (physical + mental + social) / 3
       : 0;
+
+  const renderEditForm = (onSave: () => void, onCancel: () => void, isSaving: boolean) => (
+    <div className="rounded-2xl bg-card border border-border p-4 space-y-5 animate-fade-in">
+      <WellbeingSlider
+        label="🏃 Kroppen"
+        description="Hur mår kroppen?"
+        value={editPhysical}
+        onChange={setEditPhysical}
+        labels={{ low: "😴 Trött", mid: "😌 Lagom", high: "💪 Pigg och stark" }}
+      />
+      <WellbeingSlider
+        label="🧠 Sinnet"
+        description="Hur mår sinnet?"
+        value={editMental}
+        onChange={setEditMental}
+        labels={{ low: "😟 Tung", mid: "😌 Neutral", high: "🌟 Lätt och klar" }}
+      />
+      <WellbeingSlider
+        label="🤝 Kontakten"
+        description="Hur känns kontakten med andra?"
+        value={editSocial}
+        onChange={setEditSocial}
+        labels={{ low: "🧍 Isolerad", mid: "👋 Lagom", high: "🤝 Nära och kopplad" }}
+      />
+      <Textarea
+        placeholder="Något du vill minnas från veckan? (valfritt)"
+        value={editNote}
+        onChange={(e) => setEditNote(e.target.value)}
+        rows={2}
+      />
+      <div className="flex gap-2">
+        <Button variant="growmate" className="flex-1" onClick={onSave} disabled={isSaving}>
+          {isSaving ? "Sparar..." : "Uppdatera"}
+        </Button>
+        <Button variant="outline" onClick={onCancel}>Avbryt</Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
@@ -246,12 +316,19 @@ function WellbeingTab({ entries, year }: { entries: DiaryEntry[]; year: number }
 
       <h3 className="font-display text-foreground">Denna veckas incheckning</h3>
 
-      {displayedEntry ? (
+      {editingId === thisWeekEntry?.id ? (
+        renderEditForm(handleUpdateEntry, () => setEditingId(null), updateEntry.isPending)
+      ) : displayedEntry ? (
         /* Show existing check-in */
         <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {format(new Date(displayedEntry.entry_date), "d MMMM yyyy", { locale: sv })}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {format(new Date(displayedEntry.entry_date), "d MMMM yyyy", { locale: sv })}
+            </p>
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={handleEditCurrentWeek}>
+              <Pencil className="w-3.5 h-3.5 mr-1" /> Ändra
+            </Button>
+          </div>
           <div className="flex gap-4">
             {[
               { label: "Kropp", score: displayedEntry.wellbeing_physical || 3 },
@@ -340,23 +417,40 @@ function WellbeingTab({ entries, year }: { entries: DiaryEntry[]; year: number }
         <>
           <h3 className="font-display text-foreground mt-2">Tidigare veckor</h3>
           <div className="space-y-2">
-            {pastCheckins.map((e) => (
-              <div key={e.id} className="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
-                <span className="text-xs text-muted-foreground min-w-[5rem]">
-                  {format(new Date(e.entry_date), "d MMM", { locale: sv })}
-                </span>
-                <div className="flex gap-2">
-                  <div className={cn("w-3 h-3 rounded-full", getScoreColor(e.wellbeing_physical || 3))} title="Kropp" />
-                  <div className={cn("w-3 h-3 rounded-full", getScoreColor(e.wellbeing_mental || 3))} title="Sinne" />
-                  <div className={cn("w-3 h-3 rounded-full", getScoreColor(e.wellbeing_social || 3))} title="Kontakt" />
+            {pastCheckins.map((e) =>
+              editingId === e.id ? (
+                <div key={e.id}>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {format(new Date(e.entry_date), "d MMMM yyyy", { locale: sv })}
+                  </p>
+                  {renderEditForm(handleUpdateEntry, () => setEditingId(null), updateEntry.isPending)}
                 </div>
-                {e.content && (
-                  <span className="text-xs text-muted-foreground truncate flex-1">
-                    {e.content.slice(0, 40)}
+              ) : (
+                <div key={e.id} className="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground min-w-[5rem]">
+                    {format(new Date(e.entry_date), "d MMM", { locale: sv })}
                   </span>
-                )}
-              </div>
-            ))}
+                  <div className="flex gap-2">
+                    <div className={cn("w-3 h-3 rounded-full", getScoreColor(e.wellbeing_physical || 3))} title="Kropp" />
+                    <div className={cn("w-3 h-3 rounded-full", getScoreColor(e.wellbeing_mental || 3))} title="Sinne" />
+                    <div className={cn("w-3 h-3 rounded-full", getScoreColor(e.wellbeing_social || 3))} title="Kontakt" />
+                  </div>
+                  {e.content && (
+                    <span className="text-xs text-muted-foreground truncate flex-1">
+                      {e.content.slice(0, 40)}
+                    </span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-muted-foreground"
+                    onClick={() => handleEdit(e)}
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )
+            )}
           </div>
         </>
       )}

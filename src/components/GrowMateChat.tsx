@@ -1,8 +1,19 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Mic, MicOff, Leaf } from "lucide-react";
+import { Send, Mic, MicOff, Leaf, Plus, ChevronLeft, Trash2, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ReactMarkdown from "react-markdown";
+import {
+  useChatConversations,
+  useChatMessages,
+  useCreateConversation,
+  useSaveChatMessage,
+  useUpdateConversationTitle,
+  useDeleteConversation,
+} from "@/hooks/useChat";
+import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 
 interface Message {
   id: string;
@@ -16,7 +27,7 @@ interface GrowMateChatProps {
   school?: string | null;
 }
 
-const INITIAL_MESSAGE: Message = {
+const WELCOME_MESSAGE: Message = {
   id: "welcome",
   role: "assistant",
   content:
@@ -24,17 +35,49 @@ const INITIAL_MESSAGE: Message = {
 };
 
 export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
-  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { data: conversations = [] } = useChatConversations();
+  const { data: savedMessages } = useChatMessages(activeConversationId);
+  const createConversation = useCreateConversation();
+  const saveChatMessage = useSaveChatMessage();
+  const updateTitle = useUpdateConversationTitle();
+  const deleteConversation = useDeleteConversation();
+
+  // When loading a saved conversation, populate messages
+  useEffect(() => {
+    if (savedMessages && activeConversationId) {
+      const loaded: Message[] = savedMessages.map((m) => ({
+        id: m.id,
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      }));
+      setMessages(loaded.length > 0 ? loaded : [WELCOME_MESSAGE]);
+    }
+  }, [savedMessages, activeConversationId]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  const startNewConversation = () => {
+    setActiveConversationId(null);
+    setMessages([WELCOME_MESSAGE]);
+    setShowHistory(false);
+  };
+
+  const openConversation = (id: string) => {
+    setActiveConversationId(id);
+    setShowHistory(false);
+  };
 
   const handleSend = async () => {
     const text = input.trim();
@@ -50,7 +93,22 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
     setIsLoading(true);
 
     try {
-      // Build conversation history (exclude welcome message)
+      // Create conversation if needed
+      let convId = activeConversationId;
+      if (!convId) {
+        const conv = await createConversation.mutateAsync(text.slice(0, 60));
+        convId = conv.id;
+        setActiveConversationId(convId);
+      }
+
+      // Save user message
+      await saveChatMessage.mutateAsync({
+        conversationId: convId,
+        role: "user",
+        content: text,
+      });
+
+      // Build conversation history
       const history = [...messages.filter((m) => m.id !== "welcome"), userMsg].map(
         ({ role, content }) => ({ role, content })
       );
@@ -60,24 +118,33 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
+      const botContent = data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!";
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!",
+        content: botContent,
       };
       setMessages((prev) => [...prev, botMsg]);
+
+      // Save assistant message
+      await saveChatMessage.mutateAsync({
+        conversationId: convId,
+        role: "assistant",
+        content: botContent,
+      });
+
+      // Update title from first user message
+      if (messages.filter((m) => m.role === "user").length === 0) {
+        updateTitle.mutate({ id: convId, title: text.slice(0, 60) });
+      }
     } catch (err: any) {
       console.error("Chat error:", err);
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content:
-          "Oj, något gick fel! 😔 Jag kunde inte nå AI-tjänsten just nu. Försök igen om en liten stund.",
+        content: "Oj, något gick fel! 😔 Försök igen om en liten stund.",
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -88,13 +155,70 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const toggleRecording = () => {
     if (isRecording) {
       setIsRecording(false);
-      setInput(
-        "Jag har tomater och basilika som frön, och en balkong på ca 6 kvm. Har du tips?"
-      );
+      setInput("Jag har tomater och basilika som frön, och en balkong på ca 6 kvm. Har du tips?");
     } else {
       setIsRecording(true);
     }
   };
+
+  // History sidebar view
+  if (showHistory) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="px-4 py-3 border-b border-border bg-card/80 backdrop-blur-sm flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => setShowHistory(false)}>
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <h2 className="font-medium text-sm text-foreground flex-1">Konversationer</h2>
+          <Button variant="growmate" size="sm" onClick={startNewConversation}>
+            <Plus className="w-4 h-4 mr-1" /> Ny
+          </Button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+          {conversations.length === 0 && (
+            <div className="text-center py-12">
+              <MessageSquare className="w-10 h-10 mx-auto text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground mt-3">Inga sparade konversationer ännu</p>
+            </div>
+          )}
+          {conversations.map((c) => (
+            <div
+              key={c.id}
+              className={cn(
+                "rounded-xl border p-3 cursor-pointer transition-all",
+                c.id === activeConversationId
+                  ? "border-primary bg-accent"
+                  : "border-border bg-card hover:border-primary/30"
+              )}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <button className="flex-1 text-left min-w-0" onClick={() => openConversation(c.id)}>
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {c.title || "Ny konversation"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {format(new Date(c.updated_at), "d MMM HH:mm", { locale: sv })}
+                  </p>
+                </button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteConversation.mutate(c.id);
+                    if (c.id === activeConversationId) startNewConversation();
+                  }}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -104,20 +228,21 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <Leaf className="w-4 h-4 text-primary-foreground" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="font-medium text-sm text-foreground">GrowMate Bot</p>
-            <p className="text-xs text-muted-foreground">
-              Din AI-odlingskompis
-            </p>
+            <p className="text-xs text-muted-foreground">Din AI-odlingskompis</p>
           </div>
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => setShowHistory(true)}>
+            <MessageSquare className="w-5 h-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={startNewConversation}>
+            <Plus className="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
       {/* Messages */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -134,7 +259,13 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
                   : "bg-card text-card-foreground border border-border rounded-bl-md"
               )}
             >
-              {msg.content}
+              {msg.role === "assistant" ? (
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-li:my-0">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              ) : (
+                msg.content
+              )}
             </div>
           </div>
         ))}
@@ -163,20 +294,14 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
               isRecording && "bg-destructive/10 text-destructive"
             )}
           >
-            {isRecording ? (
-              <MicOff className="w-5 h-5" />
-            ) : (
-              <Mic className="w-5 h-5" />
-            )}
+            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </Button>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder={
-              isRecording ? "🎙 Lyssnar..." : "Ställ en fråga om odling..."
-            }
+            placeholder={isRecording ? "🎙 Lyssnar..." : "Ställ en fråga om odling..."}
             className="flex-1 bg-background rounded-full border border-input px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <Button

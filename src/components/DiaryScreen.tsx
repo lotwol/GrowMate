@@ -548,10 +548,18 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
         </div>
 
         {tab === "dagbok" && !showAdd && !editingId && (
-          <Button variant="growmate" className="w-full" onClick={() => setShowAdd(true)}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Ny anteckning
-          </Button>
+          <div className="space-y-2">
+            <Button variant="growmate" className="w-full" onClick={() => setShowAdd(true)}>
+              <Plus className="w-4 h-4 mr-1.5" />
+              Ny anteckning
+            </Button>
+            {onNavigate && (
+              <Button variant="outline" className="w-full" onClick={() => onNavigate("calendar")}>
+                <CalendarDays className="w-4 h-4 mr-1.5" />
+                Visa kalender
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

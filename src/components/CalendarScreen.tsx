@@ -1,6 +1,10 @@
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { TipDetailSheet } from "@/components/calendar/TipDetailSheet";
 import {
   useCropsForCalendar,
   useDiaryEntriesForCalendar,
@@ -50,14 +54,17 @@ function fmt(d: string) {
 
 interface CalendarScreenProps {
   zone?: string | null;
+  school?: string | null;
   onBack: () => void;
 }
 
-export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
+export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
+  const { user } = useAuth();
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
   const currentDay = today.getDate();
+  const [selectedTip, setSelectedTip] = useState<any>(null);
 
   const [viewMonth, setViewMonth] = useState(currentMonth);
   const [viewYear, setViewYear] = useState(currentYear);
@@ -66,6 +73,18 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
   const { data: diaryEntries, isLoading: diaryLoading } = useDiaryEntriesForCalendar(viewYear);
   const { data: calendarEvents, isLoading: eventsLoading } = useCalendarEvents(viewYear);
   const { data: tips, isLoading: tipsLoading } = useSwedishCropTips(zone);
+  const { data: seeds } = useQuery({
+    queryKey: ["seed_inventory", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("seed_inventory")
+        .select("id, name, category, quantity")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
 
   const isLoading = cropsLoading || diaryLoading || tipsLoading || eventsLoading;
 
@@ -490,9 +509,10 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
           <h2 className="font-display text-lg mb-3">Att göra nu 📋</h2>
           <div className="space-y-2">
             {sowingTasks.map((t) => (
-              <div
+              <button
                 key={t.id}
-                className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3"
+                className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3 w-full text-left hover:border-primary/30 transition-colors"
+                onClick={() => setSelectedTip(t)}
               >
                 <span className="text-xl">🌱</span>
                 <div className="flex-1">
@@ -501,7 +521,7 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                   </p>
                   <p className="text-xs text-muted-foreground">{t.sowType}</p>
                   <span className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5 inline-flex items-center gap-1 mt-1">
-                    📖 Standardråd
+                    📖 Tryck för detaljer
                   </span>
                 </div>
                 <span
@@ -509,7 +529,7 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                 >
                   {t.difficulty}
                 </span>
-              </div>
+              </button>
             ))}
             {harvestTasks.map((t) => (
               <div
@@ -632,6 +652,14 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
           )}
         </div>
       </div>
+
+      <TipDetailSheet
+        tip={selectedTip}
+        open={!!selectedTip}
+        onClose={() => setSelectedTip(null)}
+        seeds={(seeds || []) as any}
+        userSchool={school}
+      />
     </div>
   );
 }

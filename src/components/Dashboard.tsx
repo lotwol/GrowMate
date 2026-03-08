@@ -118,7 +118,7 @@ export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: Dashboa
         </div>
       </div>
 
-      <div className="px-4 space-y-6 -mt-2">
+      <div className="px-4 space-y-6 mt-3">
         {/* Quick Actions */}
         <div className="grid grid-cols-4 gap-2">
           {QUICK_ACTIONS.map((action) => (

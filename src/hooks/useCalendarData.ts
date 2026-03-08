@@ -43,6 +43,34 @@ export function useDiaryEntriesForCalendar(year: number) {
   });
 }
 
+export function useCalendarEvents(year: number) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["calendar_events", year, user?.id],
+    queryFn: async () => {
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
+      const { data, error } = await supabase
+        .from("calendar_events" as any)
+        .select("*")
+        .eq("user_id", user!.id)
+        .gte("event_date", startDate)
+        .lte("event_date", endDate)
+        .order("event_date", { ascending: true });
+      if (error) throw error;
+      return (data || []) as {
+        id: string;
+        title: string;
+        description: string | null;
+        event_date: string;
+        emoji: string;
+        event_type: string;
+      }[];
+    },
+    enabled: !!user,
+  });
+}
+
 export function useSwedishCropTips(zone?: string | null) {
   return useQuery({
     queryKey: ["swedish_crop_tips", zone],

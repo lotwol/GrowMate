@@ -101,9 +101,9 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
             <h2 className="text-2xl font-display text-foreground">
               Hej {name}! Varför odlar du?
             </h2>
-            <p className="text-muted-foreground">
-              Ditt svar formar hela upplevelsen i appen
-            </p>
+             <p className="text-muted-foreground">
+               Välj en eller flera – ditt svar formar hela upplevelsen
+             </p>
           </div>
 
           <div className="space-y-3">

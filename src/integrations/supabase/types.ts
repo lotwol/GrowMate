@@ -100,6 +100,57 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          custom_reason: string | null
+          display_name: string | null
+          id: string
+          location: string | null
+          onboarding_completed: boolean | null
+          planner_score: number | null
+          profiles: string[] | null
+          result_vs_joy_score: number | null
+          time_score: number | null
+          updated_at: string
+          user_id: string
+          zone: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          custom_reason?: string | null
+          display_name?: string | null
+          id?: string
+          location?: string | null
+          onboarding_completed?: boolean | null
+          planner_score?: number | null
+          profiles?: string[] | null
+          result_vs_joy_score?: number | null
+          time_score?: number | null
+          updated_at?: string
+          user_id: string
+          zone?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          custom_reason?: string | null
+          display_name?: string | null
+          id?: string
+          location?: string | null
+          onboarding_completed?: boolean | null
+          planner_score?: number | null
+          profiles?: string[] | null
+          result_vs_joy_score?: number | null
+          time_score?: number | null
+          updated_at?: string
+          user_id?: string
+          zone?: string | null
+        }
+        Relationships: []
+      }
       seed_inventory: {
         Row: {
           best_before: string | null

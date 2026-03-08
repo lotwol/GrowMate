@@ -224,14 +224,12 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
     }
   };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      setIsRecording(false);
-      setInput("Jag har tomater och basilika som frön, och en balkong på ca 6 kvm. Har du tips?");
-    } else {
-      setIsRecording(true);
-    }
-  };
+  const handleVoiceTranscription = useCallback((text: string) => {
+    setInput(text);
+    setVoiceSource(true);
+  }, []);
+
+  const voice = useVoiceInput(handleVoiceTranscription);
 
   // History sidebar view
   if (showHistory) {

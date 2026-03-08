@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera, Flower2, X, AlertTriangle } from "lucide-react";
 import { findCompanionData, findBadNeighbors } from "@/data/companionPlanting";
 import { getCropFamily } from "@/data/cropRotation";
-import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout, useCropsForSeed, useDecrementSeedQuantity } from "@/hooks/useGarden";
+import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useUpdateSeed, useGardenLayout, useCropsForSeed, useDecrementSeedQuantity } from "@/hooks/useGarden";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
 import { AddSeedForm } from "@/components/garden/AddSeedForm";
 import { EditCropForm } from "@/components/garden/EditCropForm";
 import { GardenLayoutEditor } from "@/components/garden/GardenLayoutEditor";
+import { EditSeedForm } from "@/components/garden/EditSeedForm";
 import { HarvestCelebrationModal } from "@/components/garden/HarvestCelebrationModal";
 import { PhotoStrip } from "@/components/PhotoStrip";
 import type { Database } from "@/integrations/supabase/types";
@@ -136,6 +137,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const [photoCropId, setPhotoCropId] = useState<string | null>(null);
   const [companionCropId, setCompanionCropId] = useState<string | null>(null);
   const [harvestCrop, setHarvestCrop] = useState<{ id: string; name: string; emoji?: string } | null>(null);
+  const [editingSeedId, setEditingSeedId] = useState<string | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
@@ -150,6 +152,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const addGarden = useAddGarden();
   const addCrop = useAddCrop();
   const addSeed = useAddSeed();
+  const updateSeed = useUpdateSeed();
   const updateCrop = useUpdateCrop();
   const updateStatus = useUpdateCropStatus();
   const deleteCrop = useDeleteCrop();
@@ -586,6 +589,21 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
 
             {seeds.map((seed) => {
               const linkedCrops = crops.filter((c: any) => c.seed_id === seed.id);
+
+              if (editingSeedId === seed.id) {
+                return (
+                  <EditSeedForm
+                    key={seed.id}
+                    seed={seed}
+                    onSave={(updates) => {
+                      updateSeed.mutate(updates as any, { onSuccess: () => setEditingSeedId(null) });
+                    }}
+                    onCancel={() => setEditingSeedId(null)}
+                    isLoading={updateSeed.isPending}
+                  />
+                );
+              }
+
               return (
                 <div key={seed.id} className="rounded-2xl bg-card border border-border p-4 space-y-2">
                   <div className="flex items-center gap-2">
@@ -599,6 +617,9 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                         <p className="text-xs text-muted-foreground">Bäst före: {seed.best_before}</p>
                       )}
                     </div>
+                    <button onClick={() => setEditingSeedId(seed.id)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                      <Pencil className="w-4 h-4" />
+                    </button>
                   </div>
                   {linkedCrops.length > 0 && (
                     <div className="pt-1">

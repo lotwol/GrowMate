@@ -420,9 +420,10 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
           </div>
           <div className="grid grid-cols-7">
             {calendarCells.map((cell, idx) => {
-              const isToday = cell.dateStr === todayStr && cell.inMonth;
+               const isToday = cell.dateStr === todayStr && cell.inMonth;
               const hasSow = cell.inMonth && sowDates.has(cell.dateStr);
               const hasHarvest = cell.inMonth && harvestDates.has(cell.dateStr);
+              const hasEvent = cell.inMonth && eventDates.has(cell.dateStr);
               const diary = cell.inMonth ? diaryMap.get(cell.dateStr) : undefined;
               const hasDiary = !!diary;
               const moodColor = diary?.mood ? MOOD_COLORS[diary.mood] : undefined;

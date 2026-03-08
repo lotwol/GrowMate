@@ -14,7 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      crops: {
+        Row: {
+          category: Database["public"]["Enums"]["crop_category"]
+          cost: number | null
+          created_at: string
+          garden_id: string | null
+          harvest_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          sow_date: string | null
+          status: Database["public"]["Enums"]["crop_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["crop_category"]
+          cost?: number | null
+          created_at?: string
+          garden_id?: string | null
+          harvest_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          sow_date?: string | null
+          status?: Database["public"]["Enums"]["crop_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["crop_category"]
+          cost?: number | null
+          created_at?: string
+          garden_id?: string | null
+          harvest_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          sow_date?: string | null
+          status?: Database["public"]["Enums"]["crop_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crops_garden_id_fkey"
+            columns: ["garden_id"]
+            isOneToOne: false
+            referencedRelation: "gardens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gardens: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          size_sqm: number | null
+          type: Database["public"]["Enums"]["garden_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          size_sqm?: number | null
+          type?: Database["public"]["Enums"]["garden_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          size_sqm?: number | null
+          type?: Database["public"]["Enums"]["garden_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seed_inventory: {
+        Row: {
+          best_before: string | null
+          category: Database["public"]["Enums"]["crop_category"]
+          cost: number | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          purchased_from: string | null
+          quantity: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_before?: string | null
+          category?: Database["public"]["Enums"]["crop_category"]
+          cost?: number | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          purchased_from?: string | null
+          quantity?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_before?: string | null
+          category?: Database["public"]["Enums"]["crop_category"]
+          cost?: number | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          purchased_from?: string | null
+          quantity?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +150,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      crop_category: "grönsak" | "ört" | "frukt" | "bär" | "blomma"
+      crop_status:
+        | "planerad"
+        | "sådd"
+        | "grodd"
+        | "utplanterad"
+        | "skördad"
+        | "misslyckad"
+      garden_type: "friland" | "balkong" | "växthus" | "pallkrage" | "kruka"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +285,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      crop_category: ["grönsak", "ört", "frukt", "bär", "blomma"],
+      crop_status: [
+        "planerad",
+        "sådd",
+        "grodd",
+        "utplanterad",
+        "skördad",
+        "misslyckad",
+      ],
+      garden_type: ["friland", "balkong", "växthus", "pallkrage", "kruka"],
+    },
   },
 } as const

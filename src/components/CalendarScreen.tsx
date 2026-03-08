@@ -62,6 +62,7 @@ interface CalendarScreenProps {
 
 export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
   const { user } = useAuth();
+  const { data: weatherData } = useWeather(zone);
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;

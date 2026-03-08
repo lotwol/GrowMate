@@ -151,6 +151,15 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
       )}
 
       <div>
+        <label className="text-xs text-muted-foreground">Sådd-/planteringsdatum</label>
+        <input
+          type="date"
+          value={sowDate}
+          onChange={(e) => setSowDate(e.target.value)}
+          className={cn(inputCn("sow_date"), "mt-1")}
+        />
+      </div>
+
         <label className="text-xs text-muted-foreground">Anteckningar & odlingstips</label>
         <textarea
           placeholder="Anteckningar (valfritt)"

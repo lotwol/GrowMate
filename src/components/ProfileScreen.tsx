@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
-import { Settings, ChevronRight, User, MapPin, Clock, Sparkles } from "lucide-react";
+import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut } from "lucide-react";
 
 const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   sinnesron: { emoji: "🌿", title: "Sinnesron" },
@@ -16,9 +16,10 @@ const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
 interface ProfileScreenProps {
   data: OnboardingData;
   onEdit: () => void;
+  onSignOut?: () => void;
 }
 
-export function ProfileScreen({ data, onEdit }: ProfileScreenProps) {
+export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
   const plannerLabel = data.plannerScore < 35 ? "Spontan" : data.plannerScore > 65 ? "Planerare" : "Balanserad";
   const timeLabel = `${data.timeScore}h / vecka`;
   const resultLabel = data.resultVsJoyScore < 35 ? "Glädjen i processen" : data.resultVsJoyScore > 65 ? "Resultatet" : "Balans";
@@ -77,6 +78,13 @@ export function ProfileScreen({ data, onEdit }: ProfileScreenProps) {
           <Settings className="w-4 h-4 mr-2" />
           Ändra mina inställningar
         </Button>
+
+        {onSignOut && (
+          <Button variant="ghost" size="lg" className="w-full text-muted-foreground" onClick={onSignOut}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Logga ut
+          </Button>
+        )}
       </div>
     </div>
   );

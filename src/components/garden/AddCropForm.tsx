@@ -9,6 +9,8 @@ import { EmojiPicker } from "./EmojiPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
 import { findCompanionData } from "@/data/companionPlanting";
+import { getCropFamily } from "@/data/cropRotation";
+import { useAllCrops } from "@/hooks/useGarden";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 

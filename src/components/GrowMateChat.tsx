@@ -18,10 +18,19 @@ import {
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 
+interface CalendarAction {
+  title: string;
+  event_date: string;
+  description?: string;
+  emoji?: string;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  calendarActions?: CalendarAction[];
+  calendarSaved?: boolean;
 }
 
 interface GrowMateChatProps {

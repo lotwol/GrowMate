@@ -5,7 +5,24 @@ const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 const SYSTEM_PROMPT = `Du är GrowMate – en varm, kunnig odlingskompis. Du hjälper svenska odlare med odlingstips, såddscheman, skadegörare, gödning och allt som rör trädgård och odling. Du anpassar dina råd efter användarens odlingszon (I–VIII) och profil. Svara alltid på svenska, med en varm och uppmuntrande ton. Håll svaren kortfattade men informativa. Om du ger specifika råd, nämn alltid att klimat och mikromiljö kan påverka resultaten.
 
-VIKTIGT: Du har tillgång till användarens odlingsdata – deras grödor, trädgårdar, dagbok och fröförråd. Använd denna information aktivt i dina svar! Referera till deras specifika grödor, påminn om saker de noterat i dagboken, och ge råd baserat på vad de faktiskt odlar. Ju mer data de har lagt in, desto mer personliga och relevanta blir dina svar. Om de frågar om något de redan odlar, visa att du vet om det.`;
+VIKTIGT: Du har tillgång till användarens odlingsdata – deras grödor, trädgårdar, dagbok och fröförråd. Använd denna information aktivt i dina svar! Referera till deras specifika grödor, påminn om saker de noterat i dagboken, och ge råd baserat på vad de faktiskt odlar. Ju mer data de har lagt in, desto mer personliga och relevanta blir dina svar. Om de frågar om något de redan odlar, visa att du vet om det.
+
+KALENDER-FUNKTIONALITET:
+Du kan lägga till händelser i användarens kalender! Om användaren ber dig om det (t.ex. "lägg till i kalendern", "påminn mig om att...", "schemalägg...", "kan du lägga in..."), eller om du ger ett råd med ett specifikt datum som vore bra att ha i kalendern, inkludera en eller flera kalenderåtgärder i ditt svar.
+
+För att lägga till kalenderhändelser, inkludera ett JSON-block i ditt svar med exakt detta format (lägg det SIST i meddelandet, efter din vanliga text):
+
+\`\`\`calendar_actions
+[{"title": "Händelsens titel", "event_date": "YYYY-MM-DD", "description": "Valfri beskrivning", "emoji": "🌱"}]
+\`\`\`
+
+Regler:
+- event_date MÅSTE vara ett giltigt datum i formatet YYYY-MM-DD
+- Välj en passande emoji (🌱 för sådd, 🥕 för skörd, 💧 för vattning, 🧪 för gödsling, 🌿 för skötsel, 📅 för generellt)
+- Du kan lägga till flera händelser i samma svar
+- Lägg ALLTID till kalenderåtgärder när användaren explicit ber om det
+- Föreslå proaktivt att lägga till händelser när du ger datumspecifika råd
+- Beskriv i din vanliga text vad du lagt till i kalendern`;
 
 const schoolDescriptions: Record<string, string> = {
   'naturens-vag': 'Naturens väg (kallsådd, minimal inblandning, enkelt och tåligt)',
@@ -25,7 +42,6 @@ function buildUserDataContext(userContext: any): string {
 
   const parts: string[] = [];
 
-  // Crops
   if (userContext.crops?.length > 0) {
     const cropSummary = userContext.crops.map((c: any) => {
       let s = `${c.emoji || "🌱"} ${c.name} (${c.category}, status: ${c.status})`;
@@ -37,7 +53,6 @@ function buildUserDataContext(userContext: any): string {
     parts.push(`ANVÄNDARENS GRÖDOR (${userContext.crops.length} st):\n${cropSummary}`);
   }
 
-  // Gardens
   if (userContext.gardens?.length > 0) {
     const gardenSummary = userContext.gardens.map((g: any) => {
       let s = `${g.name} (typ: ${Array.isArray(g.type) ? g.type.join(", ") : g.type})`;
@@ -48,7 +63,6 @@ function buildUserDataContext(userContext: any): string {
     parts.push(`ANVÄNDARENS TRÄDGÅRDAR:\n${gardenSummary}`);
   }
 
-  // Seeds
   if (userContext.seeds?.length > 0) {
     const seedSummary = userContext.seeds.map((s: any) => {
       let str = `${s.name} (${s.category})`;
@@ -58,7 +72,6 @@ function buildUserDataContext(userContext: any): string {
     parts.push(`FRÖFÖRRÅD: ${seedSummary}`);
   }
 
-  // Recent diary
   if (userContext.recent_diary?.length > 0) {
     const diarySummary = userContext.recent_diary.slice(0, 5).map((d: any) => {
       let s = `${d.entry_date}: ${d.title || "(ingen rubrik)"}`;
@@ -67,6 +80,13 @@ function buildUserDataContext(userContext: any): string {
       return s;
     }).join("\n");
     parts.push(`SENASTE DAGBOKSANTECKNINGAR:\n${diarySummary}`);
+  }
+
+  if (userContext.calendar_events?.length > 0) {
+    const eventSummary = userContext.calendar_events.map((e: any) => {
+      return `${e.emoji || "📅"} ${e.event_date}: ${e.title}${e.description ? ` – ${e.description}` : ""}`;
+    }).join("\n");
+    parts.push(`KOMMANDE KALENDERHÄNDELSER:\n${eventSummary}`);
   }
 
   if (parts.length === 0) return "";
@@ -89,7 +109,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build context from user profile
     let contextNote = "";
     if (zone) contextNote += `Användarens odlingszon: ${zone}. `;
     if (profiles && profiles.length > 0)
@@ -98,7 +117,9 @@ Deno.serve(async (req) => {
       contextNote += `Användarens odlingsskola är: ${schoolDescriptions[school]}. Anpassa dina råd och din ton efter denna filosofi. För Naturens väg: håll det enkelt, undvik onödig komplexitet. För Precisionsodlaren: ge specifika detaljer, sorter, mått. För Hackaren: fokusera på tidsbesparande metoder. För Traditionalisten: referera till beprövade metoder. `;
     }
 
-    // Add user's personal garden data
+    const today = new Date().toISOString().split("T")[0];
+    contextNote += `Dagens datum: ${today}. `;
+
     const userDataContext = buildUserDataContext(userContext);
 
     const systemMessages: { role: string; content: string }[] = [
@@ -149,9 +170,26 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
+    let content = data.choices?.[0]?.message?.content || "";
 
-    return new Response(JSON.stringify({ success: true, content }), {
+    // Parse calendar actions from the response
+    let calendarActions: any[] = [];
+    const calendarMatch = content.match(/```calendar_actions\s*\n([\s\S]*?)\n```/);
+    if (calendarMatch) {
+      try {
+        calendarActions = JSON.parse(calendarMatch[1]);
+        // Remove the calendar_actions block from the visible content
+        content = content.replace(/```calendar_actions\s*\n[\s\S]*?\n```/, "").trim();
+      } catch (e) {
+        console.error("Failed to parse calendar actions:", e);
+      }
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      content,
+      calendar_actions: calendarActions.length > 0 ? calendarActions : undefined,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

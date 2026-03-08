@@ -102,7 +102,7 @@ const Index = () => {
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} zone={onboardingData.zone} school={onboardingData.school} name={onboardingData.name} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}
-      {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} school={onboardingData.school} />}
+      {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} school={onboardingData.school} onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "calendar" && (
         <CalendarScreen zone={onboardingData.zone} school={onboardingData.school} onBack={() => setActiveTab("home")} />
       )}

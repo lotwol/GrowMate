@@ -1,9 +1,11 @@
 import { useMemo, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Share2 } from "lucide-react";
+import { ChevronLeft, Share2, ChevronDown, ChevronUp } from "lucide-react";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { findRecipes, type Recipe } from "@/data/harvestRecipes";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { GrowingSchool } from "@/types/onboarding";
 
 const STATUS_COLORS: Record<string, string> = {

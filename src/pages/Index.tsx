@@ -13,6 +13,8 @@ import { CalendarScreen } from "@/components/CalendarScreen";
 import { CommunityScreen } from "@/components/CommunityScreen";
 import { AdminScreen } from "@/components/AdminScreen";
 import { SeasonSummaryScreen } from "@/components/SeasonSummaryScreen";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { OnboardingData } from "@/types/onboarding";
 import { useNotificationPermissionAsked, requestNotificationPermission, getNotificationPermission } from "@/hooks/useNotifications";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -99,6 +101,7 @@ const Index = () => {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
+      <OfflineIndicator />
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} zone={onboardingData.zone} school={onboardingData.school} name={onboardingData.name} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}
@@ -122,6 +125,7 @@ const Index = () => {
         <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
       <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+      <InstallPrompt />
 
       {/* Notification permission modal */}
       <Dialog open={showNotifModal} onOpenChange={setShowNotifModal}>

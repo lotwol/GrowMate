@@ -17,6 +17,6 @@ export const DEFAULT_ONBOARDING: OnboardingData = {
   zone: null,
   location: "",
   plannerScore: 50,
-  timeScore: 50,
+  timeScore: 5,
   resultVsJoyScore: 50,
 };

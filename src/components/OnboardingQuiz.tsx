@@ -94,34 +94,24 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
   // Philosophical reflection based on slider combo
   const getReflection = () => {
     const { timeScore, resultVsJoyScore } = data;
-    if (timeScore < 35 && resultVsJoyScore > 65) {
-      return {
-        emoji: "🌱",
-        text: "Du vill mycket men har lite tid – det är helt mänskligt. Vi hjälper dig välja rätt så att varje minut räknas. Men kom ihåg: ibland är det bästa resultatet att man tog sig ut överhuvudtaget.",
-      };
+    const lowTime = timeScore <= 5;
+    const highTime = timeScore >= 15;
+    const wantsResult = resultVsJoyScore > 65;
+    const wantsJoy = resultVsJoyScore < 35;
+
+    if (lowTime && wantsResult) {
+      return { emoji: "🌱", text: "Du vill mycket men har lite tid – det är helt mänskligt. Vi hjälper dig välja rätt så att varje minut räknas. Men kom ihåg: ibland är det bästa resultatet att man tog sig ut överhuvudtaget." };
     }
-    if (timeScore < 35 && resultVsJoyScore < 35) {
-      return {
-        emoji: "☀️",
-        text: "Perfekt – du söker glädjen utan press. Några krukor på balkongen och solen i ansiktet kan vara precis allt du behöver.",
-      };
+    if (lowTime && wantsJoy) {
+      return { emoji: "☀️", text: "Perfekt – du söker glädjen utan press. Några krukor på balkongen och solen i ansiktet kan vara precis allt du behöver." };
     }
-    if (timeScore > 65 && resultVsJoyScore > 65) {
-      return {
-        emoji: "🥕",
-        text: "Du är redo att satsa – och du kommer skörda! Med tid och ambition kan vi bygga något riktigt fint tillsammans.",
-      };
+    if (highTime && wantsResult) {
+      return { emoji: "🥕", text: "Du är redo att satsa – och du kommer skörda! Med tid och ambition kan vi bygga något riktigt fint tillsammans." };
     }
-    if (timeScore > 65 && resultVsJoyScore < 35) {
-      return {
-        emoji: "🧘",
-        text: "Du har tid och söker lugnet. Trädgården väntar på dig som en meditation utan instruktioner.",
-      };
+    if (highTime && wantsJoy) {
+      return { emoji: "🧘", text: "Du har tid och söker lugnet. Trädgården väntar på dig som en meditation utan instruktioner." };
     }
-    return {
-      emoji: "🌿",
-      text: "En fin balans – vi skräddarsyr upplevelsen efter just dig. Du kan alltid justera senare.",
-    };
+    return { emoji: "🌿", text: "En fin balans – vi skräddarsyr upplevelsen efter just dig. Du kan alltid justera senare." };
   };
 
   const BackButton = ({ onClick }: { onClick: () => void }) => (
@@ -277,23 +267,30 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
             </div>
 
             {/* Time per week */}
-            <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
-              <p className="text-sm font-medium text-foreground">Hur mycket tid har du för odling i veckan?</p>
-              <div className="space-y-2">
-                <input
-                  type="range" min={0} max={100} value={data.timeScore}
-                  onChange={(e) => update({ timeScore: Number(e.target.value) })}
-                  className="w-full accent-primary"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span className={cn(data.timeScore < 40 && "text-foreground font-medium")}>⏱️ Några minuter</span>
-                  <span className={cn(data.timeScore > 60 && "text-foreground font-medium")}>🌻 Timmar & timmar</span>
+            {(() => {
+              const timeSteps = [1, 2, 3, 5, 8, 10, 15, 20, 30, 40];
+              const stepIndex = timeSteps.findIndex((t) => t >= data.timeScore) === -1 ? timeSteps.length - 1 : timeSteps.findIndex((t) => t >= data.timeScore);
+              const displayHours = data.timeScore;
+              const timeLabel = displayHours <= 2 ? "Perfekt för balkonglådor och krukor – varje stund räknas!" : displayHours <= 5 ? "Några timmar ger mycket – vi hjälper dig prioritera." : displayHours <= 10 ? "Bra utrymme – du kan ha en fin liten köksträdgård." : displayHours <= 20 ? "Du kan odla på riktigt – köksträdgård med variation!" : "Wow, nästan heltid! Du kan bygga något fantastiskt.";
+              return (
+                <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Hur mycket tid har du för odling i veckan?</p>
+                  <div className="space-y-2">
+                    <input
+                      type="range" min={1} max={40} step={1} value={data.timeScore}
+                      onChange={(e) => update({ timeScore: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                      <span>⏱️ 1h</span>
+                      <span className="text-base font-medium text-foreground">{displayHours}h / vecka</span>
+                      <span>🌻 40h</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">{timeLabel}</p>
                 </div>
-              </div>
-              <p className="text-xs text-muted-foreground italic">
-                {data.timeScore < 30 ? "Helt okej! Varje minut i jorden räknas." : data.timeScore > 70 ? "Fantastiskt – du har utrymme att verkligen experimentera." : "Lagom är bäst – vi anpassar efter det."}
-              </p>
-            </div>
+              );
+            })()}
 
             {/* Result vs Joy */}
             <div className="rounded-2xl bg-card border border-border p-4 space-y-3">

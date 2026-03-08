@@ -180,7 +180,7 @@ export function useGardenLayout(gardenId: string | null, seasonYear: number) {
         .eq("season_year", seasonYear)
         .maybeSingle();
       if (error) throw error;
-      return data as GardenLayout | null;
+      return data ? { ...data, zones: (data.zones || []) as unknown as LayoutZone[] } as GardenLayout : null;
     },
   });
 }

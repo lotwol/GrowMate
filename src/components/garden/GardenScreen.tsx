@@ -138,6 +138,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
+  const { data: lastYearCrops = [] } = useAllCrops(seasonYear - 1);
   const { data: seeds = [], isLoading: seedsLoading } = useSeedInventory();
 
   const allCropNames = useMemo(() => crops.map((c: any) => c.name as string), [crops]);

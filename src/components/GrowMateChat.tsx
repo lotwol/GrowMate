@@ -36,12 +36,14 @@ const WELCOME_MESSAGE: Message = {
 };
 
 export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
+  const { user } = useAuth();
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLearningBanner, setShowLearningBanner] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: conversations = [] } = useChatConversations();
@@ -50,6 +52,27 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const saveChatMessage = useSaveChatMessage();
   const updateTitle = useUpdateConversationTitle();
   const deleteConversation = useDeleteConversation();
+
+  // Fetch user's garden data for AI context
+  const [userContext, setUserContext] = useState<any>(null);
+  useEffect(() => {
+    if (!user) return;
+    const fetchContext = async () => {
+      const [cropsRes, gardensRes, diaryRes, seedsRes] = await Promise.all([
+        supabase.from("crops").select("name, status, category, sow_date, harvest_date, emoji, notes, garden_id").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
+        supabase.from("gardens").select("name, type, size_sqm, notes").eq("user_id", user.id),
+        supabase.from("diary_entries").select("title, content, activities, entry_date, mood_garden").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(10),
+        supabase.from("seed_inventory").select("name, category, quantity, notes").eq("user_id", user.id),
+      ]);
+      setUserContext({
+        crops: cropsRes.data || [],
+        gardens: gardensRes.data || [],
+        recent_diary: diaryRes.data || [],
+        seeds: seedsRes.data || [],
+      });
+    };
+    fetchContext();
+  }, [user]);
 
   // When loading a saved conversation, populate messages
   useEffect(() => {

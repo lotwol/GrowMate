@@ -15,6 +15,9 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        growmate: "bg-primary text-primary-foreground hover:bg-primary/85 rounded-full shadow-lg shadow-primary/20 font-medium tracking-wide",
+        "growmate-outline": "border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground rounded-full font-medium tracking-wide",
+        "growmate-soft": "bg-accent text-accent-foreground hover:bg-accent/80 rounded-full font-medium",
       },
       size: {
         default: "h-10 px-4 py-2",

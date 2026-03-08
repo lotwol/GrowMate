@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
@@ -13,6 +12,13 @@ const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   annat: { emoji: "✨", title: "Annat" },
 };
 
+const SCHOOL_DISPLAY: Record<string, { emoji: string; title: string; desc: string }> = {
+  "naturens-vag": { emoji: "🌾", title: "Naturens väg", desc: "Enkelt, tåligt och avslappnat" },
+  precisionsodlaren: { emoji: "🔬", title: "Precisionsodlaren", desc: "Detaljerat, noggrant, maximalt" },
+  hackaren: { emoji: "⚡", title: "Hackaren", desc: "Smarta genvägar, mer skörd" },
+  traditionalisten: { emoji: "📖", title: "Traditionalisten", desc: "Beprövat och tidlöst" },
+};
+
 interface ProfileScreenProps {
   data: OnboardingData;
   onEdit: () => void;
@@ -23,6 +29,7 @@ export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
   const plannerLabel = data.plannerScore < 35 ? "Spontan" : data.plannerScore > 65 ? "Planerare" : "Balanserad";
   const timeLabel = `${data.timeScore}h / vecka`;
   const resultLabel = data.resultVsJoyScore < 35 ? "Glädjen i processen" : data.resultVsJoyScore > 65 ? "Resultatet" : "Balans";
+  const schoolInfo = data.school ? SCHOOL_DISPLAY[data.school] : null;
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-8">
@@ -60,6 +67,23 @@ export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
             <p className="text-xs text-muted-foreground italic">"{data.customReason}"</p>
           )}
         </div>
+
+        {/* School */}
+        {schoolInfo && (
+          <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
+            <p className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" /> Min odlingsskola
+            </p>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{schoolInfo.emoji}</span>
+              <div className="flex-1">
+                <p className="font-medium text-foreground">{schoolInfo.title}</p>
+                <p className="text-xs text-muted-foreground">{schoolInfo.desc}</p>
+              </div>
+              <button onClick={onEdit} className="text-xs text-primary hover:underline">Ändra</button>
+            </div>
+          </div>
+        )}
 
         {/* Personality */}
         <div className="rounded-2xl bg-card border border-border p-4 space-y-4">

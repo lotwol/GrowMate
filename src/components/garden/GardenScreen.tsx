@@ -300,6 +300,7 @@ export function GardenScreen({ zone, school }: GardenScreenProps) {
               <AddCropForm
                 gardens={gardens}
                 zone={zone}
+                school={school}
                 onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear }, { onSuccess: () => setShowAddCrop(false) }); }}
                 onCancel={() => setShowAddCrop(false)}
                 isLoading={addCrop.isPending}

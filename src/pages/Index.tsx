@@ -86,7 +86,7 @@ const Index = () => {
       {activeTab === "home" && (
         <Dashboard profile={onboardingData.profiles[0]} zone={onboardingData.zone} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}
-      {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} />}
+      {activeTab === "garden" && <GardenScreen zone={onboardingData.zone} school={onboardingData.school} />}
       {activeTab === "calendar" && (
         <CalendarScreen zone={onboardingData.zone} onBack={() => setActiveTab("home")} />
       )}

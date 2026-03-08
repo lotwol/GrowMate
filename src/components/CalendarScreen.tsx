@@ -73,6 +73,18 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
   const { data: diaryEntries, isLoading: diaryLoading } = useDiaryEntriesForCalendar(viewYear);
   const { data: calendarEvents, isLoading: eventsLoading } = useCalendarEvents(viewYear);
   const { data: tips, isLoading: tipsLoading } = useSwedishCropTips(zone);
+  const { data: seeds } = useQuery({
+    queryKey: ["seed_inventory", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("seed_inventory")
+        .select("id, name, category, quantity")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
 
   const isLoading = cropsLoading || diaryLoading || tipsLoading || eventsLoading;
 

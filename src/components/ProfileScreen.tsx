@@ -27,6 +27,7 @@ const SCHOOL_DISPLAY: Record<string, { emoji: string; title: string; desc: strin
 
 interface ProfileScreenProps {
   data: OnboardingData;
+  shareGrowingData?: boolean;
   onEdit: () => void;
   onSignOut?: () => void;
   onOpenAdmin?: () => void;

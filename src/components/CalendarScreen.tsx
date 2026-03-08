@@ -465,6 +465,12 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
                           style={{ backgroundColor: "#3b82f6" }}
                         />
                       )}
+                      {hasEvent && (
+                        <span
+                          className="block w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: "#a855f7" }}
+                        />
+                      )}
                     </div>
                   )}
                   {moodColor && (

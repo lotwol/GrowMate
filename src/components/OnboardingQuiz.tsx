@@ -94,34 +94,24 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
   // Philosophical reflection based on slider combo
   const getReflection = () => {
     const { timeScore, resultVsJoyScore } = data;
-    if (timeScore < 35 && resultVsJoyScore > 65) {
-      return {
-        emoji: "🌱",
-        text: "Du vill mycket men har lite tid – det är helt mänskligt. Vi hjälper dig välja rätt så att varje minut räknas. Men kom ihåg: ibland är det bästa resultatet att man tog sig ut överhuvudtaget.",
-      };
+    const lowTime = timeScore <= 5;
+    const highTime = timeScore >= 15;
+    const wantsResult = resultVsJoyScore > 65;
+    const wantsJoy = resultVsJoyScore < 35;
+
+    if (lowTime && wantsResult) {
+      return { emoji: "🌱", text: "Du vill mycket men har lite tid – det är helt mänskligt. Vi hjälper dig välja rätt så att varje minut räknas. Men kom ihåg: ibland är det bästa resultatet att man tog sig ut överhuvudtaget." };
     }
-    if (timeScore < 35 && resultVsJoyScore < 35) {
-      return {
-        emoji: "☀️",
-        text: "Perfekt – du söker glädjen utan press. Några krukor på balkongen och solen i ansiktet kan vara precis allt du behöver.",
-      };
+    if (lowTime && wantsJoy) {
+      return { emoji: "☀️", text: "Perfekt – du söker glädjen utan press. Några krukor på balkongen och solen i ansiktet kan vara precis allt du behöver." };
     }
-    if (timeScore > 65 && resultVsJoyScore > 65) {
-      return {
-        emoji: "🥕",
-        text: "Du är redo att satsa – och du kommer skörda! Med tid och ambition kan vi bygga något riktigt fint tillsammans.",
-      };
+    if (highTime && wantsResult) {
+      return { emoji: "🥕", text: "Du är redo att satsa – och du kommer skörda! Med tid och ambition kan vi bygga något riktigt fint tillsammans." };
     }
-    if (timeScore > 65 && resultVsJoyScore < 35) {
-      return {
-        emoji: "🧘",
-        text: "Du har tid och söker lugnet. Trädgården väntar på dig som en meditation utan instruktioner.",
-      };
+    if (highTime && wantsJoy) {
+      return { emoji: "🧘", text: "Du har tid och söker lugnet. Trädgården väntar på dig som en meditation utan instruktioner." };
     }
-    return {
-      emoji: "🌿",
-      text: "En fin balans – vi skräddarsyr upplevelsen efter just dig. Du kan alltid justera senare.",
-    };
+    return { emoji: "🌿", text: "En fin balans – vi skräddarsyr upplevelsen efter just dig. Du kan alltid justera senare." };
   };
 
   const BackButton = ({ onClick }: { onClick: () => void }) => (

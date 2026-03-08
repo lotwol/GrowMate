@@ -9,9 +9,10 @@ import { BottomNav } from "@/components/BottomNav";
 import { DiaryScreen } from "@/components/DiaryScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
+import { CalendarScreen } from "@/components/CalendarScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();

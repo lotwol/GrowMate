@@ -8,18 +8,18 @@ import { PlaceholderScreen } from "@/components/PlaceholderScreen";
 type Tab = "home" | "garden" | "chat" | "diary" | "profile";
 
 const Index = () => {
-  const [profile, setProfile] = useState<string | null>(null);
+  const [profiles, setProfiles] = useState<string[] | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("home");
 
-  if (!profile) {
-    return <OnboardingQuiz onComplete={(p) => setProfile(p)} />;
+  if (!profiles) {
+    return <OnboardingQuiz onComplete={(p) => setProfiles(p)} />;
   }
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       {activeTab === "home" && (
         <Dashboard
-          profile={profile}
+          profile={profiles[0]}
           onNavigateChat={() => setActiveTab("chat")}
         />
       )}

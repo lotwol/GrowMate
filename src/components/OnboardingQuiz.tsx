@@ -46,12 +46,12 @@ const PROFILES = [
 ] as const;
 
 interface OnboardingQuizProps {
-  onComplete: (profile: string) => void;
+  onComplete: (profiles: string[]) => void;
 }
 
 export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
   const [step, setStep] = useState(0);
-  const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
+  const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [zone, setZone] = useState<string | null>(null);
 
@@ -101,19 +101,23 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
             <h2 className="text-2xl font-display text-foreground">
               Hej {name}! Varför odlar du?
             </h2>
-            <p className="text-muted-foreground">
-              Ditt svar formar hela upplevelsen i appen
-            </p>
+             <p className="text-muted-foreground">
+               Välj en eller flera – ditt svar formar hela upplevelsen
+             </p>
           </div>
 
           <div className="space-y-3">
             {PROFILES.map((profile) => (
               <button
                 key={profile.id}
-                onClick={() => setSelectedProfile(profile.id)}
+                onClick={() => setSelectedProfiles((prev) =>
+                  prev.includes(profile.id)
+                    ? prev.filter((p) => p !== profile.id)
+                    : [...prev, profile.id]
+                )}
                 className={cn(
                   "w-full text-left rounded-2xl p-4 border-2 transition-all duration-200",
-                  selectedProfile === profile.id
+                  selectedProfiles.includes(profile.id)
                     ? "border-primary bg-accent shadow-md"
                     : "border-transparent bg-card hover:border-primary/30"
                 )}
@@ -147,8 +151,8 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
             variant="growmate"
             size="lg"
             className="w-full"
-            onClick={() => selectedProfile && setStep(2)}
-            disabled={!selectedProfile}
+            onClick={() => selectedProfiles.length > 0 && setStep(2)}
+            disabled={selectedProfiles.length === 0}
           >
             Nästa
           </Button>
@@ -195,7 +199,7 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
           variant="growmate"
           size="lg"
           className="w-full"
-          onClick={() => zone && selectedProfile && onComplete(selectedProfile)}
+          onClick={() => zone && selectedProfiles.length > 0 && onComplete(selectedProfiles)}
           disabled={!zone}
         >
           Starta min odling 🌱

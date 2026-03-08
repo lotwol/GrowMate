@@ -152,6 +152,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const addGarden = useAddGarden();
   const addCrop = useAddCrop();
   const addSeed = useAddSeed();
+  const updateSeed = useUpdateSeed();
   const updateCrop = useUpdateCrop();
   const updateStatus = useUpdateCropStatus();
   const deleteCrop = useDeleteCrop();

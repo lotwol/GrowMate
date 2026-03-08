@@ -161,7 +161,7 @@ export function SeedPacketScanner({ onScanComplete, onSkip }: SeedPacketScannerP
           )}
         </Button>
         <Button variant="outline" onClick={onSkip} className="text-muted-foreground">
-          Manuellt
+          Hoppa över
         </Button>
       </div>
     </div>

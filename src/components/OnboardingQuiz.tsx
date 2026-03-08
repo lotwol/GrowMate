@@ -372,8 +372,7 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
 
   // Step 3: Growing school
   if (step === 3) {
-    // Auto-select suggested school if none selected yet
-    const effectiveSchool = data.school || suggestedSchool;
+    const effectiveSchools = data.schools.length > 0 ? data.schools : (suggestedSchool ? [suggestedSchool] : []);
 
     return (
       <div className="min-h-screen flex flex-col px-6 py-8">
@@ -382,17 +381,23 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
           <StepIndicator current={2} />
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-display text-foreground">Hur vill du ha dina tips? 🌱</h2>
-            <p className="text-muted-foreground text-sm">Det finns inget rätt sätt att odla. Välj den filosofi som känns rätt för dig – du kan alltid byta senare.</p>
+            <p className="text-muted-foreground text-sm">Välj en eller flera filosofier som känns rätt – du kan alltid ändra senare.</p>
           </div>
 
           <div className="space-y-3">
             {SCHOOLS.map((school) => {
-              const isSelected = (data.school || suggestedSchool) === school.id;
-              const isSuggested = suggestedSchool === school.id && !data.school;
+              const isSelected = effectiveSchools.includes(school.id);
+              const isSuggested = suggestedSchool === school.id && data.schools.length === 0;
               return (
                 <button
                   key={school.id}
-                  onClick={() => update({ school: school.id })}
+                  onClick={() => {
+                    const current = data.schools.length > 0 ? data.schools : (suggestedSchool ? [suggestedSchool] : []);
+                    const updated = current.includes(school.id)
+                      ? current.filter((s) => s !== school.id)
+                      : [...current, school.id];
+                    update({ schools: updated, school: updated[0] || null });
+                  }}
                   className={cn(
                     "w-full text-left rounded-2xl p-4 border-2 transition-all duration-200",
                     isSelected ? "border-primary bg-accent shadow-md" : "border-transparent bg-card hover:border-primary/30"
@@ -406,6 +411,9 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
                         {isSuggested && (
                           <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">Föreslagen för dig</span>
                         )}
+                        {isSelected && (
+                          <span className="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">✓</span>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground font-medium">{school.tagline}</p>
                       <p className="text-xs text-muted-foreground mt-1">{school.description}</p>
@@ -417,16 +425,18 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
           </div>
 
           <p className="text-xs text-muted-foreground italic text-center">
-            Inspirerat av den rika svenska odlingstraditionen. GrowMates rekommendationer formas av din skola – och förfinas av data från svenska odlare.
+            Inspirerat av den rika svenska odlingstraditionen. GrowMates rekommendationer formas av dina valda skolor – och förfinas av data från svenska odlare.
           </p>
 
           <Button
             variant="growmate" size="lg" className="w-full"
             onClick={() => {
-              if (!data.school && suggestedSchool) update({ school: suggestedSchool });
+              if (data.schools.length === 0 && suggestedSchool) {
+                update({ schools: [suggestedSchool], school: suggestedSchool });
+              }
               setShowSchoolReveal(true);
             }}
-            disabled={!effectiveSchool}
+            disabled={effectiveSchools.length === 0}
           >
             Nästa
           </Button>
@@ -437,7 +447,9 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
 
   // Step 3.5: School reveal
   if (showSchoolReveal) {
-    const chosenSchool = SCHOOLS.find((s) => s.id === (data.school || suggestedSchool));
+    const chosenSchools = (data.schools.length > 0 ? data.schools : (suggestedSchool ? [suggestedSchool] : []))
+      .map((id) => SCHOOLS.find((s) => s.id === id))
+      .filter(Boolean);
     const SCHOOL_PHILOSOPHY: Record<string, string> = {
       "naturens-vag": "Du odlar med naturen, inte mot den. Lugnt, hållbart och i harmoni.",
       precisionsodlaren: "Varje detalj räknas. Du optimerar, mäter och förbättrar varje säsong.",
@@ -448,10 +460,16 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12" onClick={() => { setShowSchoolReveal(false); setStep(4); }}>
         <div className="text-center space-y-4" style={{ animation: "school-reveal 400ms ease-out forwards" }}>
-          <span className="text-6xl block">{chosenSchool?.emoji}</span>
-          <h2 className="text-3xl font-display text-foreground">{chosenSchool?.title}</h2>
+          <div className="flex justify-center gap-2 text-5xl">
+            {chosenSchools.map((s) => <span key={s!.id}>{s!.emoji}</span>)}
+          </div>
+          <h2 className="text-3xl font-display text-foreground">
+            {chosenSchools.length === 1 ? chosenSchools[0]!.title : "Din odlingsmix"}
+          </h2>
           <p className="text-muted-foreground text-base max-w-xs mx-auto leading-relaxed">
-            {SCHOOL_PHILOSOPHY[chosenSchool?.id || ""] || ""}
+            {chosenSchools.length === 1
+              ? SCHOOL_PHILOSOPHY[chosenSchools[0]!.id] || ""
+              : `Du blandar ${chosenSchools.map((s) => s!.title).join(" & ")} – en unik kombination!`}
           </p>
         </div>
         <style>{`
@@ -556,11 +574,8 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
         )}
 
         <Button variant="growmate" size="lg" className="w-full" onClick={() => {
-          if (!data.school && suggestedSchool) {
-            onComplete({ ...data, school: suggestedSchool });
-          } else {
-            onComplete(data);
-          }
+          const finalSchools = data.schools.length > 0 ? data.schools : (suggestedSchool ? [suggestedSchool] : []);
+          onComplete({ ...data, schools: finalSchools, school: finalSchools[0] || null });
         }} disabled={!data.zone}>
           Starta min odling 🌱
         </Button>

@@ -19,7 +19,7 @@ export interface ScannedSeedData {
 }
 
 interface SeedPacketScannerProps {
-  onScanComplete: (data: ScannedSeedData) => void;
+  onScanComplete: (data: ScannedSeedData, images: string[]) => void;
   onSkip: () => void;
 }
 

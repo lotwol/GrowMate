@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import heroImage from "@/assets/hero-garden.jpg";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

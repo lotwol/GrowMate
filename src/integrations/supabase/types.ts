@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      crop_placements: {
+        Row: {
+          cell_col: number | null
+          cell_row: number | null
+          created_at: string
+          crop_id: string
+          id: string
+          layout_id: string
+          user_id: string
+          zone_id: string | null
+        }
+        Insert: {
+          cell_col?: number | null
+          cell_row?: number | null
+          created_at?: string
+          crop_id: string
+          id?: string
+          layout_id: string
+          user_id: string
+          zone_id?: string | null
+        }
+        Update: {
+          cell_col?: number | null
+          cell_row?: number | null
+          created_at?: string
+          crop_id?: string
+          id?: string
+          layout_id?: string
+          user_id?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crop_placements_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crop_placements_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "garden_layouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crops: {
         Row: {
           category: Database["public"]["Enums"]["crop_category"]
@@ -24,6 +72,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          season_year: number | null
           sow_date: string | null
           status: Database["public"]["Enums"]["crop_status"]
           updated_at: string
@@ -38,6 +87,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          season_year?: number | null
           sow_date?: string | null
           status?: Database["public"]["Enums"]["crop_status"]
           updated_at?: string
@@ -52,6 +102,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          season_year?: number | null
           sow_date?: string | null
           status?: Database["public"]["Enums"]["crop_status"]
           updated_at?: string
@@ -60,6 +111,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "crops_garden_id_fkey"
+            columns: ["garden_id"]
+            isOneToOne: false
+            referencedRelation: "gardens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      garden_layouts: {
+        Row: {
+          cols: number | null
+          created_at: string
+          garden_id: string
+          id: string
+          layout_type: string
+          photo_url: string | null
+          rows: number | null
+          season_year: number
+          updated_at: string
+          user_id: string
+          zones: Json | null
+        }
+        Insert: {
+          cols?: number | null
+          created_at?: string
+          garden_id: string
+          id?: string
+          layout_type?: string
+          photo_url?: string | null
+          rows?: number | null
+          season_year?: number
+          updated_at?: string
+          user_id: string
+          zones?: Json | null
+        }
+        Update: {
+          cols?: number | null
+          created_at?: string
+          garden_id?: string
+          id?: string
+          layout_type?: string
+          photo_url?: string | null
+          rows?: number | null
+          season_year?: number
+          updated_at?: string
+          user_id?: string
+          zones?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garden_layouts_garden_id_fkey"
             columns: ["garden_id"]
             isOneToOne: false
             referencedRelation: "gardens"

@@ -447,7 +447,9 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
 
   // Step 3.5: School reveal
   if (showSchoolReveal) {
-    const chosenSchool = SCHOOLS.find((s) => s.id === (data.school || suggestedSchool));
+    const chosenSchools = (data.schools.length > 0 ? data.schools : (suggestedSchool ? [suggestedSchool] : []))
+      .map((id) => SCHOOLS.find((s) => s.id === id))
+      .filter(Boolean);
     const SCHOOL_PHILOSOPHY: Record<string, string> = {
       "naturens-vag": "Du odlar med naturen, inte mot den. Lugnt, hållbart och i harmoni.",
       precisionsodlaren: "Varje detalj räknas. Du optimerar, mäter och förbättrar varje säsong.",
@@ -458,10 +460,16 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12" onClick={() => { setShowSchoolReveal(false); setStep(4); }}>
         <div className="text-center space-y-4" style={{ animation: "school-reveal 400ms ease-out forwards" }}>
-          <span className="text-6xl block">{chosenSchool?.emoji}</span>
-          <h2 className="text-3xl font-display text-foreground">{chosenSchool?.title}</h2>
+          <div className="flex justify-center gap-2 text-5xl">
+            {chosenSchools.map((s) => <span key={s!.id}>{s!.emoji}</span>)}
+          </div>
+          <h2 className="text-3xl font-display text-foreground">
+            {chosenSchools.length === 1 ? chosenSchools[0]!.title : "Din odlingsmix"}
+          </h2>
           <p className="text-muted-foreground text-base max-w-xs mx-auto leading-relaxed">
-            {SCHOOL_PHILOSOPHY[chosenSchool?.id || ""] || ""}
+            {chosenSchools.length === 1
+              ? SCHOOL_PHILOSOPHY[chosenSchools[0]!.id] || ""
+              : `Du blandar ${chosenSchools.map((s) => s!.title).join(" & ")} – en unik kombination!`}
           </p>
         </div>
         <style>{`

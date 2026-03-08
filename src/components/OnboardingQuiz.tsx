@@ -68,6 +68,7 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
   const [data, setData] = useState<OnboardingData>(initialData || DEFAULT_ONBOARDING);
   const [showCustom, setShowCustom] = useState(!!initialData?.customReason);
   const [manualZone, setManualZone] = useState(false);
+  const [showSchoolReveal, setShowSchoolReveal] = useState(false);
 
   const update = (partial: Partial<OnboardingData>) => setData((d) => ({ ...d, ...partial }));
 

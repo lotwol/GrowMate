@@ -3,7 +3,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-const SYSTEM_PROMPT = `Du är GrowMate – en varm, kunnig odlingskompis. Du hjälper svenska odlare med odlingstips, såddscheman, skadegörare, gödning och allt som rör trädgård och odling. Du anpassar dina råd efter användarens odlingszon (I–VIII) och profil. Svara alltid på svenska, med en varm och uppmuntrande ton. Håll svaren kortfattade men informativa. Om du ger specifika råd, nämn alltid att klimat och mikromiljö kan påverka resultaten.`;
+const SYSTEM_PROMPT = `Du är GrowMate – en varm, kunnig odlingskompis. Du hjälper svenska odlare med odlingstips, såddscheman, skadegörare, gödning och allt som rör trädgård och odling. Du anpassar dina råd efter användarens odlingszon (I–VIII) och profil. Svara alltid på svenska, med en varm och uppmuntrande ton. Håll svaren kortfattade men informativa. Om du ger specifika råd, nämn alltid att klimat och mikromiljö kan påverka resultaten.
+
+VIKTIGT: Du har tillgång till användarens odlingsdata – deras grödor, trädgårdar, dagbok och fröförråd. Använd denna information aktivt i dina svar! Referera till deras specifika grödor, påminn om saker de noterat i dagboken, och ge råd baserat på vad de faktiskt odlar. Ju mer data de har lagt in, desto mer personliga och relevanta blir dina svar. Om de frågar om något de redan odlar, visa att du vet om det.`;
 
 const schoolDescriptions: Record<string, string> = {
   'naturens-vag': 'Naturens väg (kallsådd, minimal inblandning, enkelt och tåligt)',
@@ -18,13 +20,67 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function buildUserDataContext(userContext: any): string {
+  if (!userContext) return "";
+
+  const parts: string[] = [];
+
+  // Crops
+  if (userContext.crops?.length > 0) {
+    const cropSummary = userContext.crops.map((c: any) => {
+      let s = `${c.emoji || "🌱"} ${c.name} (${c.category}, status: ${c.status})`;
+      if (c.sow_date) s += `, sådd: ${c.sow_date}`;
+      if (c.harvest_date) s += `, skörd: ${c.harvest_date}`;
+      if (c.notes) s += `, anteckning: "${c.notes}"`;
+      return s;
+    }).join("\n");
+    parts.push(`ANVÄNDARENS GRÖDOR (${userContext.crops.length} st):\n${cropSummary}`);
+  }
+
+  // Gardens
+  if (userContext.gardens?.length > 0) {
+    const gardenSummary = userContext.gardens.map((g: any) => {
+      let s = `${g.name} (typ: ${Array.isArray(g.type) ? g.type.join(", ") : g.type})`;
+      if (g.size_sqm) s += `, ${g.size_sqm} kvm`;
+      if (g.notes) s += `, "${g.notes}"`;
+      return s;
+    }).join("\n");
+    parts.push(`ANVÄNDARENS TRÄDGÅRDAR:\n${gardenSummary}`);
+  }
+
+  // Seeds
+  if (userContext.seeds?.length > 0) {
+    const seedSummary = userContext.seeds.map((s: any) => {
+      let str = `${s.name} (${s.category})`;
+      if (s.quantity) str += `, antal: ${s.quantity}`;
+      return str;
+    }).join(", ");
+    parts.push(`FRÖFÖRRÅD: ${seedSummary}`);
+  }
+
+  // Recent diary
+  if (userContext.recent_diary?.length > 0) {
+    const diarySummary = userContext.recent_diary.slice(0, 5).map((d: any) => {
+      let s = `${d.entry_date}: ${d.title || "(ingen rubrik)"}`;
+      if (d.content) s += ` – ${d.content.slice(0, 100)}`;
+      if (d.activities?.length) s += ` [aktiviteter: ${d.activities.join(", ")}]`;
+      return s;
+    }).join("\n");
+    parts.push(`SENASTE DAGBOKSANTECKNINGAR:\n${diarySummary}`);
+  }
+
+  if (parts.length === 0) return "";
+
+  return `\n\nHär är användarens personliga odlingsdata som du ska använda för att ge personanpassade svar:\n\n${parts.join("\n\n")}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, zone, profiles, school } = await req.json();
+    const { messages, zone, profiles, school, userContext } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "No messages provided" }), {
@@ -42,14 +98,17 @@ Deno.serve(async (req) => {
       contextNote += `Användarens odlingsskola är: ${schoolDescriptions[school]}. Anpassa dina råd och din ton efter denna filosofi. För Naturens väg: håll det enkelt, undvik onödig komplexitet. För Precisionsodlaren: ge specifika detaljer, sorter, mått. För Hackaren: fokusera på tidsbesparande metoder. För Traditionalisten: referera till beprövade metoder. `;
     }
 
+    // Add user's personal garden data
+    const userDataContext = buildUserDataContext(userContext);
+
     const systemMessages: { role: string; content: string }[] = [
       { role: "system", content: SYSTEM_PROMPT },
     ];
 
-    if (contextNote) {
+    if (contextNote || userDataContext) {
       systemMessages.push({
         role: "system",
-        content: `Kontext om användaren: ${contextNote}Anpassa dina svar efter detta.`,
+        content: `Kontext om användaren: ${contextNote}${userDataContext}\n\nAnpassa dina svar efter detta. Referera gärna till deras specifika grödor och data när det är relevant.`,
       });
     }
 

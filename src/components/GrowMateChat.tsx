@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Mic, MicOff, Leaf, Plus, ChevronLeft, Trash2, MessageSquare } from "lucide-react";
+import { Send, Mic, MicOff, Leaf, Plus, ChevronLeft, Trash2, MessageSquare, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "@/hooks/useAuth";
 import {
   useChatConversations,
   useChatMessages,
@@ -35,12 +36,14 @@ const WELCOME_MESSAGE: Message = {
 };
 
 export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
+  const { user } = useAuth();
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLearningBanner, setShowLearningBanner] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: conversations = [] } = useChatConversations();
@@ -49,6 +52,27 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const saveChatMessage = useSaveChatMessage();
   const updateTitle = useUpdateConversationTitle();
   const deleteConversation = useDeleteConversation();
+
+  // Fetch user's garden data for AI context
+  const [userContext, setUserContext] = useState<any>(null);
+  useEffect(() => {
+    if (!user) return;
+    const fetchContext = async () => {
+      const [cropsRes, gardensRes, diaryRes, seedsRes] = await Promise.all([
+        supabase.from("crops").select("name, status, category, sow_date, harvest_date, emoji, notes, garden_id").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
+        supabase.from("gardens").select("name, type, size_sqm, notes").eq("user_id", user.id),
+        supabase.from("diary_entries").select("title, content, activities, entry_date, mood_garden").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(10),
+        supabase.from("seed_inventory").select("name, category, quantity, notes").eq("user_id", user.id),
+      ]);
+      setUserContext({
+        crops: cropsRes.data || [],
+        gardens: gardensRes.data || [],
+        recent_diary: diaryRes.data || [],
+        seeds: seedsRes.data || [],
+      });
+    };
+    fetchContext();
+  }, [user]);
 
   // When loading a saved conversation, populate messages
   useEffect(() => {
@@ -114,7 +138,7 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       );
 
       const { data, error } = await supabase.functions.invoke("growmate-chat", {
-        body: { messages: history, zone: zone || undefined, profiles, school: school || undefined },
+        body: { messages: history, zone: zone || undefined, profiles, school: school || undefined, userContext },
       });
 
       if (error) throw error;
@@ -243,6 +267,18 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {showLearningBanner && messages.length <= 1 && (
+          <div className="rounded-2xl bg-accent/60 border border-border px-4 py-3 flex items-start gap-2.5 animate-fade-in">
+            <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-foreground font-medium">GrowMate lär sig av dig 🌱</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Ju mer du loggar – grödor, dagbok, fröer – desto bättre råd får du. Din data stannar hos dig och gör GrowMate smartare för varje säsong.
+              </p>
+            </div>
+            <button onClick={() => setShowLearningBanner(false)} className="text-muted-foreground text-xs shrink-0 hover:text-foreground">✕</button>
+          </div>
+        )}
         {messages.map((msg) => (
           <div
             key={msg.id}

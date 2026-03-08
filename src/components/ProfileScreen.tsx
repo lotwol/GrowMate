@@ -207,3 +207,93 @@ function SliderDisplay({ label, value, emoji, score }: { label: string; value: s
     </div>
   );
 }
+
+function NotificationSettings({
+  settings,
+  onUpdate,
+}: {
+  settings: import("@/hooks/useNotifications").NotificationSettings;
+  onUpdate: (partial: Partial<import("@/hooks/useNotifications").NotificationSettings>) => void;
+}) {
+  const perm = getNotificationPermission();
+  const [permGranted, setPermGranted] = useState(perm === "granted");
+
+  const handleEnableToggle = async (key: keyof typeof settings, checked: boolean) => {
+    if (checked && !permGranted) {
+      const granted = await requestNotificationPermission();
+      setPermGranted(granted);
+      if (!granted) return;
+    }
+    onUpdate({ [key]: checked });
+  };
+
+  const timeString = `${String(settings.wellbeingHour).padStart(2, "0")}:${String(settings.wellbeingMinute).padStart(2, "0")}`;
+
+  return (
+    <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+      <p className="text-sm font-medium text-foreground flex items-center gap-2">
+        <Bell className="w-4 h-4 text-primary" /> Notifikationer
+      </p>
+
+      {perm === "unsupported" && (
+        <p className="text-xs text-muted-foreground">Din webbläsare stöder inte notifikationer.</p>
+      )}
+
+      {perm !== "unsupported" && (
+        <>
+          {/* Wellbeing */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <p className="text-sm text-foreground">Daglig välmåendepåminnelse</p>
+                <p className="text-xs text-muted-foreground">Påminnelse att logga ditt välmående</p>
+              </div>
+              <Switch
+                checked={settings.wellbeingEnabled}
+                onCheckedChange={(c) => handleEnableToggle("wellbeingEnabled", c)}
+              />
+            </div>
+            {settings.wellbeingEnabled && (
+              <div className="flex items-center gap-2 pl-1">
+                <span className="text-xs text-muted-foreground">Tid:</span>
+                <Input
+                  type="time"
+                  value={timeString}
+                  onChange={(e) => {
+                    const [h, m] = e.target.value.split(":").map(Number);
+                    if (!isNaN(h) && !isNaN(m)) onUpdate({ wellbeingHour: h, wellbeingMinute: m });
+                  }}
+                  className="w-28 h-8 text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Sowing */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-foreground">Såningspåminnelser</p>
+              <p className="text-xs text-muted-foreground">7 dagar innan rekommenderat sådatum</p>
+            </div>
+            <Switch
+              checked={settings.sowingEnabled}
+              onCheckedChange={(c) => handleEnableToggle("sowingEnabled", c)}
+            />
+          </div>
+
+          {/* Harvest */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-foreground">Skördepåminnelser</p>
+              <p className="text-xs text-muted-foreground">14 dagar innan beräknad skörd</p>
+            </div>
+            <Switch
+              checked={settings.harvestEnabled}
+              onCheckedChange={(c) => handleEnableToggle("harvestEnabled", c)}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

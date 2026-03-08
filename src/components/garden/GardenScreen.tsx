@@ -451,23 +451,16 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                       </div>
                     </div>
 
-                    {/* Linked seed pill */}
                     {(crop as any).seed_id && (() => {
                       const linkedSeed = seeds.find(s => s.id === (crop as any).seed_id);
                       if (!linkedSeed) return null;
                       return (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground hover:bg-accent transition-colors">
-                              🫘 {linkedSeed.name}{linkedSeed.notes ? "" : ""}
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-56 p-3 text-sm space-y-1">
-                            <p className="font-medium text-foreground">Odlas från: {linkedSeed.name}</p>
-                            {linkedSeed.best_before && <p className="text-xs text-muted-foreground">Bäst före: {linkedSeed.best_before}</p>}
-                            {linkedSeed.quantity && <p className="text-xs text-muted-foreground">Antal kvar i lager: {linkedSeed.quantity}</p>}
-                          </PopoverContent>
-                        </Popover>
+                        <button
+                          onClick={() => { setHighlightedSeedId(linkedSeed.id); setTab("frön"); }}
+                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground hover:bg-accent transition-colors"
+                        >
+                          🫘 Frö: {linkedSeed.name}{linkedSeed.quantity ? ` · ${linkedSeed.quantity} kvar` : ""}
+                        </button>
                       );
                     })()}
 

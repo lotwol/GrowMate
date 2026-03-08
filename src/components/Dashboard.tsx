@@ -10,9 +10,12 @@ import {
   BookOpen,
   Thermometer,
   Users,
+  ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 
 const MONTH_TIPS: Record<number, { title: string; description: string }> = {
   1: { title: "Januaritips", description: "Planera årets odling och beställ fröer" },

@@ -95,11 +95,39 @@ export function useUpdateCrop() {
 }
 
 export function useUpdateCropStatus() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase.from("crops").update({ status: status as any }).eq("id", id);
       if (error) throw error;
+
+      // Auto-contribute to community if sharing is enabled and crop is harvested or failed
+      if (user && (status === "skördad" || status === "misslyckad")) {
+        try {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("share_growing_data, zone")
+            .eq("user_id", user.id)
+            .single();
+          if ((prof as any)?.share_growing_data) {
+            const { data: crop } = await supabase.from("crops").select("*, gardens(type)").eq("id", id).single();
+            if (crop) {
+              await supabase.from("community_growing_data").insert({
+                crop_name: crop.name,
+                zone: (prof as any).zone || "okänd",
+                season_year: crop.season_year || new Date().getFullYear(),
+                sow_date: crop.sow_date,
+                harvest_date: crop.harvest_date || (status === "skördad" ? new Date().toISOString().split("T")[0] : null),
+                success_rating: status === "skördad" ? 4 : 1,
+                garden_type: (crop as any).gardens?.type?.[0] || null,
+              });
+            }
+          }
+        } catch {
+          // Silent fail – sharing is best-effort
+        }
+      }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crops"] }),
   });

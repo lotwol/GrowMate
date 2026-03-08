@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Plus, ChevronLeft, ChevronRight, Trash2, Pencil, Save } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Trash2, Pencil, Save, CalendarDays } from "lucide-react";
 import { format, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import { sv } from "date-fns/locale";
 import { useDiaryEntries, useAddDiaryEntry, useUpdateDiaryEntry, useDeleteDiaryEntry } from "@/hooks/useDiary";
@@ -29,6 +29,7 @@ type DiaryTab = "dagbok" | "wellbeing";
 
 interface DiaryScreenProps {
   initialTab?: "dagbok" | "wellbeing";
+  onNavigate?: (tab: string) => void;
 }
 
 // ── Diary Entry Form ──
@@ -464,7 +465,7 @@ function getMoodEmoji(mood: number | null) {
   return MOOD_OPTIONS.find((m) => m.value === mood)?.emoji || "";
 }
 
-export function DiaryScreen({ initialTab = "dagbok" }: DiaryScreenProps) {
+export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenProps) {
   const [tab, setTab] = useState<DiaryTab>(initialTab);
   const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
   const [showAdd, setShowAdd] = useState(false);
@@ -547,10 +548,18 @@ export function DiaryScreen({ initialTab = "dagbok" }: DiaryScreenProps) {
         </div>
 
         {tab === "dagbok" && !showAdd && !editingId && (
-          <Button variant="growmate" className="w-full" onClick={() => setShowAdd(true)}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Ny anteckning
-          </Button>
+          <div className="space-y-2">
+            <Button variant="growmate" className="w-full" onClick={() => setShowAdd(true)}>
+              <Plus className="w-4 h-4 mr-1.5" />
+              Ny anteckning
+            </Button>
+            {onNavigate && (
+              <Button variant="outline" className="w-full" onClick={() => onNavigate("calendar")}>
+                <CalendarDays className="w-4 h-4 mr-1.5" />
+                Visa kalender
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

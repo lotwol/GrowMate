@@ -350,6 +350,21 @@ export function SeasonSummaryScreen({ year: initialYear, name, zone, school, onB
               </div>
             </FadeSection>
 
+            {/* SEASON BADGES */}
+            {seasonBadges.length > 0 && (
+              <FadeSection>
+                <h2 className="font-display text-foreground mb-3">Årets märken</h2>
+                <div className="grid grid-cols-3 gap-3">
+                  {seasonBadges.map((badge) => (
+                    <div key={badge.id} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-card border border-border">
+                      <span className="text-2xl">{badge.emoji}</span>
+                      <span className="text-[10px] text-foreground font-medium text-center leading-tight">{badge.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </FadeSection>
+            )}
+
             {/* SHARE */}
             <FadeSection>
               <Button variant="growmate-outline" size="lg" className="w-full" onClick={handleShare}>

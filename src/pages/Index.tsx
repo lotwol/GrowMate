@@ -81,7 +81,7 @@ const Index = () => {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       {activeTab === "home" && (
-        <Dashboard profile={onboardingData.profiles[0]} onNavigateChat={() => setActiveTab("chat")} />
+        <Dashboard profile={onboardingData.profiles[0]} onNavigateChat={() => setActiveTab("chat")} onNavigate={(tab) => setActiveTab(tab as Tab)} />
       )}
       {activeTab === "garden" && <GardenScreen />}
       {activeTab === "chat" && (

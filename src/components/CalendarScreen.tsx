@@ -95,7 +95,17 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
   const diaryMap = useMemo(() => {
     const map = new Map<string, { mood: number | null; title: string | null }>();
     (diaryEntries || []).forEach((e) => {
-      map.set(e.entry_date, { mood: e.mood_garden, title: e.title });
+      // Use mood_garden if set, otherwise derive from wellbeing averages
+      let mood = e.mood_garden;
+      if (mood == null) {
+        const scores = [e.wellbeing_physical, e.wellbeing_mental, e.wellbeing_social].filter(
+          (s): s is number => s != null
+        );
+        if (scores.length > 0) {
+          mood = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        }
+      }
+      map.set(e.entry_date, { mood, title: e.title });
     });
     return map;
   }, [diaryEntries]);
@@ -229,12 +239,18 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
       today.getTime() - 30 * 86400000
     );
     return diaryEntries
-      .filter((e) => e.mood_garden != null && new Date(e.entry_date) >= thirtyDaysAgo)
-      .sort((a, b) => a.entry_date.localeCompare(b.entry_date))
-      .map((e) => ({
-        date: e.entry_date,
-        mood: e.mood_garden!,
-      }));
+      .map((e) => {
+        let mood = e.mood_garden;
+        if (mood == null) {
+          const scores = [e.wellbeing_physical, e.wellbeing_mental, e.wellbeing_social].filter(
+            (s): s is number => s != null
+          );
+          if (scores.length > 0) mood = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        }
+        return { date: e.entry_date, mood };
+      })
+      .filter((e): e is { date: string; mood: number } => e.mood != null && new Date(e.date) >= thirtyDaysAgo)
+      .sort((a, b) => a.date.localeCompare(b.date));
   }, [diaryEntries, today]);
 
   const sparklinePath = useMemo(() => {

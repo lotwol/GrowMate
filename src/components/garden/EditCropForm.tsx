@@ -5,6 +5,7 @@ import { X, Save } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { Garden, Crop } from "@/hooks/useGarden";
 import { EmojiPicker } from "./EmojiPicker";
+import { PhotoStrip } from "@/components/PhotoStrip";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 

@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   wellbeingMinute: 0,
   sowingEnabled: true,
   harvestEnabled: true,
+  frostEnabled: true,
   permissionAsked: false,
 };
 

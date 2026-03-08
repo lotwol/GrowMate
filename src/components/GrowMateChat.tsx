@@ -16,6 +16,9 @@ import {
   useUpdateConversationTitle,
   useDeleteConversation,
 } from "@/hooks/useChat";
+import { ActionCard, parseActions, type ChatAction } from "@/components/chat/ActionCard";
+import { useAddCrop } from "@/hooks/useGarden";
+import { useAddDiaryEntry } from "@/hooks/useDiary";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 
@@ -32,6 +35,7 @@ interface Message {
   content: string;
   calendarActions?: CalendarAction[];
   calendarSaved?: boolean;
+  chatActions?: ChatAction[];
 }
 
 interface GrowMateChatProps {
@@ -75,6 +79,8 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const saveChatMessage = useSaveChatMessage();
   const updateTitle = useUpdateConversationTitle();
   const deleteConversation = useDeleteConversation();
+  const addCrop = useAddCrop();
+  const addDiaryEntry = useAddDiaryEntry();
 
   // Fetch user's garden data for AI context
   const [userContext, setUserContext] = useState<any>(null);
@@ -119,7 +125,64 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
     }
   };
 
-  // When loading a saved conversation, populate messages
+  const handleActionConfirm = async (action: ChatAction) => {
+    switch (action.type) {
+      case "ADD_CROP": {
+        const { name, emoji, sowDate, harvestDate, notes } = action.data;
+        await addCrop.mutateAsync({
+          name: name || "Ny gröda",
+          emoji: emoji || "🌱",
+          sow_date: sowDate || null,
+          harvest_date: harvestDate || null,
+          notes: notes || null,
+          season_year: new Date().getFullYear(),
+        } as any);
+        toast({ title: `🌱 ${name} tillagd i Min Odling!` });
+        queryClient.invalidateQueries({ queryKey: ["crops"] });
+        break;
+      }
+      case "ADD_REMINDER": {
+        const { text, date } = action.data;
+        if ("Notification" in window && Notification.permission === "granted") {
+          const targetDate = new Date(date);
+          const now = new Date();
+          const delay = targetDate.getTime() - now.getTime();
+          if (delay > 0) {
+            setTimeout(() => {
+              new Notification("🔔 GrowMate-påminnelse", { body: text });
+            }, delay);
+          }
+        }
+        // Also save as calendar event for persistence
+        if (user) {
+          await supabase.from("calendar_events" as any).insert({
+            user_id: user.id,
+            title: text,
+            event_date: date,
+            emoji: "🔔",
+            event_type: "reminder",
+          } as any);
+          queryClient.invalidateQueries({ queryKey: ["calendar_events"] });
+        }
+        toast({ title: `🔔 Påminnelse satt för ${date}` });
+        break;
+      }
+      case "LOG_DIARY": {
+        const { title, content, mood } = action.data;
+        await addDiaryEntry.mutateAsync({
+          entry_date: format(new Date(), "yyyy-MM-dd"),
+          title: title || "Dagboksanteckning",
+          content: content || null,
+          mood_garden: mood || null,
+          season_year: new Date().getFullYear(),
+        } as any);
+        toast({ title: "📝 Loggat i dagboken!" });
+        queryClient.invalidateQueries({ queryKey: ["diary_entries"] });
+        break;
+      }
+    }
+  };
+
   useEffect(() => {
     if (savedMessages && activeConversationId) {
       const loaded: Message[] = savedMessages.map((m) => ({
@@ -189,15 +252,20 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      const botContent = data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!";
+      const rawContent = data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!";
       const calendarActions: CalendarAction[] = data?.calendar_actions || [];
       
+      // Parse structured actions from response
+      const { cleanText, actions: chatActions } = parseActions(rawContent);
+      const botContent = cleanText;
+
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: botContent,
         calendarActions: calendarActions.length > 0 ? calendarActions : undefined,
         calendarSaved: false,
+        chatActions: chatActions.length > 0 ? chatActions : undefined,
       };
       setMessages((prev) => [...prev, botMsg]);
 
@@ -373,6 +441,19 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
                     <span>·</span>
                     <span>{a.event_date}</span>
                   </div>
+                ))}
+              </div>
+            )}
+            {/* Structured action cards */}
+            {msg.chatActions && msg.chatActions.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {msg.chatActions.map((action, i) => (
+                  <ActionCard
+                    key={i}
+                    action={action}
+                    onConfirm={handleActionConfirm}
+                    onDismiss={() => {}}
+                  />
                 ))}
               </div>
             )}

@@ -506,7 +506,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
     );
   };
 
-  const handleUpdate = (id: string, data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[] }) => {
+  const handleUpdate = (id: string, data: { entry_date: string; title: string; content: string; mood_garden: number | null; activities: string[]; photo_urls: string[] }) => {
     updateEntry.mutate(
       {
         id,
@@ -515,6 +515,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
         content: data.content || null,
         mood_garden: data.mood_garden,
         activities: data.activities,
+        photo_urls: data.photo_urls,
       },
       { onSuccess: () => setEditingId(null) }
     );

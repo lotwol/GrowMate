@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, useSaveProfile } from "@/hooks/useProfile";
 import { AuthScreen } from "@/components/AuthScreen";
@@ -14,6 +14,9 @@ import { CommunityScreen } from "@/components/CommunityScreen";
 import { AdminScreen } from "@/components/AdminScreen";
 import { SeasonSummaryScreen } from "@/components/SeasonSummaryScreen";
 import { OnboardingData } from "@/types/onboarding";
+import { useNotificationPermissionAsked, requestNotificationPermission, getNotificationPermission } from "@/hooks/useNotifications";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile" | "calendar" | "community" | "admin" | "season-summary";
 
@@ -23,6 +26,16 @@ const Index = () => {
   const saveProfile = useSaveProfile();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [editingProfile, setEditingProfile] = useState(false);
+  const [permAsked, markPermAsked] = useNotificationPermissionAsked();
+  const [showNotifModal, setShowNotifModal] = useState(false);
+
+  // Show permission modal after first onboarding completion
+  useEffect(() => {
+    if (profile?.onboarding_completed && !permAsked && getNotificationPermission() === "default") {
+      const timer = setTimeout(() => setShowNotifModal(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [profile?.onboarding_completed, permAsked]);
 
   // Loading
   if (authLoading || (user && profileLoading)) {
@@ -109,6 +122,40 @@ const Index = () => {
         <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
       <BottomNav active={["diary-wellbeing", "calendar", "community", "season-summary"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
+
+      {/* Notification permission modal */}
+      <Dialog open={showNotifModal} onOpenChange={setShowNotifModal}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader className="text-center">
+            <div className="text-4xl mb-2 text-center">🔔</div>
+            <DialogTitle className="text-center">Få påminnelser om din odling?</DialogTitle>
+            <DialogDescription className="text-center">
+              Vi skickar bara relevanta tips – aldrig spam.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              variant="growmate"
+              onClick={async () => {
+                await requestNotificationPermission();
+                markPermAsked();
+                setShowNotifModal(false);
+              }}
+            >
+              Ja tack
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                markPermAsked();
+                setShowNotifModal(false);
+              }}
+            >
+              Inte nu
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

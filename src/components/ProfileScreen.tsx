@@ -20,7 +20,7 @@ interface ProfileScreenProps {
 
 export function ProfileScreen({ data, onEdit }: ProfileScreenProps) {
   const plannerLabel = data.plannerScore < 35 ? "Spontan" : data.plannerScore > 65 ? "Planerare" : "Balanserad";
-  const timeLabel = data.timeScore < 35 ? "Lite tid" : data.timeScore > 65 ? "Mycket tid" : "Lagom";
+  const timeLabel = `${data.timeScore}h / vecka`;
   const resultLabel = data.resultVsJoyScore < 35 ? "Glädjen i processen" : data.resultVsJoyScore > 65 ? "Resultatet" : "Balans";
 
   return (

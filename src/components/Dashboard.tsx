@@ -14,6 +14,7 @@ import {
   ChevronRight,
   BarChart3,
   Lightbulb,
+  ShoppingCart,
 } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";

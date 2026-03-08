@@ -252,15 +252,20 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      const botContent = data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!";
+      const rawContent = data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!";
       const calendarActions: CalendarAction[] = data?.calendar_actions || [];
       
+      // Parse structured actions from response
+      const { cleanText, actions: chatActions } = parseActions(rawContent);
+      const botContent = cleanText;
+
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: botContent,
         calendarActions: calendarActions.length > 0 ? calendarActions : undefined,
         calendarSaved: false,
+        chatActions: chatActions.length > 0 ? chatActions : undefined,
       };
       setMessages((prev) => [...prev, botMsg]);
 

@@ -60,6 +60,7 @@ export function EditSeedForm({ seed, onSave, onCancel, isLoading }: EditSeedForm
       id: seed.id,
       name: name.trim(),
       category,
+      emoji,
       quantity: quantity.trim() || undefined,
       best_before: bestBefore || undefined,
       purchased_from: purchasedFrom.trim() || undefined,

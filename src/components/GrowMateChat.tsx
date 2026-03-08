@@ -139,7 +139,7 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
 
   const startNewConversation = () => {
     setActiveConversationId(null);
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([getWelcomeMessage(school)]);
     setShowHistory(false);
   };
 

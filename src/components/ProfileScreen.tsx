@@ -16,9 +16,10 @@ const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
 interface ProfileScreenProps {
   data: OnboardingData;
   onEdit: () => void;
+  onSignOut?: () => void;
 }
 
-export function ProfileScreen({ data, onEdit }: ProfileScreenProps) {
+export function ProfileScreen({ data, onEdit, onSignOut }: ProfileScreenProps) {
   const plannerLabel = data.plannerScore < 35 ? "Spontan" : data.plannerScore > 65 ? "Planerare" : "Balanserad";
   const timeLabel = `${data.timeScore}h / vecka`;
   const resultLabel = data.resultVsJoyScore < 35 ? "Glädjen i processen" : data.resultVsJoyScore > 65 ? "Resultatet" : "Balans";

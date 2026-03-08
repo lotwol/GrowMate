@@ -11,6 +11,8 @@ import { Constants } from "@/integrations/supabase/types";
 
 type Tab = "ytor" | "grödor" | "frön";
 
+import { GARDEN_TYPES } from "@/components/garden/AddGardenForm";
+
 const GARDEN_TYPE_EMOJI: Record<string, string> = {
   friland: "🌾", balkong: "🏙️", växthus: "🏡", pallkrage: "📦", kruka: "🪴",
 };

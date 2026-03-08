@@ -6,7 +6,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type GardenType = Database["public"]["Enums"]["garden_type"];
 
-const GARDEN_TYPES: { value: GardenType; emoji: string; label: string }[] = [
+export const GARDEN_TYPES: { value: GardenType; emoji: string; label: string }[] = [
   { value: "friland", emoji: "🌾", label: "Friland" },
   { value: "balkong", emoji: "🏙️", label: "Balkong" },
   { value: "växthus", emoji: "🏡", label: "Växthus" },
@@ -15,14 +15,14 @@ const GARDEN_TYPES: { value: GardenType; emoji: string; label: string }[] = [
 ];
 
 interface AddGardenFormProps {
-  onSubmit: (garden: { name: string; type: GardenType; size_sqm?: number; notes?: string }) => void;
+  onSubmit: (garden: { name: string; type: GardenType[]; size_sqm?: number; notes?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormProps) {
   const [name, setName] = useState("");
-  const [type, setType] = useState<GardenType>("friland");
+  const [types, setTypes] = useState<GardenType[]>(["friland"]);
   const [size, setSize] = useState("");
   const [notes, setNotes] = useState("");
 

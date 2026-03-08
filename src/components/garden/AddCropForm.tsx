@@ -21,7 +21,7 @@ const VALID_CATEGORIES: CropCategory[] = ["grönsak", "ört", "frukt", "bär", "
 
 interface AddCropFormProps {
   gardens: Garden[];
-  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string }) => void;
+  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }

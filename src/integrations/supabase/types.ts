@@ -498,6 +498,7 @@ export type Database = {
           profiles: string[] | null
           result_vs_joy_score: number | null
           school: string | null
+          share_growing_data: boolean
           time_score: number | null
           updated_at: string
           user_id: string
@@ -515,6 +516,7 @@ export type Database = {
           profiles?: string[] | null
           result_vs_joy_score?: number | null
           school?: string | null
+          share_growing_data?: boolean
           time_score?: number | null
           updated_at?: string
           user_id: string
@@ -532,6 +534,7 @@ export type Database = {
           profiles?: string[] | null
           result_vs_joy_score?: number | null
           school?: string | null
+          share_growing_data?: boolean
           time_score?: number | null
           updated_at?: string
           user_id?: string

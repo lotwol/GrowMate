@@ -281,6 +281,22 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
           </div>
         </div>
 
+        {/* Daily School Tip */}
+        {dailyTip && schoolMeta && (
+          <div className="rounded-2xl bg-card border border-border p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                <Lightbulb className="w-5 h-5 text-accent-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground mb-0.5">Dagens tips från {schoolMeta.label}</p>
+                <p className="text-sm font-medium text-foreground">{dailyTip.crop_name}</p>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{dailyTip.tip}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Wellbeing Check */}
         <div className="rounded-2xl bg-gradient-to-br from-accent to-secondary p-4 border border-border">
           <div className="flex items-start gap-3">

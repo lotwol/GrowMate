@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, Package, ArrowRight } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { Garden, SeedItem } from "@/hooks/useGarden";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";

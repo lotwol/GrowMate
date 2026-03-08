@@ -293,20 +293,31 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
             })()}
 
             {/* Result vs Joy */}
-            <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
-              <p className="text-sm font-medium text-foreground">Vad är viktigast för dig?</p>
-              <div className="space-y-2">
-                <input
-                  type="range" min={0} max={100} value={data.resultVsJoyScore}
-                  onChange={(e) => update({ resultVsJoyScore: Number(e.target.value) })}
-                  className="w-full accent-primary"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span className={cn(data.resultVsJoyScore < 40 && "text-foreground font-medium")}>🧘 Glädjen i att påta</span>
-                  <span className={cn(data.resultVsJoyScore > 60 && "text-foreground font-medium")}>🥕 Resultatet på tallriken</span>
+            {(() => {
+              const v = data.resultVsJoyScore;
+              const joyLabel = v <= 15 ? "Processen är allt – att få vara ute och påta är belöningen i sig."
+                : v <= 35 ? "Glädjen kommer först, men lite skörd gör det ännu roligare."
+                : v <= 65 ? "Du söker en kombo – vi hjälper dig hitta balansen i vardagen."
+                : v <= 85 ? "Resultatet driver dig, men du njuter av vägen dit."
+                : "Skörden är målet – du vill se resultat på tallriken!";
+              return (
+                <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Vad är viktigast för dig?</p>
+                  <div className="space-y-2">
+                    <input
+                      type="range" min={0} max={100} value={data.resultVsJoyScore}
+                      onChange={(e) => update({ resultVsJoyScore: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span className={cn(v < 40 && "text-foreground font-medium")}>🧘 Glädjen i att påta</span>
+                      <span className={cn(v > 60 && "text-foreground font-medium")}>🥕 Resultatet på tallriken</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">{joyLabel}</p>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Philosophical reflection */}
             <div className="rounded-2xl bg-accent/60 border border-primary/20 p-4 animate-fade-in">

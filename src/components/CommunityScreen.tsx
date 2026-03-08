@@ -184,7 +184,9 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
       </div>
 
       <div className="px-4 space-y-4">
-        {tab === "zon" ? (
+        {tab === "frobyte" ? (
+          <FrobyteTab zone={zone} />
+        ) : tab === "zon" ? (
           <>
             {loading ? (
               <div className="text-center py-8">

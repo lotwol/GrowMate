@@ -160,6 +160,7 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
         />
       </div>
 
+      <div>
         <label className="text-xs text-muted-foreground">Anteckningar & odlingstips</label>
         <textarea
           placeholder="Anteckningar (valfritt)"

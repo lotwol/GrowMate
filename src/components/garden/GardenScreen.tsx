@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera, Flower2, X, AlertTriangle } from "lucide-react";
 import { findCompanionData, findBadNeighbors } from "@/data/companionPlanting";
 import { getCropFamily } from "@/data/cropRotation";
-import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
+import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout, useCropsForSeed, useDecrementSeedQuantity } from "@/hooks/useGarden";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
 import { AddSeedForm } from "@/components/garden/AddSeedForm";
@@ -153,6 +154,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const updateStatus = useUpdateCropStatus();
   const deleteCrop = useDeleteCrop();
   const deleteGarden = useDeleteGarden();
+  const decrementSeedQty = useDecrementSeedQuantity();
 
   const tabs: { id: Tab; label: string; icon: typeof Leaf; count: number }[] = [
     { id: "ytor", label: "Ytor", icon: Sprout, count: gardens.length },
@@ -350,11 +352,13 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
             {showAddCrop ? (
               <AddCropForm
                 gardens={gardens}
+                seeds={seeds}
                 zone={zone}
                 school={school}
-                onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear }, { onSuccess: () => setShowAddCrop(false) }); }}
+                onSubmit={(c) => { addCrop.mutate({ ...c, season_year: seasonYear } as any, { onSuccess: () => setShowAddCrop(false) }); }}
                 onCancel={() => setShowAddCrop(false)}
                 isLoading={addCrop.isPending}
+                onSeedLinked={(seedId) => decrementSeedQty.mutate(seedId)}
               />
             ) : (
               <Button variant="growmate-outline" className="w-full" onClick={() => setShowAddCrop(true)}>
@@ -378,6 +382,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                     key={crop.id}
                     crop={crop}
                     gardens={gardens}
+                    seeds={seeds}
                     onSave={(updates) => {
                       updateCrop.mutate(updates as any, { onSuccess: () => setEditingCropId(null) });
                     }}
@@ -429,6 +434,26 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                         </button>
                       </div>
                     </div>
+
+                    {/* Linked seed pill */}
+                    {(crop as any).seed_id && (() => {
+                      const linkedSeed = seeds.find(s => s.id === (crop as any).seed_id);
+                      if (!linkedSeed) return null;
+                      return (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground hover:bg-accent transition-colors">
+                              🫘 {linkedSeed.name}{linkedSeed.notes ? "" : ""}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-56 p-3 text-sm space-y-1">
+                            <p className="font-medium text-foreground">Odlas från: {linkedSeed.name}</p>
+                            {linkedSeed.best_before && <p className="text-xs text-muted-foreground">Bäst före: {linkedSeed.best_before}</p>}
+                            {linkedSeed.quantity && <p className="text-xs text-muted-foreground">Antal kvar i lager: {linkedSeed.quantity}</p>}
+                          </PopoverContent>
+                        </Popover>
+                      );
+                    })()}
 
                     {/* Status selector */}
                     <div className="flex flex-wrap gap-1.5">
@@ -559,22 +584,41 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
               </div>
             )}
 
-            {seeds.map((seed) => (
-              <div key={seed.id} className="rounded-2xl bg-card border border-border p-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{CATEGORY_EMOJI[seed.category] || "🌱"}</span>
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">{seed.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {seed.quantity || "–"}{seed.purchased_from ? ` · från ${seed.purchased_from}` : ""}{seed.cost ? ` · ${seed.cost} kr` : ""}
-                    </p>
-                    {seed.best_before && (
-                      <p className="text-xs text-muted-foreground">Bäst före: {seed.best_before}</p>
-                    )}
+            {seeds.map((seed) => {
+              const linkedCrops = crops.filter((c: any) => c.seed_id === seed.id);
+              return (
+                <div key={seed.id} className="rounded-2xl bg-card border border-border p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{CATEGORY_EMOJI[seed.category] || "🌱"}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{seed.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {seed.quantity || "–"}{seed.purchased_from ? ` · från ${seed.purchased_from}` : ""}{seed.cost ? ` · ${seed.cost} kr` : ""}
+                      </p>
+                      {seed.best_before && (
+                        <p className="text-xs text-muted-foreground">Bäst före: {seed.best_before}</p>
+                      )}
+                    </div>
                   </div>
+                  {linkedCrops.length > 0 && (
+                    <div className="pt-1">
+                      <p className="text-xs text-muted-foreground mb-1">Används i {linkedCrops.length} gröda{linkedCrops.length !== 1 ? "r" : ""}:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {linkedCrops.map((c: any) => (
+                          <button
+                            key={c.id}
+                            onClick={() => { setTab("grödor"); }}
+                            className="text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors"
+                          >
+                            🌱 {c.name}{c.gardens?.name ? ` (${c.gardens.name})` : ""}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

@@ -86,11 +86,54 @@ export function useAddCrop() {
 export function useUpdateCrop() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string } & Partial<TablesInsert<"crops">>) => {
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<TablesInsert<"crops">> & { seed_id?: string | null }) => {
       const { error } = await supabase.from("crops").update(updates as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crops"] }),
+  });
+}
+
+export function useCropsForSeed(seedId: string | null) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["crops", "for-seed", seedId],
+    enabled: !!user && !!seedId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("crops")
+        .select("id, name, emoji, category, garden_id, gardens(name)")
+        .eq("user_id", user!.id)
+        .eq("seed_id", seedId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useDecrementSeedQuantity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (seedId: string) => {
+      const { data: seed, error: fetchErr } = await supabase
+        .from("seed_inventory")
+        .select("quantity")
+        .eq("id", seedId)
+        .single();
+      if (fetchErr) throw fetchErr;
+      const current = seed?.quantity;
+      if (!current) return;
+      // Try to parse numeric quantity
+      const num = parseInt(current, 10);
+      if (isNaN(num) || num <= 0) return;
+      const { error } = await supabase
+        .from("seed_inventory")
+        .update({ quantity: String(Math.max(0, num - 1)) })
+        .eq("id", seedId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["seed_inventory"] }),
   });
 }
 

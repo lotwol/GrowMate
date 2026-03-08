@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { X, Sparkles } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
-import type { Garden } from "@/hooks/useGarden";
+import type { Garden, SeedItem } from "@/hooks/useGarden";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
 import { EmojiPicker } from "./EmojiPicker";
+import { SeedSelector } from "./SeedSelector";
+import { SeedDepletionPrompt } from "./SeedDepletionPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
 import { findCompanionData } from "@/data/companionPlanting";
@@ -40,11 +42,13 @@ const DIFFICULTY_BADGE: Record<string, string> = {
 
 interface AddCropFormProps {
   gardens: Garden[];
+  seeds: SeedItem[];
   zone?: string | null;
   school?: string | null;
-  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string }) => void;
+  onSubmit: (crop: { name: string; category: CropCategory; garden_id?: string; sow_date?: string; notes?: string; emoji?: string; seed_id?: string }) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  onSeedLinked?: (seedId: string) => void;
 }
 
 // OpenFarm suggestion type
@@ -89,7 +93,7 @@ interface CommunityInsight {
   confidence_level: string | null;
 }
 
-export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoading }: AddCropFormProps) {
+export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, isLoading, onSeedLinked }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");
@@ -98,6 +102,9 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
   const [gardenId, setGardenId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [sowDate, setSowDate] = useState("");
+  const [seedId, setSeedId] = useState<string | null>(null);
+  const [showDepletionPrompt, setShowDepletionPrompt] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   // Previous year's crops for rotation check
   const lastYear = new Date().getFullYear() - 1;
@@ -199,7 +206,7 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
     }
   };
 
-  const handleSubmit = () => {
+  const doSubmit = () => {
     if (!name.trim()) return;
     onSubmit({
       name: name.trim(),
@@ -208,7 +215,34 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
       garden_id: gardenId || undefined,
       sow_date: sowDate || undefined,
       notes: notes.trim() || undefined,
+      seed_id: seedId || undefined,
     });
+  };
+
+  const handleSubmit = () => {
+    if (!name.trim()) return;
+    // Check if seed has numeric quantity for depletion prompt
+    if (seedId) {
+      const seed = seeds.find(s => s.id === seedId);
+      const qty = seed?.quantity ? parseInt(seed.quantity, 10) : NaN;
+      if (!isNaN(qty) && qty > 0) {
+        setPendingSubmit(true);
+        setShowDepletionPrompt(true);
+        return;
+      }
+    }
+    doSubmit();
+  };
+
+  const handleDepletionConfirm = () => {
+    if (seedId) onSeedLinked?.(seedId);
+    setShowDepletionPrompt(false);
+    doSubmit();
+  };
+
+  const handleDepletionSkip = () => {
+    setShowDepletionPrompt(false);
+    doSubmit();
   };
 
   if (showScanner) {
@@ -429,7 +463,23 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
               <option key={g.id} value={g.id}>{g.name}</option>
             ))}
           </select>
-        </div>
+       </div>
+      )}
+
+      {/* Seed selector */}
+      <SeedSelector
+        seeds={seeds}
+        selectedSeedId={seedId}
+        onSelect={setSeedId}
+        cropName={name}
+      />
+
+      {showDepletionPrompt && seedId && (
+        <SeedDepletionPrompt
+          seedName={seeds.find(s => s.id === seedId)?.name || ""}
+          onConfirm={handleDepletionConfirm}
+          onSkip={handleDepletionSkip}
+        />
       )}
 
       <div>

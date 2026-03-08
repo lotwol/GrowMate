@@ -308,6 +308,7 @@ export type Database = {
           notes: string | null
           photo_urls: string[]
           season_year: number | null
+          seed_id: string | null
           sow_date: string | null
           status: Database["public"]["Enums"]["crop_status"]
           updated_at: string
@@ -325,6 +326,7 @@ export type Database = {
           notes?: string | null
           photo_urls?: string[]
           season_year?: number | null
+          seed_id?: string | null
           sow_date?: string | null
           status?: Database["public"]["Enums"]["crop_status"]
           updated_at?: string
@@ -342,6 +344,7 @@ export type Database = {
           notes?: string | null
           photo_urls?: string[]
           season_year?: number | null
+          seed_id?: string | null
           sow_date?: string | null
           status?: Database["public"]["Enums"]["crop_status"]
           updated_at?: string
@@ -353,6 +356,13 @@ export type Database = {
             columns: ["garden_id"]
             isOneToOne: false
             referencedRelation: "gardens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crops_seed_id_fkey"
+            columns: ["seed_id"]
+            isOneToOne: false
+            referencedRelation: "seed_inventory"
             referencedColumns: ["id"]
           },
         ]

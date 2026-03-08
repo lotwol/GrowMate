@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { X, Save } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
-import type { Garden, Crop } from "@/hooks/useGarden";
+import type { Garden, Crop, SeedItem } from "@/hooks/useGarden";
 import { EmojiPicker } from "./EmojiPicker";
+import { SeedSelector } from "./SeedSelector";
 import { PhotoStrip } from "@/components/PhotoStrip";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
@@ -20,12 +21,13 @@ const CATEGORIES: { value: CropCategory; emoji: string; label: string }[] = [
 interface EditCropFormProps {
   crop: Crop;
   gardens: Garden[];
-  onSave: (updates: { id: string; name?: string; category?: CropCategory; emoji?: string | null; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null; photo_urls?: string[] }) => void;
+  seeds: SeedItem[];
+  onSave: (updates: { id: string; name?: string; category?: CropCategory; emoji?: string | null; garden_id?: string | null; sow_date?: string | null; harvest_date?: string | null; notes?: string | null; cost?: number | null; photo_urls?: string[]; seed_id?: string | null }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: EditCropFormProps) {
+export function EditCropForm({ crop, gardens, seeds, onSave, onCancel, isLoading }: EditCropFormProps) {
   const defaultEmoji = CATEGORIES.find(c => c.value === crop.category)?.emoji || "🌱";
   const [name, setName] = useState(crop.name);
   const [category, setCategory] = useState<CropCategory>(crop.category);
@@ -36,6 +38,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
   const [notes, setNotes] = useState(crop.notes || "");
   const [cost, setCost] = useState(crop.cost ? String(crop.cost) : "");
   const [photoUrls, setPhotoUrls] = useState<string[]>((crop as any).photo_urls || []);
+  const [seedId, setSeedId] = useState<string | null>((crop as any).seed_id || null);
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -50,6 +53,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
       notes: notes.trim() || null,
       cost: cost ? Number(cost) : null,
       photo_urls: photoUrls,
+      seed_id: seedId,
     });
   };
 
@@ -103,6 +107,15 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
           </select>
         </div>
       )}
+
+      {/* Seed selector */}
+      <SeedSelector
+        seeds={seeds}
+        selectedSeedId={seedId}
+        onSelect={setSeedId}
+        cropName={name}
+        allowClear={true}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <div>

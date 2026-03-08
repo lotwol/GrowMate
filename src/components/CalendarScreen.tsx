@@ -253,8 +253,8 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [diaryEntries, today]);
 
-  const sparklinePath = useMemo(() => {
-    if (wellbeingData.length < 2) return null;
+  const sparklineData = useMemo(() => {
+    if (wellbeingData.length === 0) return null;
     const w = 300;
     const h = 50;
     const thirtyDaysAgo = today.getTime() - 30 * 86400000;
@@ -262,8 +262,11 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
     const points = wellbeingData.map((d) => {
       const x = ((new Date(d.date).getTime() - thirtyDaysAgo) / range) * w;
       const y = h - ((d.mood - 1) / 4) * h;
-      return { x, y };
+      return { x, y, mood: d.mood };
     });
+    if (points.length === 1) {
+      return { points, line: null, area: null };
+    }
     const line = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
     const area =
       line +

@@ -65,10 +65,10 @@ export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormPr
           {GARDEN_TYPES.map((gt) => (
             <button
               key={gt.value}
-              onClick={() => setType(gt.value)}
+              onClick={() => toggleType(gt.value)}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all",
-                type === gt.value
+                types.includes(gt.value)
                   ? "border-primary bg-accent text-accent-foreground"
                   : "border-border bg-card text-muted-foreground hover:border-primary/40"
               )}

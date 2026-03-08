@@ -165,8 +165,14 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
       { id: cropId, status: status as any },
       {
         onSuccess: () => {
-          if (status === "skördad" && zone && !dismissedContributions.has(cropId)) {
-            setContributingCropId(cropId);
+          if (status === "skördad") {
+            const crop = crops.find((c: any) => c.id === cropId);
+            if (crop) {
+              setHarvestCrop({ id: crop.id, name: crop.name, emoji: (crop as any).emoji });
+            }
+            if (zone && !dismissedContributions.has(cropId)) {
+              setContributingCropId(cropId);
+            }
           }
         },
       }

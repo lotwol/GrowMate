@@ -49,6 +49,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
       harvest_date: harvestDate || null,
       notes: notes.trim() || null,
       cost: cost ? Number(cost) : null,
+      photo_urls: photoUrls,
     });
   };
 

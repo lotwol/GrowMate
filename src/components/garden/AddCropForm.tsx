@@ -24,9 +24,6 @@ interface AddCropFormProps {
   onCancel: () => void;
   isLoading?: boolean;
 }
-  onCancel: () => void;
-  isLoading?: boolean;
-}
 
 export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);

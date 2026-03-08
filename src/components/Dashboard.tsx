@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import heroImage from "@/assets/hero-garden.jpg";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,10 +13,13 @@ import {
   Users,
   ChevronRight,
   BarChart3,
+  Lightbulb,
 } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
+import { supabase } from "@/integrations/supabase/client";
+import type { GrowingSchool } from "@/types/onboarding";
 
 const MONTH_TIPS: Record<number, { title: string; description: string }> = {
   1: { title: "Januaritips", description: "Planera årets odling och beställ fröer" },
@@ -50,14 +54,69 @@ const QUICK_ACTIONS = [
   { icon: CalendarDays, label: "Kalender", desc: "Såningsschema", tab: "calendar" as const },
 ];
 
+const SCHOOL_META: Record<GrowingSchool, { emoji: string; label: string; badgeColor: string }> = {
+  "naturens-vag": { emoji: "🌿", label: "Naturens väg", badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" },
+  precisionsodlaren: { emoji: "📊", label: "Precisionsodlaren", badgeColor: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
+  hackaren: { emoji: "⚡", label: "Hackaren", badgeColor: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" },
+  traditionalisten: { emoji: "🌻", label: "Traditionalisten", badgeColor: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" },
+};
+
+const SCHOOL_TIP_COLUMN: Record<GrowingSchool, string> = {
+  "naturens-vag": "school_naturens_vag_tip",
+  precisionsodlaren: "school_precisionsodlaren_tip",
+  hackaren: "school_hackaren_tip",
+  traditionalisten: "school_traditionalisten_tip",
+};
+
+function getTimeOfDay(): "morning" | "afternoon" | "evening" {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "morning";
+  if (h < 18) return "afternoon";
+  return "evening";
+}
+
+const SCHOOL_GREETINGS: Record<GrowingSchool, Record<string, string>> = {
+  "naturens-vag": {
+    morning: "God morgon, {name}. Hur mår trädgården idag? 🌿",
+    afternoon: "Hej {name}. Naturen har sin egen takt – följ med. 🌿",
+    evening: "Bra kväll, {name}. Lyssna på vad trädgården berättar. 🌙",
+  },
+  precisionsodlaren: {
+    morning: "Morgon, {name}. Vad är dagens odlingsmål? 📊",
+    afternoon: "Hej {name}. Dags att kolla statusen. 📊",
+    evening: "Kväll, {name}. Dags att logga dagens observationer. 📝",
+  },
+  hackaren: {
+    morning: "Hej {name}! Vad kan vi förenkla idag? ⚡",
+    afternoon: "Yo {name}! Något smart hack på gång? ⚡",
+    evening: "Kvällshack, {name} – något smart du noterade idag? 🔧",
+  },
+  traditionalisten: {
+    morning: "God morgon, {name}. Farmor skulle vara stolt. 🌻",
+    afternoon: "God eftermiddag, {name}. Tradition bär frukt. 🌻",
+    evening: "God kväll, {name}. Dagens arbete är gjort. 🌾",
+  },
+};
+
+function getSchoolGreeting(school: GrowingSchool | null, name: string): string {
+  const tod = getTimeOfDay();
+  if (school && SCHOOL_GREETINGS[school]) {
+    return SCHOOL_GREETINGS[school][tod].replace("{name}", name);
+  }
+  const fallback = tod === "morning" ? "God morgon" : tod === "afternoon" ? "Hej" : "God kväll";
+  return `${fallback}! 🌱`;
+}
+
 interface DashboardProps {
   profile: string;
   zone?: string | null;
+  school?: GrowingSchool | null;
+  name?: string;
   onNavigateChat: () => void;
   onNavigate: (tab: string) => void;
 }
 
-export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: DashboardProps) {
+export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavigate }: DashboardProps) {
   const { data: weather, isLoading: weatherLoading } = useWeather(zone);
   const currentYear = new Date().getFullYear();
   const { data: crops = [] } = useCropsForCalendar(currentYear);
@@ -66,6 +125,31 @@ export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: Dashboa
   const month = new Date().getMonth() + 1;
   const monthTip = MONTH_TIPS[month] || MONTH_TIPS[3];
   const sowTip = zone ? (ZONE_SOW_TIPS[zone] || "Sallad kan direktsås snart") : "Sallad kan direktsås om 4 veckor";
+
+  // Daily school tip
+  const [dailyTip, setDailyTip] = useState<{ crop_name: string; tip: string } | null>(null);
+  useEffect(() => {
+    if (!zone || !school) return;
+    const tipCol = SCHOOL_TIP_COLUMN[school];
+    if (!tipCol) return;
+    const fetchTip = async () => {
+      const { data } = await supabase
+        .from("swedish_crop_tips")
+        .select(`crop_name, ${tipCol}`)
+        .eq("zone", zone)
+        .not(tipCol, "is", null);
+      if (data && data.length > 0) {
+        // Deterministic daily rotation based on date
+        const dayOfYear = Math.floor((Date.now() - new Date(currentYear, 0, 0).getTime()) / 86400000);
+        const idx = dayOfYear % data.length;
+        const row = data[idx] as any;
+        if (row[tipCol]) {
+          setDailyTip({ crop_name: row.crop_name, tip: row[tipCol] });
+        }
+      }
+    };
+    fetchTip();
+  }, [zone, school, currentYear]);
 
   const profileEmojis: Record<string, string> = {
     sinnesron: "🌿",

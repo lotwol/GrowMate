@@ -8,28 +8,36 @@ import {
   CalendarDays,
   Heart,
   BookOpen,
+  Thermometer,
 } from "lucide-react";
+import { useWeather } from "@/hooks/useWeather";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const SEASON_TIPS = [
-  {
-    icon: Sun,
-    title: "Mars-tips",
-    description: "Dags att förså tomat, paprika och chili inomhus",
-    color: "bg-growmate-sun/20 text-growmate-earth",
-  },
-  {
-    icon: Droplets,
-    title: "Vattning",
-    description: "Håll jämn fukt i fönsterbrädan – inte för blött",
-    color: "bg-growmate-sky/20 text-growmate-sky",
-  },
-  {
-    icon: CalendarDays,
-    title: "Kommande",
-    description: "Sallad kan direktsås om 4 veckor",
-    color: "bg-growmate-leaf-light text-primary",
-  },
-];
+const MONTH_TIPS: Record<number, { title: string; description: string }> = {
+  1: { title: "Januaritips", description: "Planera årets odling och beställ fröer" },
+  2: { title: "Februaritips", description: "Börja förså chili och paprika inomhus" },
+  3: { title: "Mars-tips", description: "Dags att förså tomat, paprika och chili inomhus" },
+  4: { title: "Apriltips", description: "Härda av plantor och börja direktså utomhus" },
+  5: { title: "Maj-tips", description: "Plantera ut efter sista frosten – kolla din zon!" },
+  6: { title: "Junitips", description: "Vattna regelbundet och gödsla tomater" },
+  7: { title: "Julitips", description: "Skörda och så höstgrödor som grönkål" },
+  8: { title: "Augustitips", description: "Skörda sommargrödor och planera hösten" },
+  9: { title: "Septembertips", description: "Sista skördarna och jordförbättring" },
+  10: { title: "Oktobertips", description: "Täck rabatter och plantera vitlök" },
+  11: { title: "Novembertips", description: "Rensa och förbered för vintern" },
+  12: { title: "Decembertips", description: "Vila, planera och drömma om nästa säsong" },
+};
+
+const ZONE_SOW_TIPS: Record<string, string> = {
+  I: "Sallad kan direktsås om 3 veckor",
+  II: "Sallad kan direktsås om 4 veckor",
+  III: "Sallad kan direktsås om 4 veckor",
+  IV: "Sallad kan direktsås om 5 veckor",
+  V: "Sallad kan direktsås om 6 veckor",
+  VI: "Sallad kan direktsås om 7 veckor",
+  VII: "Sallad kan direktsås om 8 veckor",
+  VIII: "Sallad kan direktsås om 9 veckor",
+};
 
 const QUICK_ACTIONS = [
   { icon: Leaf, label: "Min odling", desc: "Se dina grödor", tab: "garden" as const },
@@ -40,11 +48,17 @@ const QUICK_ACTIONS = [
 
 interface DashboardProps {
   profile: string;
+  zone?: string | null;
   onNavigateChat: () => void;
   onNavigate: (tab: string) => void;
 }
 
-export function Dashboard({ profile, onNavigateChat, onNavigate }: DashboardProps) {
+export function Dashboard({ profile, zone, onNavigateChat, onNavigate }: DashboardProps) {
+  const { data: weather, isLoading: weatherLoading } = useWeather(zone);
+  const month = new Date().getMonth() + 1;
+  const monthTip = MONTH_TIPS[month] || MONTH_TIPS[3];
+  const sowTip = zone ? (ZONE_SOW_TIPS[zone] || "Sallad kan direktsås snart") : "Sallad kan direktsås om 4 veckor";
+
   const profileEmojis: Record<string, string> = {
     sinnesron: "🌿",
     "skordeglädjen": "🥕",
@@ -52,6 +66,37 @@ export function Dashboard({ profile, onNavigateChat, onNavigate }: DashboardProp
     experimenteraren: "🧪",
     "självhushållaren": "🏡",
   };
+
+  const tips = [
+    // Tip 1: Weather (real or fallback)
+    weather
+      ? {
+          icon: Thermometer,
+          title: `${weather.emoji} ${weather.temperature}°C – ${weather.description}`,
+          description: zone ? `Just nu i zon ${zone}` : "Aktuellt väder",
+          color: "bg-growmate-sun/20 text-growmate-earth",
+        }
+      : {
+          icon: Sun,
+          title: monthTip.title,
+          description: monthTip.description,
+          color: "bg-growmate-sun/20 text-growmate-earth",
+        },
+    // Tip 2: Seasonal
+    {
+      icon: Droplets,
+      title: "Vattning",
+      description: "Håll jämn fukt i fönsterbrädan – inte för blött",
+      color: "bg-growmate-sky/20 text-growmate-sky",
+    },
+    // Tip 3: Sowing
+    {
+      icon: CalendarDays,
+      title: "Kommande",
+      description: sowTip,
+      color: "bg-growmate-leaf-light text-primary",
+    },
+  ];
 
   return (
     <div className="min-h-screen pb-24">
@@ -98,7 +143,16 @@ export function Dashboard({ profile, onNavigateChat, onNavigate }: DashboardProp
             Just nu i odlingen
           </h2>
           <div className="space-y-2">
-            {SEASON_TIPS.map((tip) => (
+            {weatherLoading && (
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border">
+                <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            )}
+            {(!weatherLoading ? tips : tips.slice(1)).map((tip) => (
               <div
                 key={tip.title}
                 className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border"

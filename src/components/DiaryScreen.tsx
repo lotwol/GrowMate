@@ -123,12 +123,22 @@ function DiaryEntryForm({
         </div>
       </div>
 
+      {/* Photo strip */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground mb-2 block">Foton</label>
+        <PhotoStrip
+          photos={photoUrls}
+          onPhotosChange={setPhotoUrls}
+          storagePath={`diary/${date}`}
+        />
+      </div>
+
       <div className="flex gap-2 pt-1">
         <Button
           variant="growmate"
           className="flex-1"
           disabled={isSaving}
-          onClick={() => onSave({ entry_date: date, title, content, mood_garden: mood, activities })}
+          onClick={() => onSave({ entry_date: date, title, content, mood_garden: mood, activities, photo_urls: photoUrls })}
         >
           <Save className="w-4 h-4 mr-1.5" />
           {isSaving ? "Sparar..." : "Spara"}

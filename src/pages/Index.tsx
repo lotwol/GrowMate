@@ -99,7 +99,10 @@ const Index = () => {
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" onNavigate={(tab) => setActiveTab(tab as Tab)} />}
       {activeTab === "community" && <CommunityScreen zone={onboardingData.zone} />}
       {activeTab === "profile" && (
-        <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
+        <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} onOpenAdmin={() => setActiveTab("admin")} />
+      )}
+      {activeTab === "admin" && (
+        <AdminScreen onBack={() => setActiveTab("profile")} />
       )}
       <BottomNav active={["diary-wellbeing", "calendar", "community"].includes(activeTab) ? "home" : activeTab as any} onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>

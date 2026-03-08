@@ -48,9 +48,22 @@ export function ProfileScreen({ data, onEdit, onSignOut, onOpenAdmin }: ProfileS
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto">
+          <div
+            className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto cursor-pointer select-none"
+            onClick={() => {
+              const next = logoTaps + 1;
+              setLogoTaps(next);
+              if (next >= 5) {
+                onOpenAdmin?.();
+                setLogoTaps(0);
+              }
+            }}
+          >
             <User className="w-8 h-8 text-accent-foreground" />
           </div>
+          {logoTaps >= 3 && logoTaps < 5 && (
+            <p className="text-xs text-muted-foreground text-center">🔓</p>
+          )}
           <h1 className="text-2xl font-display text-foreground">{data.name}</h1>
           {data.zone && (
             <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">

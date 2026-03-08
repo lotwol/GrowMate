@@ -179,12 +179,24 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
       if (data?.error) throw new Error(data.error);
 
       const botContent = data?.content || "Jag kunde tyvärr inte svara just nu. Försök igen!";
+      const calendarActions: CalendarAction[] = data?.calendar_actions || [];
+      
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: botContent,
+        calendarActions: calendarActions.length > 0 ? calendarActions : undefined,
+        calendarSaved: false,
       };
       setMessages((prev) => [...prev, botMsg]);
+
+      // Auto-save calendar events
+      if (calendarActions.length > 0) {
+        await saveCalendarEvents(calendarActions);
+        setMessages((prev) =>
+          prev.map((m) => m.id === botMsg.id ? { ...m, calendarSaved: true } : m)
+        );
+      }
 
       // Save assistant message
       await saveChatMessage.mutateAsync({

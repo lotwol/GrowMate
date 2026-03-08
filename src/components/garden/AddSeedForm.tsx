@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import { X, Sparkles } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 

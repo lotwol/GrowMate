@@ -294,6 +294,24 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
           </div>
         </div>
 
+        {/* Companion planting warning */}
+        {badNeighbors.length > 0 && !companionDismissed && (
+          <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">🌿</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">Odlingstips</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {badNeighbors[0][0]} och {badNeighbors[0][1]} trivs inte ihop – överväg att flytta dem i din planering
+                </p>
+              </div>
+              <button onClick={dismissCompanion} className="text-muted-foreground hover:text-foreground shrink-0">
+                <span className="text-xs">✕</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Daily School Tip */}
         {dailyTip && schoolMeta && (
           <div className="rounded-2xl bg-card border border-border p-4">

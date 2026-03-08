@@ -64,9 +64,21 @@ export function CalendarScreen({ zone, onBack }: CalendarScreenProps) {
 
   const { data: crops, isLoading: cropsLoading } = useCropsForCalendar(viewYear);
   const { data: diaryEntries, isLoading: diaryLoading } = useDiaryEntriesForCalendar(viewYear);
+  const { data: calendarEvents, isLoading: eventsLoading } = useCalendarEvents(viewYear);
   const { data: tips, isLoading: tipsLoading } = useSwedishCropTips(zone);
 
-  const isLoading = cropsLoading || diaryLoading || tipsLoading;
+  const isLoading = cropsLoading || diaryLoading || tipsLoading || eventsLoading;
+
+  // Calendar events map
+  const eventDates = useMemo(() => {
+    const map = new Map<string, { title: string; emoji: string }[]>();
+    (calendarEvents || []).forEach((e) => {
+      const arr = map.get(e.event_date) || [];
+      arr.push({ title: e.title, emoji: e.emoji });
+      map.set(e.event_date, arr);
+    });
+    return map;
+  }, [calendarEvents]);
 
   // Build lookup maps
   const sowDates = useMemo(() => {

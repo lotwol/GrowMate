@@ -11,6 +11,7 @@ export interface OnboardingData {
   timeScore: number; // 0 = minimal tid, 100 = mycket tid
   resultVsJoyScore: number; // 0 = glädjen i processen, 100 = resultatet
   school: GrowingSchool | null;
+  schools: GrowingSchool[];
 }
 
 export const DEFAULT_ONBOARDING: OnboardingData = {
@@ -23,4 +24,5 @@ export const DEFAULT_ONBOARDING: OnboardingData = {
   timeScore: 5,
   resultVsJoyScore: 50,
   school: null,
+  schools: [],
 };

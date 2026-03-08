@@ -32,15 +32,16 @@ const SEASON_TIPS = [
 ];
 
 const QUICK_ACTIONS = [
-  { icon: Leaf, label: "Min odling", desc: "Se dina grödor" },
-  { icon: BookOpen, label: "Dagbok", desc: "Logga aktivitet" },
-  { icon: Heart, label: "Välmående", desc: "Veckoincheckning" },
-  { icon: CalendarDays, label: "Kalender", desc: "Såningsschema" },
+  { icon: Leaf, label: "Min odling", desc: "Se dina grödor", tab: "garden" as const },
+  { icon: BookOpen, label: "Dagbok", desc: "Logga aktivitet", tab: "diary" as const },
+  { icon: Heart, label: "Välmående", desc: "Veckoincheckning", tab: "wellbeing" as const },
+  { icon: CalendarDays, label: "Kalender", desc: "Såningsschema", tab: "calendar" as const },
 ];
 
 interface DashboardProps {
   profile: string;
   onNavigateChat: () => void;
+  onNavigate: (tab: string) => void;
 }
 
 export function Dashboard({ profile, onNavigateChat }: DashboardProps) {

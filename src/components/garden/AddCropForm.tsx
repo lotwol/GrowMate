@@ -67,6 +67,10 @@ interface SwedishTip {
   spacing_cm: number | null;
   difficulty: string | null;
   tips: string | null;
+  school_naturens_vag_tip: string | null;
+  school_precisionsodlaren_tip: string | null;
+  school_hackaren_tip: string | null;
+  school_traditionalisten_tip: string | null;
 }
 
 interface CommunityInsight {

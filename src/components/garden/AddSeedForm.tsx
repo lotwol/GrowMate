@@ -32,12 +32,21 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [scannedPhotos, setScannedPhotos] = useState<string[]>([]);
   const [name, setName] = useState("");
+  const [emoji, setEmoji] = useState("🌱");
+  const [emojiManuallySet, setEmojiManuallySet] = useState(false);
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [quantity, setQuantity] = useState("");
   const [bestBefore, setBestBefore] = useState("");
   const [purchasedFrom, setPurchasedFrom] = useState("");
   const [cost, setCost] = useState("");
   const [notes, setNotes] = useState("");
+
+  // Auto-suggest emoji when name changes (unless manually set)
+  useEffect(() => {
+    if (!emojiManuallySet && name.trim().length >= 2) {
+      setEmoji(suggestSeedEmoji(name, category));
+    }
+  }, [name, category, emojiManuallySet]);
 
   const handleScanComplete = (data: ScannedSeedData, images: string[]) => {
     const filled = new Set<string>();

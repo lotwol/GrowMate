@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
-import { Settings, ChevronRight, User, MapPin, Clock, Sparkles } from "lucide-react";
+import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut } from "lucide-react";
 
 const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   sinnesron: { emoji: "🌿", title: "Sinnesron" },

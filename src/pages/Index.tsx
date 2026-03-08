@@ -13,6 +13,8 @@ import { CalendarScreen } from "@/components/CalendarScreen";
 import { CommunityScreen } from "@/components/CommunityScreen";
 import { AdminScreen } from "@/components/AdminScreen";
 import { SeasonSummaryScreen } from "@/components/SeasonSummaryScreen";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { OnboardingData } from "@/types/onboarding";
 import { useNotificationPermissionAsked, requestNotificationPermission, getNotificationPermission } from "@/hooks/useNotifications";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";

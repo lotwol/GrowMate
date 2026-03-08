@@ -109,13 +109,16 @@ export function AddCropForm({ gardens, onSubmit, onCancel, isLoading }: AddCropF
         </div>
       )}
 
-      <input
-        type="text"
-        placeholder="Namn, t.ex. Tomat San Marzano"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className={inputCn("name")}
-      />
+      <div className="flex items-center gap-2">
+        <EmojiPicker value={emoji} onChange={setEmoji} />
+        <input
+          type="text"
+          placeholder="Namn, t.ex. Tomat San Marzano"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className={cn(inputCn("name"), "flex-1")}
+        />
+      </div>
 
       <div>
         <p className="text-xs text-muted-foreground mb-2">Kategori</p>

@@ -280,7 +280,34 @@ export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoadi
         );
       })()}
 
-      {/* OpenFarm suggestions */}
+      {/* Crop rotation warning */}
+      {(() => {
+        const trimmed = name.trim();
+        if (trimmed.length < 3) return null;
+        const family = getCropFamily(trimmed);
+        if (!family) return null;
+        const prevCrop = lastYearCrops.find((c: any) => {
+          const f = getCropFamily(c.name);
+          return f === family;
+        });
+        if (prevCrop) {
+          return (
+            <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2">
+              <span className="text-sm">⚠️</span>
+              <p className="text-xs text-foreground">
+                Du odlade <span className="font-medium">{(prevCrop as any).name}</span> (samma familj: {family}) förra året. Välj en annan yta om möjligt.
+              </p>
+            </div>
+          );
+        }
+        return (
+          <div className="flex items-start gap-2 rounded-lg bg-primary/10 border border-primary/20 px-3 py-2">
+            <span className="text-sm">✅</span>
+            <p className="text-xs text-foreground">Bra rotation – ingen {family} odlades förra året.</p>
+          </div>
+        );
+      })()}
+
       {openFarmSuggestions.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-xs text-muted-foreground">Från global fröbas 🌍</p>

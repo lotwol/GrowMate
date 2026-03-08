@@ -100,7 +100,7 @@ export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormPr
         className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body resize-none"
       />
 
-      <Button variant="growmate" className="w-full" onClick={handleSubmit} disabled={!name.trim() || isLoading}>
+      <Button variant="growmate" className="w-full" onClick={handleSubmit} disabled={!name.trim() || types.length === 0 || isLoading}>
         {isLoading ? "Sparar..." : "Lägg till yta"}
       </Button>
     </div>

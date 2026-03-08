@@ -85,7 +85,7 @@ const Index = () => {
       )}
       {activeTab === "garden" && <GardenScreen />}
       {activeTab === "chat" && (
-        <div className="h-screen"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
+        <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
       )}
       {activeTab === "diary" && (
         <PlaceholderScreen emoji="📔" title="Odlingsdagbok" description="Logga din odlingsresa med foton, anteckningar och säsongsbetyg. Kommer snart!" />

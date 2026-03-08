@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Mic, MicOff, Leaf, Plus, ChevronLeft, Trash2, MessageSquare, Sparkles, CalendarPlus, Check } from "lucide-react";
+import { Send, Mic, Square, Loader2, Leaf, Plus, ChevronLeft, Trash2, MessageSquare, Sparkles, CalendarPlus, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
 import {
   useChatConversations,
   useChatMessages,
@@ -53,8 +54,8 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [voiceSource, setVoiceSource] = useState(false);
   const [showLearningBanner, setShowLearningBanner] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -222,14 +223,12 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
     }
   };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      setIsRecording(false);
-      setInput("Jag har tomater och basilika som frön, och en balkong på ca 6 kvm. Har du tips?");
-    } else {
-      setIsRecording(true);
-    }
-  };
+  const handleVoiceTranscription = useCallback((text: string) => {
+    setInput(text);
+    setVoiceSource(true);
+  }, []);
+
+  const voice = useVoiceInput(handleVoiceTranscription);
 
   // History sidebar view
   if (showHistory) {
@@ -384,41 +383,78 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
 
       {/* Input */}
       <div className="px-4 py-3 border-t border-border bg-card/80 backdrop-blur-sm">
+        {/* Recording indicator */}
+        {voice.status === "recording" && (
+          <div className="flex items-center justify-center gap-3 mb-2 animate-fade-in">
+            <div className="flex items-center gap-1">
+              <span className="w-1 h-3 bg-destructive rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
+              <span className="w-1 h-4 bg-destructive rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
+              <span className="w-1 h-3 bg-destructive rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
+            </div>
+            <span className="text-xs text-destructive font-medium">
+              Inspelning pågår... {voice.elapsedSeconds}s
+            </span>
+            <button
+              onClick={voice.cancel}
+              className="text-xs text-muted-foreground hover:text-foreground underline"
+            >
+              Avbryt
+            </button>
+          </div>
+        )}
+        {voice.status === "processing" && (
+          <div className="flex items-center justify-center gap-2 mb-2 animate-fade-in">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <span className="text-xs text-muted-foreground">Tolkar röst...</span>
+          </div>
+        )}
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleRecording}
+          <button
+            onClick={voice.toggle}
+            disabled={voice.status === "processing" || isLoading}
             className={cn(
-              "shrink-0 rounded-full",
-              isRecording && "bg-destructive/10 text-destructive"
+              "shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all",
+              voice.status === "recording"
+                ? "bg-destructive text-destructive-foreground animate-pulse scale-110 shadow-lg"
+                : voice.status === "processing"
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             )}
           >
-            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </Button>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder={isRecording ? "🎙 Lyssnar..." : "Ställ en fråga om odling..."}
-            className="flex-1 bg-background rounded-full border border-input px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+            {voice.status === "recording" ? (
+              <Square className="w-4 h-4" />
+            ) : voice.status === "processing" ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Mic className="w-5 h-5" />
+            )}
+          </button>
+          <div className="flex-1 relative">
+            {voiceSource && input && (
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs">🎤</span>
+            )}
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => { setInput(e.target.value); setVoiceSource(false); }}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder={voice.status === "recording" ? "🎙 Lyssnar..." : "Ställ en fråga om odling..."}
+              className={cn(
+                "w-full bg-background rounded-full border border-input py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+                voiceSource && input ? "pl-9 pr-4" : "px-4"
+              )}
+            />
+          </div>
           <Button
             variant="growmate"
             size="icon"
-            onClick={handleSend}
+            onClick={() => { handleSend(); setVoiceSource(false); }}
             disabled={!input.trim() || isLoading}
             className="shrink-0"
           >
             <Send className="w-4 h-4" />
           </Button>
         </div>
-        {isRecording && (
-          <p className="text-xs text-center text-destructive mt-2 animate-pulse-soft">
-            Tryck på mikrofonen igen för att stoppa inspelningen
-          </p>
-        )}
       </div>
     </div>
   );

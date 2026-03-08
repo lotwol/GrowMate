@@ -5,6 +5,7 @@ import { X, Sparkles } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { Garden } from "@/hooks/useGarden";
 import { SeedPacketScanner, type ScannedSeedData } from "./SeedPacketScanner";
+import { EmojiPicker } from "./EmojiPicker";
 
 type CropCategory = Database["public"]["Enums"]["crop_category"];
 

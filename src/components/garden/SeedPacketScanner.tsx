@@ -19,7 +19,7 @@ export interface ScannedSeedData {
 }
 
 interface SeedPacketScannerProps {
-  onScanComplete: (data: ScannedSeedData) => void;
+  onScanComplete: (data: ScannedSeedData, images: string[]) => void;
   onSkip: () => void;
 }
 
@@ -73,7 +73,7 @@ export function SeedPacketScanner({ onScanComplete, onSkip }: SeedPacketScannerP
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
       if (data?.success && data.data) {
-        onScanComplete(data.data);
+        onScanComplete(data.data, images);
       } else {
         throw new Error("Kunde inte tolka fröpåsen");
       }

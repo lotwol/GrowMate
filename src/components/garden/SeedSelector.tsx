@@ -20,11 +20,12 @@ interface SeedSelectorProps {
 export function SeedSelector({ seeds, selectedSeedId, onSelect, cropName, allowClear, className }: SeedSelectorProps) {
   const [open, setOpen] = useState(false);
 
-  // Sort seeds: matching crop name first
+  // Filter to active seeds, sort by crop name match
   const sortedSeeds = useMemo(() => {
-    if (!cropName || cropName.trim().length < 2) return seeds;
+    const activeSeeds = seeds.filter((s: any) => !s.status || s.status === "active");
+    if (!cropName || cropName.trim().length < 2) return activeSeeds;
     const lower = cropName.trim().toLowerCase();
-    return [...seeds].sort((a, b) => {
+    return [...activeSeeds].sort((a, b) => {
       const aMatch = a.name.toLowerCase().startsWith(lower) ? 0 : 1;
       const bMatch = b.name.toLowerCase().startsWith(lower) ? 0 : 1;
       return aMatch - bMatch;

@@ -567,8 +567,10 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          photo_urls: string[]
           purchased_from: string | null
           quantity: string | null
+          status: string
           updated_at: string
           user_id: string
         }
@@ -580,8 +582,10 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          photo_urls?: string[]
           purchased_from?: string | null
           quantity?: string | null
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -593,8 +597,10 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          photo_urls?: string[]
           purchased_from?: string | null
           quantity?: string | null
+          status?: string
           updated_at?: string
           user_id?: string
         }

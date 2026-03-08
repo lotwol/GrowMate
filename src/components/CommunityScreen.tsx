@@ -1,9 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfidenceBadge } from "@/components/ui/ConfidenceBadge";
-import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { formatDistanceToNow, format } from "date-fns";
 import { sv } from "date-fns/locale";
+import { Send, Check } from "lucide-react";
 
 interface CommunityInsight {
   id: string;
@@ -55,10 +60,22 @@ interface CommunityScreenProps {
 type CommunityTab = "bidra" | "zon";
 
 export function CommunityScreen({ zone }: CommunityScreenProps) {
+  const { user } = useAuth();
   const [tab, setTab] = useState<CommunityTab>("zon");
   const [insights, setInsights] = useState<CommunityInsight[]>([]);
   const [logEntries, setLogEntries] = useState<LearningLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Bidra form state
+  const [userCrops, setUserCrops] = useState<{ name: string; sow_date: string | null; harvest_date: string | null }[]>([]);
+  const [cropName, setCropName] = useState("");
+  const [sowDate, setSowDate] = useState("");
+  const [harvestDate, setHarvestDate] = useState("");
+  const [gardenType, setGardenType] = useState("");
+  const [successRating, setSuccessRating] = useState<number | null>(null);
+  const [notesPublic, setNotesPublic] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -81,10 +98,61 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
         .limit(5);
       setLogEntries((logData as any) || []);
 
+      // Load user's crops for easy selection
+      if (user) {
+        const { data: crops } = await supabase
+          .from("crops" as any)
+          .select("name, sow_date, harvest_date")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+        setUserCrops((crops as any) || []);
+      }
+
       setLoading(false);
     }
     load();
-  }, [zone]);
+  }, [zone, user]);
+
+  const selectCrop = (crop: { name: string; sow_date: string | null; harvest_date: string | null }) => {
+    setCropName(crop.name);
+    if (crop.sow_date) setSowDate(crop.sow_date);
+    if (crop.harvest_date) setHarvestDate(crop.harvest_date);
+  };
+
+  const handleSubmit = async () => {
+    if (!cropName.trim() || !zone) return;
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("community_growing_data" as any)
+        .insert({
+          crop_name: cropName.trim(),
+          zone,
+          season_year: new Date().getFullYear(),
+          sow_date: sowDate || null,
+          harvest_date: harvestDate || null,
+          garden_type: gardenType || null,
+          success_rating: successRating,
+          notes_public: notesPublic.trim() || null,
+        } as any);
+      if (error) throw error;
+      setSubmitted(true);
+      setCropName("");
+      setSowDate("");
+      setHarvestDate("");
+      setGardenType("");
+      setSuccessRating(null);
+      setNotesPublic("");
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (err) {
+      console.error("Submit error:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const GARDEN_TYPES = ["friland", "balkong", "växthus", "pallkrage", "kruka"];
 
   return (
     <div className="min-h-screen pb-24">
@@ -198,12 +266,151 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
             </div>
           </>
         ) : (
-          <div className="rounded-2xl bg-card border border-border p-6 text-center">
-            <span className="text-2xl">🤝</span>
-            <p className="text-foreground font-medium mt-3">Bidra med din odlingsdata</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Dela dina resultat anonymt med andra odlare i din zon. Funktionen kommer snart!
-            </p>
+          <div className="space-y-4">
+            {/* Intro */}
+            <div className="rounded-2xl bg-gradient-to-br from-accent to-secondary p-4 border border-border">
+              <p className="text-sm text-foreground leading-relaxed">
+                🤝 Dela dina odlingsresultat anonymt med andra odlare i din zon. Ju fler som bidrar, desto smartare blir algoritmens rekommendationer!
+              </p>
+            </div>
+
+            {!zone ? (
+              <div className="rounded-2xl bg-card border border-border p-6 text-center">
+                <span className="text-2xl">🗺️</span>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Ange din zon i profilen för att kunna bidra.
+                </p>
+              </div>
+            ) : submitted ? (
+              <div className="rounded-2xl bg-card border border-primary/30 p-6 text-center animate-fade-in">
+                <Check className="w-10 h-10 text-primary mx-auto" />
+                <p className="text-foreground font-medium mt-3">Tack för ditt bidrag! 🌱</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Din data hjälper andra odlare i zon {zone}.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-2xl bg-card border border-border p-4 space-y-4">
+                <h3 className="font-display text-foreground">Dela en gröda</h3>
+
+                {/* Quick select from user's crops */}
+                {userCrops.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Välj från dina grödor</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {userCrops.map((c, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => selectCrop(c)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                            cropName === c.name
+                              ? "border-primary bg-accent text-accent-foreground"
+                              : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                          )}
+                        >
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Crop name */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Gröda *</label>
+                  <Input
+                    placeholder="T.ex. Tomat, Morot, Sallad..."
+                    value={cropName}
+                    onChange={(e) => setCropName(e.target.value)}
+                  />
+                </div>
+
+                {/* Dates */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Sådatum</label>
+                    <Input type="date" value={sowDate} onChange={(e) => setSowDate(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Skördedatum</label>
+                    <Input type="date" value={harvestDate} onChange={(e) => setHarvestDate(e.target.value)} />
+                  </div>
+                </div>
+
+                {/* Garden type */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Odlingstyp</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {GARDEN_TYPES.map((gt) => (
+                      <button
+                        key={gt}
+                        type="button"
+                        onClick={() => setGardenType(gardenType === gt ? "" : gt)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize",
+                          gardenType === gt
+                            ? "border-primary bg-accent text-accent-foreground"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                        )}
+                      >
+                        {gt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Success rating */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Hur gick det?</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((v) => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setSuccessRating(successRating === v ? null : v)}
+                        className={cn(
+                          "w-10 h-10 rounded-xl text-xl transition-all",
+                          successRating === v
+                            ? "bg-primary text-primary-foreground scale-110 shadow-sm"
+                            : "bg-card border border-border hover:bg-accent"
+                        )}
+                      >
+                        {v <= 1 ? "😔" : v <= 2 ? "😐" : v <= 3 ? "🙂" : v <= 4 ? "😊" : "🌟"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Tips till andra odlare (valfritt)</label>
+                  <Textarea
+                    placeholder="T.ex. 'Sorten X fungerade bäst i pallkrage'"
+                    value={notesPublic}
+                    onChange={(e) => setNotesPublic(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+
+                <div className="bg-muted/50 rounded-lg px-3 py-2">
+                  <p className="text-[10px] text-muted-foreground">
+                    🔒 Din data delas anonymt – inget kopplas till ditt konto. Zon {zone} anges automatiskt.
+                  </p>
+                </div>
+
+                <Button
+                  variant="growmate"
+                  className="w-full"
+                  onClick={handleSubmit}
+                  disabled={!cropName.trim() || submitting}
+                >
+                  <Send className="w-4 h-4 mr-1.5" />
+                  {submitting ? "Skickar..." : "Dela med communityn"}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

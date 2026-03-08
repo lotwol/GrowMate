@@ -108,6 +108,7 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
     onSubmit({
       name: name.trim(),
       category,
+      emoji,
       quantity: quantity.trim() || undefined,
       best_before: bestBefore || undefined,
       purchased_from: purchasedFrom.trim() || undefined,

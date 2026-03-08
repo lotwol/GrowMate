@@ -84,7 +84,7 @@ interface CommunityInsight {
   typical_harvest_month_end: number | null;
 }
 
-export function AddCropForm({ gardens, zone, onSubmit, onCancel, isLoading }: AddCropFormProps) {
+export function AddCropForm({ gardens, zone, school, onSubmit, onCancel, isLoading }: AddCropFormProps) {
   const [showScanner, setShowScanner] = useState(true);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");

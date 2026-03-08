@@ -32,18 +32,19 @@ const SEASON_TIPS = [
 ];
 
 const QUICK_ACTIONS = [
-  { icon: Leaf, label: "Min odling", desc: "Se dina grödor" },
-  { icon: BookOpen, label: "Dagbok", desc: "Logga aktivitet" },
-  { icon: Heart, label: "Välmående", desc: "Veckoincheckning" },
-  { icon: CalendarDays, label: "Kalender", desc: "Såningsschema" },
+  { icon: Leaf, label: "Min odling", desc: "Se dina grödor", tab: "garden" as const },
+  { icon: BookOpen, label: "Dagbok", desc: "Logga aktivitet", tab: "diary" as const },
+  { icon: Heart, label: "Välmående", desc: "Veckoincheckning", tab: "diary" as const },
+  { icon: CalendarDays, label: "Kalender", desc: "Såningsschema", tab: "garden" as const },
 ];
 
 interface DashboardProps {
   profile: string;
   onNavigateChat: () => void;
+  onNavigate: (tab: string) => void;
 }
 
-export function Dashboard({ profile, onNavigateChat }: DashboardProps) {
+export function Dashboard({ profile, onNavigateChat, onNavigate }: DashboardProps) {
   const profileEmojis: Record<string, string> = {
     sinnesron: "🌿",
     "skordeglädjen": "🥕",
@@ -78,6 +79,7 @@ export function Dashboard({ profile, onNavigateChat }: DashboardProps) {
           {QUICK_ACTIONS.map((action) => (
             <button
               key={action.label}
+              onClick={() => onNavigate(action.tab)}
               className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all"
             >
               <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">

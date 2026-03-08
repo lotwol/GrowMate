@@ -16,6 +16,9 @@ import {
   useUpdateConversationTitle,
   useDeleteConversation,
 } from "@/hooks/useChat";
+import { ActionCard, parseActions, type ChatAction } from "@/components/chat/ActionCard";
+import { useAddCrop } from "@/hooks/useGarden";
+import { useAddDiaryEntry } from "@/hooks/useDiary";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 
@@ -32,6 +35,7 @@ interface Message {
   content: string;
   calendarActions?: CalendarAction[];
   calendarSaved?: boolean;
+  chatActions?: ChatAction[];
 }
 
 interface GrowMateChatProps {

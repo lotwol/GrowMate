@@ -615,6 +615,7 @@ export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenPr
                     content: entry.content || "",
                     mood_garden: entry.mood_garden,
                     activities: entry.activities || [],
+                    photo_urls: (entry as any).photo_urls || [],
                   }}
                   onSave={(data) => handleUpdate(entry.id, data)}
                   onCancel={() => setEditingId(null)}

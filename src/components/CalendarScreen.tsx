@@ -652,6 +652,14 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
           )}
         </div>
       </div>
+
+      <TipDetailSheet
+        tip={selectedTip}
+        open={!!selectedTip}
+        onClose={() => setSelectedTip(null)}
+        seeds={(seeds || []) as any}
+        userSchool={school}
+      />
     </div>
   );
 }

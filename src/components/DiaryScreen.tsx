@@ -465,7 +465,7 @@ function getMoodEmoji(mood: number | null) {
   return MOOD_OPTIONS.find((m) => m.value === mood)?.emoji || "";
 }
 
-export function DiaryScreen({ initialTab = "dagbok" }: DiaryScreenProps) {
+export function DiaryScreen({ initialTab = "dagbok", onNavigate }: DiaryScreenProps) {
   const [tab, setTab] = useState<DiaryTab>(initialTab);
   const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
   const [showAdd, setShowAdd] = useState(false);

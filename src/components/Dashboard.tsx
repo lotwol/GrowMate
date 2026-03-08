@@ -152,6 +152,25 @@ export function Dashboard({ profile, zone, school, name, onNavigateChat, onNavig
     fetchTip();
   }, [zone, school, currentYear]);
 
+  // Companion planting warnings
+  const badNeighbors = useMemo(() => findBadNeighbors(crops.map((c) => c.name)), [crops]);
+  const [companionDismissed, setCompanionDismissed] = useState(() => {
+    try {
+      const stored = localStorage.getItem("growmate_companion_dismissed");
+      if (stored) {
+        const { week } = JSON.parse(stored);
+        const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+        return week === currentWeek;
+      }
+    } catch {}
+    return false;
+  });
+  const dismissCompanion = () => {
+    const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+    localStorage.setItem("growmate_companion_dismissed", JSON.stringify({ week: currentWeek }));
+    setCompanionDismissed(true);
+  };
+
 
   const tips = [
     // Tip 1: Weather (real or fallback)

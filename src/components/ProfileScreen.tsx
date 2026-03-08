@@ -176,6 +176,9 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
           </div>
         </div>
 
+        {/* Season comparison */}
+        <SeasonComparisonSection />
+
         {/* Notification settings */}
         <NotificationSettings settings={notifSettings} onUpdate={updateNotifSettings} />
 

@@ -69,7 +69,8 @@ const Index = () => {
           plannerScore: profile.planner_score || 50,
           timeScore: profile.time_score || 5,
           resultVsJoyScore: profile.result_vs_joy_score || 50,
-          school: (profile as any).school || null,
+          school: (profile as any).school?.split(",")[0] || null,
+          schools: (profile as any).school ? (profile as any).school.split(",") : [],
         }
       : undefined;
 

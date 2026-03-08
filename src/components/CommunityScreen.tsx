@@ -63,32 +63,24 @@ export function CommunityScreen({ zone }: CommunityScreenProps) {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const queries: Promise<any>[] = [];
 
-      // Insights for zone
       if (zone) {
-        queries.push(
-          supabase
-            .from("community_insights" as any)
-            .select("*")
-            .eq("zone", zone)
-            .order("sample_count", { ascending: false })
-            .then(({ data }) => setInsights((data as any) || []))
-        );
+        const { data } = await supabase
+          .from("community_insights" as any)
+          .select("*")
+          .eq("zone", zone)
+          .order("sample_count", { ascending: false });
+        setInsights((data as any) || []);
       }
 
-      // Learning log
-      queries.push(
-        supabase
-          .from("algorithm_learning_log" as any)
-          .select("*")
-          .in("event_type", ["sow_deviation", "harvest_deviation", "baseline_confirmed", "confidence_upgrade", "new_insight"])
-          .order("created_at", { ascending: false })
-          .limit(5)
-          .then(({ data }) => setLogEntries((data as any) || []))
-      );
+      const { data: logData } = await supabase
+        .from("algorithm_learning_log" as any)
+        .select("*")
+        .in("event_type", ["sow_deviation", "harvest_deviation", "baseline_confirmed", "confidence_upgrade", "new_insight"])
+        .order("created_at", { ascending: false })
+        .limit(5);
+      setLogEntries((logData as any) || []);
 
-      await Promise.all(queries);
       setLoading(false);
     }
     load();

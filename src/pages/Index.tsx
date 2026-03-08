@@ -91,7 +91,7 @@ const Index = () => {
         <CalendarScreen zone={onboardingData.zone} onBack={() => setActiveTab("home")} />
       )}
       {activeTab === "chat" && (
-        <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
+        <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} school={onboardingData.school} /></div>
       )}
       {activeTab === "diary" && <DiaryScreen />}
       {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" />}

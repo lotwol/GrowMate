@@ -75,7 +75,7 @@ export function EditCropForm({ crop, gardens, onSave, onCancel, isLoading }: Edi
           {CATEGORIES.map((c) => (
             <button
               key={c.value}
-              onClick={() => setCategory(c.value)}
+              onClick={() => { setCategory(c.value); setEmoji(c.emoji); }}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-all",
                 category === c.value

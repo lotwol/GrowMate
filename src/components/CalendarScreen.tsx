@@ -517,6 +517,14 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
                           style={{ backgroundColor: "#a855f7" }}
                         />
                       )}
+                      {hasFrost && (
+                        <span
+                          className="block text-[8px] leading-none"
+                          title={`Frost prognos: ${frostTemp}°C`}
+                        >
+                          ❄️
+                        </span>
+                      )}
                     </div>
                   )}
                   {moodColor && (

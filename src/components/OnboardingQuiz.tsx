@@ -414,13 +414,51 @@ export function OnboardingQuiz({ onComplete, initialData }: OnboardingQuizProps)
             variant="growmate" size="lg" className="w-full"
             onClick={() => {
               if (!data.school && suggestedSchool) update({ school: suggestedSchool });
-              setStep(4);
+              setShowSchoolReveal(true);
             }}
             disabled={!effectiveSchool}
           >
             Nästa
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  // Step 3.5: School reveal
+  if (showSchoolReveal) {
+    const chosenSchool = SCHOOLS.find((s) => s.id === (data.school || suggestedSchool));
+    const SCHOOL_PHILOSOPHY: Record<string, string> = {
+      "naturens-vag": "Du odlar med naturen, inte mot den. Lugnt, hållbart och i harmoni.",
+      precisionsodlaren: "Varje detalj räknas. Du optimerar, mäter och förbättrar varje säsong.",
+      hackaren: "Maximal skörd, minimal ansträngning. Smarta genvägar är din superkraft.",
+      traditionalisten: "Beprövade metoder som fungerat i generationer. Trygg och tidlös kunskap.",
+    };
+
+    // Auto-advance after 2 seconds
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setShowSchoolReveal(false);
+        setStep(4);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }, []);
+
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12" onClick={() => { setShowSchoolReveal(false); setStep(4); }}>
+        <div className="text-center space-y-4" style={{ animation: "school-reveal 400ms ease-out forwards" }}>
+          <span className="text-6xl block">{chosenSchool?.emoji}</span>
+          <h2 className="text-3xl font-display text-foreground">{chosenSchool?.title}</h2>
+          <p className="text-muted-foreground text-base max-w-xs mx-auto leading-relaxed">
+            {SCHOOL_PHILOSOPHY[chosenSchool?.id || ""] || ""}
+          </p>
+        </div>
+        <style>{`
+          @keyframes school-reveal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+          }
+        `}</style>
       </div>
     );
   }

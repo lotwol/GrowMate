@@ -1,15 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
-import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users, Bell } from "lucide-react";
+import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users, Bell, BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useNotifications, getNotificationPermission, requestNotificationPermission } from "@/hooks/useNotifications";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   sinnesron: { emoji: "🌿", title: "Sinnesron" },
@@ -174,6 +176,9 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
           </div>
         </div>
 
+        {/* Season comparison */}
+        <SeasonComparisonSection />
+
         {/* Notification settings */}
         <NotificationSettings settings={notifSettings} onUpdate={updateNotifSettings} />
 
@@ -205,6 +210,101 @@ function SliderDisplay({ label, value, emoji, score }: { label: string; value: s
         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${score}%` }} />
       </div>
     </div>
+  );
+}
+
+function useSeasonStats(year: number) {
+  const { data: crops = [] } = useCropsForCalendar(year);
+  const { data: diary = [] } = useDiaryEntriesForCalendar(year);
+  return useMemo(() => {
+    const totalCrops = crops.length;
+    const harvested = crops.filter((c) => c.status === "skördad").length;
+    const diaryDays = diary.filter((d) => d.mood_garden !== null || d.title).length;
+    const moods = diary.filter((d) => d.mood_garden !== null).map((d) => d.mood_garden!);
+    const avgMood = moods.length > 0 ? +(moods.reduce((a, b) => a + b, 0) / moods.length).toFixed(1) : null;
+    const hasData = totalCrops > 0 || diaryDays > 0;
+    return { totalCrops, harvested, diaryDays, avgMood, hasData };
+  }, [crops, diary]);
+}
+
+function TrendIcon({ current, previous }: { current: number; previous: number }) {
+  if (current > previous) return <TrendingUp className="w-3 h-3 text-primary" />;
+  if (current < previous) return <TrendingDown className="w-3 h-3 text-destructive" />;
+  return <Minus className="w-3 h-3 text-muted-foreground" />;
+}
+
+function SeasonComparisonSection() {
+  const currentYear = new Date().getFullYear();
+  const y0 = useSeasonStats(currentYear);
+  const y1 = useSeasonStats(currentYear - 1);
+  const y2 = useSeasonStats(currentYear - 2);
+
+  const years = [
+    { year: currentYear, stats: y0, current: true },
+    { year: currentYear - 1, stats: y1, current: false },
+    { year: currentYear - 2, stats: y2, current: false },
+  ].filter((y) => y.stats.hasData);
+
+  if (years.length < 1) return null;
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="growmate-outline" className="w-full">
+          <BarChart3 className="w-4 h-4 mr-2" />
+          Jämför säsonger
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="bottom" className="rounded-t-2xl max-h-[70vh]">
+        <SheetHeader>
+          <SheetTitle className="font-display">Jämför säsonger</SheetTitle>
+        </SheetHeader>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 pr-3 text-muted-foreground font-normal text-xs">År</th>
+                <th className="text-center py-2 px-2 text-muted-foreground font-normal text-xs">Grödor</th>
+                <th className="text-center py-2 px-2 text-muted-foreground font-normal text-xs">Skördar</th>
+                <th className="text-center py-2 px-2 text-muted-foreground font-normal text-xs">Humör</th>
+                <th className="text-center py-2 pl-2 text-muted-foreground font-normal text-xs">Loggdagar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {years.map((y, i) => {
+                const prev = years[i + 1]?.stats;
+                return (
+                  <tr key={y.year} className={cn("border-b border-border last:border-0", y.current && "bg-primary/5")}>
+                    <td className={cn("py-3 pr-3 font-medium", y.current ? "text-primary" : "text-foreground")}>{y.year}</td>
+                    <td className="py-3 px-2 text-center">
+                      <span className="flex items-center justify-center gap-1">
+                        {y.stats.totalCrops}
+                        {prev && <TrendIcon current={y.stats.totalCrops} previous={prev.totalCrops} />}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2 text-center">
+                      <span className="flex items-center justify-center gap-1">
+                        {y.stats.harvested}
+                        {prev && <TrendIcon current={y.stats.harvested} previous={prev.harvested} />}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2 text-center">
+                      {y.stats.avgMood !== null ? y.stats.avgMood : "–"}
+                    </td>
+                    <td className="py-3 pl-2 text-center">
+                      <span className="flex items-center justify-center gap-1">
+                        {y.stats.diaryDays}
+                        {prev && <TrendIcon current={y.stats.diaryDays} previous={prev.diaryDays} />}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 

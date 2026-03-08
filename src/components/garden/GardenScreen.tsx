@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Plus, Leaf, Package, Sprout, Trash2, Pencil, ChevronLeft, ChevronRight, Map, Star, Camera, Flower2, X, AlertTriangle } from "lucide-react";
 import { findCompanionData, findBadNeighbors } from "@/data/companionPlanting";
+import { getCropFamily } from "@/data/cropRotation";
 import { useGardens, useAllCrops, useSeedInventory, useAddGarden, useAddCrop, useUpdateCrop, useUpdateCropStatus, useDeleteCrop, useDeleteGarden, useAddSeed, useGardenLayout } from "@/hooks/useGarden";
 import { AddGardenForm, GARDEN_TYPES } from "@/components/garden/AddGardenForm";
 import { AddCropForm } from "@/components/garden/AddCropForm";
@@ -137,6 +138,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
+  const { data: lastYearCrops = [] } = useAllCrops(seasonYear - 1);
   const { data: seeds = [], isLoading: seedsLoading } = useSeedInventory();
 
   const allCropNames = useMemo(() => crops.map((c: any) => c.name as string), [crops]);
@@ -293,6 +295,40 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                     </div>
                   </div>
                   {garden.notes && <p className="text-xs text-muted-foreground italic">{garden.notes}</p>}
+                  {/* Rotation badges */}
+                  {(() => {
+                    const lastYearGardenCrops = lastYearCrops.filter((c: any) => c.garden_id === garden.id);
+                    const currentGardenCrops = gardenCrops;
+                    if (lastYearGardenCrops.length === 0 || currentGardenCrops.length === 0) return null;
+                    const warnings: { current: string; prev: string; family: string }[] = [];
+                    let allGood = true;
+                    currentGardenCrops.forEach((cc: any) => {
+                      const family = getCropFamily(cc.name);
+                      if (!family) return;
+                      const conflict = lastYearGardenCrops.find((lc: any) => getCropFamily(lc.name) === family);
+                      if (conflict) {
+                        allGood = false;
+                        warnings.push({ current: cc.name, prev: (conflict as any).name, family });
+                      }
+                    });
+                    if (warnings.length > 0) {
+                      return (
+                        <div className="space-y-1 pt-1">
+                          {warnings.map((w, i) => (
+                            <p key={i} className="text-xs text-destructive bg-destructive/10 rounded-lg px-2 py-1">
+                              🔄 Undvik {w.family} – du hade {w.prev} här {seasonYear - 1}
+                            </p>
+                          ))}
+                        </div>
+                      );
+                    }
+                    if (allGood && currentGardenCrops.some((c: any) => getCropFamily(c.name))) {
+                      return (
+                        <p className="text-xs text-primary bg-primary/10 rounded-lg px-2 py-1 pt-1">✅ Bra rotation</p>
+                      );
+                    }
+                    return null;
+                  })()}
                   {gardenCrops.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {gardenCrops.map((c: any) => (

@@ -11,7 +11,7 @@ import { ProfileScreen } from "@/components/ProfileScreen";
 import { GardenScreen } from "@/components/garden/GardenScreen";
 import { OnboardingData } from "@/types/onboarding";
 
-type Tab = "home" | "garden" | "chat" | "diary" | "profile";
+type Tab = "home" | "garden" | "chat" | "diary" | "diary-wellbeing" | "profile";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -88,10 +88,11 @@ const Index = () => {
         <div className="h-screen pb-16"><GrowMateChat zone={onboardingData.zone} profiles={onboardingData.profiles} /></div>
       )}
       {activeTab === "diary" && <DiaryScreen />}
+      {activeTab === "diary-wellbeing" && <DiaryScreen initialTab="wellbeing" />}
       {activeTab === "profile" && (
         <ProfileScreen data={onboardingData} onEdit={() => setEditingProfile(true)} onSignOut={signOut} />
       )}
-      <BottomNav active={activeTab} onNavigate={setActiveTab} />
+      <BottomNav active={activeTab === "diary-wellbeing" ? "diary" : activeTab} onNavigate={setActiveTab} />
     </div>
   );
 };

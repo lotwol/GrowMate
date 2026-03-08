@@ -127,7 +127,7 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
         role: m.role as "user" | "assistant",
         content: m.content,
       }));
-      setMessages(loaded.length > 0 ? loaded : [WELCOME_MESSAGE]);
+      setMessages(loaded.length > 0 ? loaded : [getWelcomeMessage(school)]);
     }
   }, [savedMessages, activeConversationId]);
 

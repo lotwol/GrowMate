@@ -151,6 +151,26 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
           </div>
         </div>
 
+        {/* Community sharing */}
+        <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+          <p className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" /> Community-delning
+          </p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-foreground">Dela odlingsdata automatiskt</p>
+              <p className="text-xs text-muted-foreground">
+                Dina grödor, sådd- och skördedatum delas anonymt för att hjälpa andra odlare. Ingen personlig info delas.
+              </p>
+            </div>
+            <Switch
+              checked={sharing}
+              onCheckedChange={toggleSharing}
+              disabled={savingShare}
+            />
+          </div>
+        </div>
+
         {/* Edit button */}
         <Button variant="growmate-outline" size="lg" className="w-full" onClick={onEdit}>
           <Settings className="w-4 h-4 mr-2" />

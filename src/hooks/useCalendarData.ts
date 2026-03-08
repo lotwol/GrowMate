@@ -26,11 +26,18 @@ export function useDiaryEntriesForCalendar(year: number) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("diary_entries")
-        .select("entry_date, mood_garden, title")
+        .select("entry_date, mood_garden, title, wellbeing_physical, wellbeing_mental, wellbeing_social")
         .eq("user_id", user!.id)
         .eq("season_year", year);
       if (error) throw error;
-      return (data || []) as { entry_date: string; mood_garden: number | null; title: string | null }[];
+      return (data || []) as {
+        entry_date: string;
+        mood_garden: number | null;
+        title: string | null;
+        wellbeing_physical: number | null;
+        wellbeing_mental: number | null;
+        wellbeing_social: number | null;
+      }[];
     },
     enabled: !!user,
   });

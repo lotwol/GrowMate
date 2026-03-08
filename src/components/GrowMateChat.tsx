@@ -54,8 +54,9 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [voiceSource, setVoiceSource] = useState(false);
+  const [showLearningBanner, setShowLearningBanner] = useState(true);
   const [showLearningBanner, setShowLearningBanner] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 

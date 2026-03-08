@@ -125,7 +125,64 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
     }
   };
 
-  // When loading a saved conversation, populate messages
+  const handleActionConfirm = async (action: ChatAction) => {
+    switch (action.type) {
+      case "ADD_CROP": {
+        const { name, emoji, sowDate, harvestDate, notes } = action.data;
+        await addCrop.mutateAsync({
+          name: name || "Ny gröda",
+          emoji: emoji || "🌱",
+          sow_date: sowDate || null,
+          harvest_date: harvestDate || null,
+          notes: notes || null,
+          season_year: new Date().getFullYear(),
+        } as any);
+        toast({ title: `🌱 ${name} tillagd i Min Odling!` });
+        queryClient.invalidateQueries({ queryKey: ["crops"] });
+        break;
+      }
+      case "ADD_REMINDER": {
+        const { text, date } = action.data;
+        if ("Notification" in window && Notification.permission === "granted") {
+          const targetDate = new Date(date);
+          const now = new Date();
+          const delay = targetDate.getTime() - now.getTime();
+          if (delay > 0) {
+            setTimeout(() => {
+              new Notification("🔔 GrowMate-påminnelse", { body: text });
+            }, delay);
+          }
+        }
+        // Also save as calendar event for persistence
+        if (user) {
+          await supabase.from("calendar_events" as any).insert({
+            user_id: user.id,
+            title: text,
+            event_date: date,
+            emoji: "🔔",
+            event_type: "reminder",
+          } as any);
+          queryClient.invalidateQueries({ queryKey: ["calendar_events"] });
+        }
+        toast({ title: `🔔 Påminnelse satt för ${date}` });
+        break;
+      }
+      case "LOG_DIARY": {
+        const { title, content, mood } = action.data;
+        await addDiaryEntry.mutateAsync({
+          entry_date: format(new Date(), "yyyy-MM-dd"),
+          title: title || "Dagboksanteckning",
+          content: content || null,
+          mood_garden: mood || null,
+          season_year: new Date().getFullYear(),
+        } as any);
+        toast({ title: "📝 Loggat i dagboken!" });
+        queryClient.invalidateQueries({ queryKey: ["diary_entries"] });
+        break;
+      }
+    }
+  };
+
   useEffect(() => {
     if (savedMessages && activeConversationId) {
       const loaded: Message[] = savedMessages.map((m) => ({

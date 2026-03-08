@@ -199,7 +199,7 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
           variant="growmate"
           size="lg"
           className="w-full"
-          onClick={() => zone && selectedProfile && onComplete(selectedProfile)}
+          onClick={() => zone && selectedProfiles.length > 0 && onComplete(selectedProfiles)}
           disabled={!zone}
         >
           Starta min odling 🌱

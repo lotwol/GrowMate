@@ -157,14 +157,20 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
       )}
 
       <div>
-        <label className="text-xs text-muted-foreground">Namn</label>
-        <input
-          type="text"
-          placeholder="Namn, t.ex. Basilika Genovese"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className={inputCn("name")}
-        />
+        <label className="text-xs text-muted-foreground">Namn & ikon</label>
+        <div className="flex items-center gap-2 mt-1">
+          <EmojiPicker value={emoji} onChange={(e) => { setEmoji(e); setEmojiManuallySet(true); }} size="sm" />
+          <input
+            type="text"
+            placeholder="Namn, t.ex. Basilika Genovese"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={cn(
+              "flex-1 rounded-xl border px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-body",
+              scannedFields.has("name") ? "border-primary/50 bg-primary/5" : "border-input bg-background"
+            )}
+          />
+        </div>
       </div>
 
       <div>

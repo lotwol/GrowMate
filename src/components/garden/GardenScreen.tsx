@@ -9,6 +9,7 @@ import { AddCropForm } from "@/components/garden/AddCropForm";
 import { AddSeedForm } from "@/components/garden/AddSeedForm";
 import { EditCropForm } from "@/components/garden/EditCropForm";
 import { GardenLayoutEditor } from "@/components/garden/GardenLayoutEditor";
+import { HarvestCelebrationModal } from "@/components/garden/HarvestCelebrationModal";
 import { PhotoStrip } from "@/components/PhotoStrip";
 import type { Database } from "@/integrations/supabase/types";
 import { Constants } from "@/integrations/supabase/types";

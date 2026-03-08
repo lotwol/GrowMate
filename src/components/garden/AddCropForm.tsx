@@ -463,7 +463,23 @@ export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, 
               <option key={g.id} value={g.id}>{g.name}</option>
             ))}
           </select>
-        </div>
+       </div>
+      )}
+
+      {/* Seed selector */}
+      <SeedSelector
+        seeds={seeds}
+        selectedSeedId={seedId}
+        onSelect={setSeedId}
+        cropName={name}
+      />
+
+      {showDepletionPrompt && seedId && (
+        <SeedDepletionPrompt
+          seedName={seeds.find(s => s.id === seedId)?.name || ""}
+          onConfirm={handleDepletionConfirm}
+          onSkip={handleDepletionSkip}
+        />
       )}
 
       <div>

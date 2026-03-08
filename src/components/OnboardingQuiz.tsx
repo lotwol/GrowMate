@@ -55,8 +55,51 @@ export function OnboardingQuiz({ onComplete }: OnboardingQuizProps) {
   const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [zone, setZone] = useState<string | null>(null);
+  const [location, setLocation] = useState("");
+  const [manualZone, setManualZone] = useState(false);
+
+  const LOCATION_ZONES: Record<string, { zone: string; desc: string }> = {
+    "malmö": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+    "lund": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+    "helsingborg": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+    "kristianstad": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+    "ystad": { zone: "I", desc: "Sydligaste Sverige – mildast klimat" },
+    "göteborg": { zone: "II", desc: "Västkusten – milt maritimt klimat" },
+    "halmstad": { zone: "II", desc: "Västkusten – milt maritimt klimat" },
+    "kalmar": { zone: "II", desc: "Sydöstra kusten" },
+    "växjö": { zone: "III", desc: "Småland – lite kallare vintrar" },
+    "jönköping": { zone: "III", desc: "Småland – lite kallare vintrar" },
+    "linköping": { zone: "III", desc: "Östergötland" },
+    "norrköping": { zone: "III", desc: "Östergötland" },
+    "stockholm": { zone: "III", desc: "Stockholmsregionen" },
+    "nyköping": { zone: "III", desc: "Södermanland" },
+    "västerås": { zone: "IV", desc: "Mälardalen" },
+    "örebro": { zone: "IV", desc: "Mellansverige" },
+    "uppsala": { zone: "IV", desc: "Uppland" },
+    "karlstad": { zone: "IV", desc: "Värmland" },
+    "borlänge": { zone: "V", desc: "Dalarna" },
+    "falun": { zone: "V", desc: "Dalarna" },
+    "gävle": { zone: "V", desc: "Gästrikland" },
+    "sundsvall": { zone: "V", desc: "Medelpad" },
+    "härnösand": { zone: "V", desc: "Ångermanland" },
+    "östersund": { zone: "VI", desc: "Jämtland – kort men intensiv säsong" },
+    "umeå": { zone: "VI", desc: "Västerbotten" },
+    "luleå": { zone: "VII", desc: "Norrbotten – utmanande men möjligt" },
+    "kiruna": { zone: "VIII", desc: "Fjällnära – kort säsong, ljusa nätter" },
+    "gällivare": { zone: "VIII", desc: "Fjällnära – kort säsong, ljusa nätter" },
+  };
 
   const zones = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+
+  const suggestedZone = useMemo(() => {
+    const loc = location.toLowerCase().trim();
+    if (!loc) return null;
+    // Exact match first
+    if (LOCATION_ZONES[loc]) return LOCATION_ZONES[loc];
+    // Partial match
+    const match = Object.entries(LOCATION_ZONES).find(([key]) => key.includes(loc) || loc.includes(key));
+    return match ? match[1] : null;
+  }, [location]);
 
   if (step === 0) {
     return (

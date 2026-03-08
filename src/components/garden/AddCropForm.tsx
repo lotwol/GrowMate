@@ -98,10 +98,10 @@ const CATEGORY_EMOJI_MAP: Record<string, string> = {
 };
 
 export function AddCropForm({ gardens, seeds, zone, school, onSubmit, onCancel, isLoading, onSeedLinked }: AddCropFormProps) {
-  const [showScanner, setShowScanner] = useState(true);
+  const [showScanner, setShowScanner] = useState(false);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const activeSeeds = seeds.filter((s: any) => !s.status || s.status === "active");
-  const [entryMode, setEntryMode] = useState<"choose" | "manual">(activeSeeds.length > 0 ? "choose" : "manual");
+  const [entryMode, setEntryMode] = useState<"pick" | "choose" | "manual" | "scanner">("pick");
   const [name, setName] = useState("");
   const [category, setCategory] = useState<CropCategory>("grönsak");
   const [emoji, setEmoji] = useState("🥕");

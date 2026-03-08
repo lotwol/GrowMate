@@ -7,6 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { findRecipes } from "@/data/harvestRecipes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { GrowingSchool } from "@/types/onboarding";
+import { useEarnedBadges, useSeasonBadges } from "@/hooks/useBadges";
 
 const STATUS_COLORS: Record<string, string> = {
   skördad: "bg-primary text-primary-foreground",
@@ -96,6 +97,8 @@ export function SeasonSummaryScreen({ year: initialYear, name, zone, school, onB
   const { data: diary = [] } = useDiaryEntriesForCalendar(year);
   const [harvestsExpanded, setHarvestsExpanded] = useState(false);
   const [recipeCrop, setRecipeCrop] = useState<string | null>(null);
+  const { earned: allEarned } = useEarnedBadges(school);
+  const seasonBadges = useSeasonBadges(allEarned, crops, diary);
 
   const stats = useMemo(() => {
     const totalCrops = crops.length;
@@ -346,6 +349,21 @@ export function SeasonSummaryScreen({ year: initialYear, name, zone, school, onB
                 <p className="text-sm text-foreground leading-relaxed">{schoolReflection}</p>
               </div>
             </FadeSection>
+
+            {/* SEASON BADGES */}
+            {seasonBadges.length > 0 && (
+              <FadeSection>
+                <h2 className="font-display text-foreground mb-3">Årets märken</h2>
+                <div className="grid grid-cols-3 gap-3">
+                  {seasonBadges.map((badge) => (
+                    <div key={badge.id} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-card border border-border">
+                      <span className="text-2xl">{badge.emoji}</span>
+                      <span className="text-[10px] text-foreground font-medium text-center leading-tight">{badge.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </FadeSection>
+            )}
 
             {/* SHARE */}
             <FadeSection>

@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { OnboardingData } from "@/types/onboarding";
 import { cn } from "@/lib/utils";
-import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users, Bell, BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Settings, ChevronRight, User, MapPin, Clock, Sparkles, LogOut, Users, Bell, BarChart3, TrendingUp, TrendingDown, Minus, Lock } from "lucide-react";
 import { useNotifications, getNotificationPermission, requestNotificationPermission } from "@/hooks/useNotifications";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCropsForCalendar, useDiaryEntriesForCalendar } from "@/hooks/useCalendarData";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useEarnedBadges, useNewBadgeNotifications } from "@/hooks/useBadges";
+import { ALL_BADGES, type Badge } from "@/data/badges";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const PROFILE_LABELS: Record<string, { emoji: string; title: string }> = {
   sinnesron: { emoji: "🌿", title: "Sinnesron" },
@@ -45,6 +48,8 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
   const [savingShare, setSavingShare] = useState(false);
   const { settings: notifSettings, updateSettings: updateNotifSettings } = useNotifications(data.zone);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const { earned, notYetEarned } = useEarnedBadges(data.school);
+  useNewBadgeNotifications(earned);
 
   useEffect(() => { setSharing(shareGrowingData); }, [shareGrowingData]);
 
@@ -175,6 +180,9 @@ export function ProfileScreen({ data, shareGrowingData = false, onEdit, onSignOu
             />
           </div>
         </div>
+
+        {/* Badges */}
+        <BadgeGrid earned={earned} notYetEarned={notYetEarned} />
 
         {/* Season comparison */}
         <SeasonComparisonSection />
@@ -406,6 +414,50 @@ function NotificationSettings({
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function BadgeGrid({ earned, notYetEarned }: { earned: Badge[]; notYetEarned: Badge[] }) {
+  return (
+    <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-foreground">Dina märken 🏅</p>
+        <span className="text-xs text-muted-foreground">{earned.length} av {ALL_BADGES.length} märken</span>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {earned.map((badge) => (
+          <Popover key={badge.id}>
+            <PopoverTrigger asChild>
+              <button className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-accent/50 transition-colors">
+                <span className="text-2xl">{badge.emoji}</span>
+                <span className="text-[10px] text-foreground font-medium text-center leading-tight">{badge.name}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="text-xs p-3 max-w-[200px]">
+              <p className="font-medium">{badge.emoji} {badge.name}</p>
+              <p className="text-muted-foreground mt-1">{badge.description}</p>
+            </PopoverContent>
+          </Popover>
+        ))}
+        {notYetEarned.map((badge) => (
+          <Popover key={badge.id}>
+            <PopoverTrigger asChild>
+              <button className="flex flex-col items-center gap-1 p-2 rounded-xl opacity-40 grayscale hover:opacity-60 transition-all">
+                <div className="relative">
+                  <span className="text-2xl">{badge.emoji}</span>
+                  <Lock className="w-3 h-3 text-muted-foreground absolute -bottom-0.5 -right-0.5" />
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">{badge.name}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="text-xs p-3 max-w-[200px]">
+              <p className="font-medium">🔒 {badge.name}</p>
+              <p className="text-muted-foreground mt-1">{badge.description}</p>
+            </PopoverContent>
+          </Popover>
+        ))}
+      </div>
     </div>
   );
 }

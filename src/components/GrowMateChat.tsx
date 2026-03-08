@@ -62,7 +62,7 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
   const queryClient = useQueryClient();
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<Message[]>([getWelcomeMessage(school)]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [voiceSource, setVoiceSource] = useState(false);

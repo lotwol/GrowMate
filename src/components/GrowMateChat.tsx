@@ -349,6 +349,24 @@ export function GrowMateChat({ zone, profiles, school }: GrowMateChatProps) {
                 msg.content
               )}
             </div>
+            {/* Calendar actions card */}
+            {msg.calendarActions && msg.calendarActions.length > 0 && (
+              <div className="mt-2 rounded-xl bg-accent/60 border border-border p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                  <CalendarPlus className="w-3.5 h-3.5 text-primary" />
+                  {msg.calendarSaved ? "Tillagt i kalendern" : "Lägger till i kalendern..."}
+                  {msg.calendarSaved && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                </div>
+                {msg.calendarActions.map((a, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{a.emoji || "📅"}</span>
+                    <span className="font-medium text-foreground">{a.title}</span>
+                    <span>·</span>
+                    <span>{a.event_date}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
         {isLoading && (

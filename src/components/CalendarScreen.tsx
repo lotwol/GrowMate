@@ -31,11 +31,12 @@ const MOOD_COLORS: Record<number, string> = {
 };
 
 function getSeasonRange(zone?: string | null): [number, number] {
-  if (!zone) return [4, 10];
-  if (["I", "II"].includes(zone)) return [3, 10];
-  if (["III", "IV"].includes(zone)) return [4, 10];
-  if (["V", "VI"].includes(zone)) return [5, 9];
-  return [6, 8];
+  // Full growing year: from indoor sowing through harvest
+  if (!zone) return [2, 11];
+  if (["I", "II"].includes(zone)) return [2, 11];
+  if (["III", "IV"].includes(zone)) return [2, 11];
+  if (["V", "VI"].includes(zone)) return [3, 10];
+  return [3, 9];
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -329,18 +330,26 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
 
   // Season arc SVG
   function renderSeasonArc() {
-    const w = 320;
-    const h = 120;
-    const pad = 30;
+    const w = 340;
+    const h = 140;
+    const pad = 24;
     const arcW = w - pad * 2;
-    const cy = h - 10;
+    const cy = h - 24;
     const rx = arcW / 2;
-    const ry = 70;
+    const ry = 75;
     const cx = w / 2;
 
     return (
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ maxHeight: 160 }}>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ maxHeight: 170 }}>
         {/* Arc path */}
+        <path
+          d={`M ${pad},${cy} A ${rx},${ry} 0 0 1 ${w - pad},${cy}`}
+          fill="none"
+          className="stroke-primary/20"
+          strokeWidth={3}
+          strokeLinecap="round"
+        />
+        {/* Active season arc overlay */}
         <path
           d={`M ${pad},${cy} A ${rx},${ry} 0 0 1 ${w - pad},${cy}`}
           fill="none"
@@ -354,15 +363,16 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
           const angle = Math.PI * (1 - frac);
           const tx = cx - rx * Math.cos(angle);
           const ty = cy - ry * Math.sin(angle);
+          const isCurrentMonth = m === currentMonth + 1;
           return (
             <g key={m}>
-              <circle cx={tx} cy={ty} r={2} className="fill-muted-foreground" />
+              <circle cx={tx} cy={ty} r={isCurrentMonth ? 3 : 2} className={isCurrentMonth ? "fill-primary" : "fill-muted-foreground/60"} />
               <text
                 x={tx}
-                y={ty + 14}
+                y={ty + 13}
                 textAnchor="middle"
-                className="fill-muted-foreground"
-                fontSize={9}
+                className={isCurrentMonth ? "fill-primary font-medium" : "fill-muted-foreground"}
+                fontSize={isCurrentMonth ? 10 : 9}
               >
                 {MONTH_ABBR_SV[m - 1]}
               </text>
@@ -377,7 +387,7 @@ export function CalendarScreen({ zone, school, onBack }: CalendarScreenProps) {
           const dy = cy - ry * Math.sin(angle);
           return (
             <>
-              <circle cx={dx} cy={dy} r={7} className="fill-primary/30 animate-pulse" />
+              <circle cx={dx} cy={dy} r={7} className="fill-primary/20 animate-pulse" />
               <circle cx={dx} cy={dy} r={4} className="fill-primary" />
             </>
           );

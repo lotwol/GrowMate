@@ -37,7 +37,7 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
   const [cost, setCost] = useState("");
   const [notes, setNotes] = useState("");
 
-  const handleScanComplete = (data: ScannedSeedData) => {
+  const handleScanComplete = (data: ScannedSeedData, images: string[]) => {
     const filled = new Set<string>();
 
     if (data.name) { setName(data.name); filled.add("name"); }
@@ -61,12 +61,39 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
       filled.add("notes");
     }
 
+    // Store scanned images for later upload
+    setScannedPhotos(images);
+
     setScannedFields(filled);
     setShowScanner(false);
   };
 
-  const handleSubmit = () => {
+  const { user } = useAuth();
+
+  const uploadScannedPhotos = async (): Promise<string[]> => {
+    if (scannedPhotos.length === 0 || !user) return [];
+    const urls: string[] = [];
+    for (let i = 0; i < scannedPhotos.length; i++) {
+      try {
+        const base64 = scannedPhotos[i];
+        const res = await fetch(base64);
+        const blob = await res.blob();
+        const ext = blob.type.includes("png") ? "png" : "jpg";
+        const path = `seeds/${user.id}/${Date.now()}_${i}.${ext}`;
+        const { error } = await supabase.storage.from("growmate-photos").upload(path, blob);
+        if (error) continue;
+        const { data: urlData } = supabase.storage.from("growmate-photos").getPublicUrl(path);
+        urls.push(urlData.publicUrl);
+      } catch {
+        // skip failed uploads
+      }
+    }
+    return urls;
+  };
+
+  const handleSubmit = async () => {
     if (!name.trim()) return;
+    const photoUrls = await uploadScannedPhotos();
     onSubmit({
       name: name.trim(),
       category,
@@ -75,6 +102,7 @@ export function AddSeedForm({ onSubmit, onCancel, isLoading }: AddSeedFormProps)
       purchased_from: purchasedFrom.trim() || undefined,
       cost: cost ? Number(cost) : undefined,
       notes: notes.trim() || undefined,
+      photo_urls: photoUrls.length > 0 ? photoUrls : undefined,
     });
   };
 

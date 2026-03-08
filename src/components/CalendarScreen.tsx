@@ -31,11 +31,12 @@ const MOOD_COLORS: Record<number, string> = {
 };
 
 function getSeasonRange(zone?: string | null): [number, number] {
-  if (!zone) return [4, 10];
-  if (["I", "II"].includes(zone)) return [3, 10];
-  if (["III", "IV"].includes(zone)) return [4, 10];
-  if (["V", "VI"].includes(zone)) return [5, 9];
-  return [6, 8];
+  // Full growing year: from indoor sowing through harvest
+  if (!zone) return [2, 11];
+  if (["I", "II"].includes(zone)) return [2, 11];
+  if (["III", "IV"].includes(zone)) return [2, 11];
+  if (["V", "VI"].includes(zone)) return [3, 10];
+  return [3, 9];
 }
 
 function getDaysInMonth(year: number, month: number) {

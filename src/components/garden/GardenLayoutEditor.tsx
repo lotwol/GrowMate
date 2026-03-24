@@ -6,14 +6,14 @@ import { useUpsertLayout, useCropPlacements, usePlaceCrop, useRemovePlacement, t
 import { supabase } from "@/integrations/supabase/client";
 
 const ZONE_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(25, 80%, 55%)",
-  "hsl(280, 60%, 55%)",
-  "hsl(45, 85%, 50%)",
-  "hsl(190, 70%, 45%)",
-  "hsl(340, 65%, 55%)",
-  "hsl(160, 60%, 40%)",
-  "hsl(0, 70%, 55%)",
+  { bg: "hsl(142, 40%, 45%)", cell: "hsla(142, 40%, 45%, 0.2)" },   // sage green
+  { bg: "hsl(158, 35%, 38%)", cell: "hsla(158, 35%, 38%, 0.2)" },   // teal green
+  { bg: "hsl(120, 30%, 50%)", cell: "hsla(120, 30%, 50%, 0.2)" },   // soft green
+  { bg: "hsl(170, 35%, 42%)", cell: "hsla(170, 35%, 42%, 0.2)" },   // mint
+  { bg: "hsl(95, 30%, 48%)", cell: "hsla(95, 30%, 48%, 0.2)" },     // lime-green
+  { bg: "hsl(150, 25%, 55%)", cell: "hsla(150, 25%, 55%, 0.2)" },   // pale moss
+  { bg: "hsl(180, 25%, 42%)", cell: "hsla(180, 25%, 42%, 0.2)" },   // dark mint
+  { bg: "hsl(105, 25%, 40%)", cell: "hsla(105, 25%, 40%, 0.2)" },   // forest
 ];
 
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -77,10 +77,11 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
 
   const addZone = () => {
     if (!newZoneName.trim()) return;
+    const zoneColor = ZONE_COLORS[zones.length % ZONE_COLORS.length];
     const newZone: LayoutZone = {
       id: `z-${Date.now()}`,
       name: newZoneName.trim(),
-      color: ZONE_COLORS[zones.length % ZONE_COLORS.length],
+      color: zoneColor.bg,
       cells: [],
     };
     setZones(prev => [...prev, newZone]);
@@ -172,7 +173,7 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
         setZones(data.zones.map((z: any, i: number) => ({
           id: `z-${Date.now()}-${i}`,
           name: z.name,
-          color: ZONE_COLORS[i % ZONE_COLORS.length],
+          color: ZONE_COLORS[i % ZONE_COLORS.length].bg,
           cells: z.cells || [],
         })));
       }
@@ -374,7 +375,7 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
                 mode === "view" ? "cursor-default" : "cursor-pointer hover:brightness-90",
                 !zone && !crop ? "bg-muted/50" : "",
               )}
-              style={zone ? { backgroundColor: zone.color + "33", borderColor: zone.color } : undefined}
+              style={zone ? { backgroundColor: ZONE_COLORS.find(zc => zc.bg === zone.color)?.cell || zone.color, borderLeft: `2px solid ${zone.color}` } : undefined}
               title={[zone?.name, crop?.name].filter(Boolean).join(" · ")}
             >
               {crop ? (

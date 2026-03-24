@@ -375,7 +375,7 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
                 mode === "view" ? "cursor-default" : "cursor-pointer hover:brightness-90",
                 !zone && !crop ? "bg-muted/50" : "",
               )}
-              style={zone ? { backgroundColor: zone.color + "33", borderColor: zone.color } : undefined}
+              style={zone ? { backgroundColor: ZONE_COLORS.find(zc => zc.bg === zone.color)?.cell || zone.color, borderLeft: `2px solid ${zone.color}` } : undefined}
               title={[zone?.name, crop?.name].filter(Boolean).join(" · ")}
             >
               {crop ? (

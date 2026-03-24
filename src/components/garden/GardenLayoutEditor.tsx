@@ -173,7 +173,7 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
         setZones(data.zones.map((z: any, i: number) => ({
           id: `z-${Date.now()}-${i}`,
           name: z.name,
-          color: ZONE_COLORS[i % ZONE_COLORS.length],
+          color: ZONE_COLORS[i % ZONE_COLORS.length].bg,
           cells: z.cells || [],
         })));
       }

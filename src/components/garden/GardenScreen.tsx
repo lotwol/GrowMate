@@ -305,9 +305,9 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                       <button onClick={() => setLayoutGardenId(garden.id)} className="text-muted-foreground hover:text-primary transition-colors p-1" title="Visa layout">
                         <Map className="w-4 h-4" />
                       </button>
-                      <button onClick={() => deleteGarden.mutate(garden.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <button onClick={() => setGardenToDelete({ id: garden.id, name: garden.name })} className="text-muted-foreground hover:text-destructive transition-colors p-1" title="Ta bort yta">
+                         <Trash2 className="w-4 h-4" />
+                       </button>
                     </div>
                   </div>
                   {garden.notes && <p className="text-xs text-muted-foreground italic">{garden.notes}</p>}

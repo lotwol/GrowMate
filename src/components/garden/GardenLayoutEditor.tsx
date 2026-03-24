@@ -77,10 +77,11 @@ export function GardenLayoutEditor({ gardenId, gardenName, seasonYear, layout, c
 
   const addZone = () => {
     if (!newZoneName.trim()) return;
+    const zoneColor = ZONE_COLORS[zones.length % ZONE_COLORS.length];
     const newZone: LayoutZone = {
       id: `z-${Date.now()}`,
       name: newZoneName.trim(),
-      color: ZONE_COLORS[zones.length % ZONE_COLORS.length],
+      color: zoneColor.bg,
       cells: [],
     };
     setZones(prev => [...prev, newZone]);

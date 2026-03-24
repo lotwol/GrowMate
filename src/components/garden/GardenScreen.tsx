@@ -143,6 +143,7 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
   const [confirmDeleteCropId, setConfirmDeleteCropId] = useState<string | null>(null);
   const [startCropSeedId, setStartCropSeedId] = useState<string | null>(null);
   const [highlightedSeedId, setHighlightedSeedId] = useState<string | null>(null);
+  const [gardenToDelete, setGardenToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const { data: gardens = [], isLoading: gardensLoading } = useGardens();
   const { data: crops = [], isLoading: cropsLoading } = useAllCrops(seasonYear);
@@ -304,9 +305,9 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                       <button onClick={() => setLayoutGardenId(garden.id)} className="text-muted-foreground hover:text-primary transition-colors p-1" title="Visa layout">
                         <Map className="w-4 h-4" />
                       </button>
-                      <button onClick={() => deleteGarden.mutate(garden.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <button onClick={() => setGardenToDelete({ id: garden.id, name: garden.name })} className="text-muted-foreground hover:text-destructive transition-colors p-1" title="Ta bort yta">
+                         <Trash2 className="w-4 h-4" />
+                       </button>
                     </div>
                   </div>
                   {garden.notes && <p className="text-xs text-muted-foreground italic">{garden.notes}</p>}
@@ -749,6 +750,30 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
                 onClick={() => {
                   if (confirmDeleteCropId) deleteCrop.mutate(confirmDeleteCropId);
                   setConfirmDeleteCropId(null);
+                }}
+              >
+                Ta bort
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Delete garden confirmation */}
+        <AlertDialog open={!!gardenToDelete} onOpenChange={(open) => { if (!open) setGardenToDelete(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ta bort odlingsyta?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Är du säker på att du vill ta bort <span className="font-semibold">"{gardenToDelete?.name}"</span>? Alla grödor kopplade till ytan kan påverkas. Det går inte att ångra.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  if (gardenToDelete) deleteGarden.mutate(gardenToDelete.id);
+                  setGardenToDelete(null);
                 }}
               >
                 Ta bort

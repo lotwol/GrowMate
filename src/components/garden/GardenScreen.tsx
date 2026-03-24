@@ -758,6 +758,30 @@ export function GardenScreen({ zone, school, onNavigate }: GardenScreenProps) {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Delete garden confirmation */}
+        <AlertDialog open={!!gardenToDelete} onOpenChange={(open) => { if (!open) setGardenToDelete(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ta bort odlingsyta?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Är du säker på att du vill ta bort <span className="font-semibold">"{gardenToDelete?.name}"</span>? Alla grödor kopplade till ytan kan påverkas. Det går inte att ångra.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  if (gardenToDelete) deleteGarden.mutate(gardenToDelete.id);
+                  setGardenToDelete(null);
+                }}
+              >
+                Ta bort
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Start crop from seed sheet */}
         {startCropSeedId && (() => {
           const seedForSheet = seeds.find(s => s.id === startCropSeedId);

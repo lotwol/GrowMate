@@ -6,14 +6,14 @@ import { useUpsertLayout, useCropPlacements, usePlaceCrop, useRemovePlacement, t
 import { supabase } from "@/integrations/supabase/client";
 
 const ZONE_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(25, 80%, 55%)",
-  "hsl(280, 60%, 55%)",
-  "hsl(45, 85%, 50%)",
-  "hsl(190, 70%, 45%)",
-  "hsl(340, 65%, 55%)",
-  "hsl(160, 60%, 40%)",
-  "hsl(0, 70%, 55%)",
+  { bg: "hsl(142, 40%, 45%)", cell: "hsla(142, 40%, 45%, 0.2)" },   // sage green
+  { bg: "hsl(158, 35%, 38%)", cell: "hsla(158, 35%, 38%, 0.2)" },   // teal green
+  { bg: "hsl(120, 30%, 50%)", cell: "hsla(120, 30%, 50%, 0.2)" },   // soft green
+  { bg: "hsl(170, 35%, 42%)", cell: "hsla(170, 35%, 42%, 0.2)" },   // mint
+  { bg: "hsl(95, 30%, 48%)", cell: "hsla(95, 30%, 48%, 0.2)" },     // lime-green
+  { bg: "hsl(150, 25%, 55%)", cell: "hsla(150, 25%, 55%, 0.2)" },   // pale moss
+  { bg: "hsl(180, 25%, 42%)", cell: "hsla(180, 25%, 42%, 0.2)" },   // dark mint
+  { bg: "hsl(105, 25%, 40%)", cell: "hsla(105, 25%, 40%, 0.2)" },   // forest
 ];
 
 const CATEGORY_EMOJI: Record<string, string> = {

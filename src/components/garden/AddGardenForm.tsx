@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X, HelpCircle } from "lucide-react";
+import { X, HelpCircle, FileText } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type GardenType = Database["public"]["Enums"]["garden_type"];
@@ -25,6 +25,45 @@ const SIZE_HINTS: Partial<Record<GardenType, string>> = {
   friland: "Liten trädgård ≈ 10–30 m², stor ≈ 50–200 m²",
 };
 
+const DRAFT_KEY = "growmate_garden_draft";
+
+interface DraftData {
+  name: string;
+  types: GardenType[];
+  size: string;
+  notes: string;
+  pallkrageCount: string;
+  savedAt: number;
+}
+
+function loadDraft(): DraftData | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as DraftData;
+    // Expire drafts older than 7 days
+    if (Date.now() - draft.savedAt > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(DRAFT_KEY);
+      return null;
+    }
+    return draft;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(data: Omit<DraftData, "savedAt">) {
+  // Only save if there's meaningful content
+  if (!data.name.trim() && !data.notes.trim() && !data.size && !data.pallkrageCount) return;
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...data, savedAt: Date.now() }));
+  } catch { /* ignore quota errors */ }
+}
+
+export function clearGardenDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+
 interface AddGardenFormProps {
   onSubmit: (garden: { name: string; type: GardenType[]; size_sqm?: number; notes?: string }) => void;
   onCancel: () => void;
@@ -32,13 +71,23 @@ interface AddGardenFormProps {
 }
 
 export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormProps) {
-  const [name, setName] = useState("");
-  const [types, setTypes] = useState<GardenType[]>(["friland"]);
-  const [size, setSize] = useState("");
-  const [notes, setNotes] = useState("");
-  const [pallkrageCount, setPallkrageCount] = useState("");
+  const draft = useMemo(() => loadDraft(), []);
+  const [name, setName] = useState(draft?.name ?? "");
+  const [types, setTypes] = useState<GardenType[]>(draft?.types ?? ["friland"]);
+  const [size, setSize] = useState(draft?.size ?? "");
+  const [notes, setNotes] = useState(draft?.notes ?? "");
+  const [pallkrageCount, setPallkrageCount] = useState(draft?.pallkrageCount ?? "");
+  const [showDraftBanner, setShowDraftBanner] = useState(!!draft?.name);
 
   const hasPallkrage = types.includes("pallkrage");
+
+  // Auto-save draft on every change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveDraft({ name, types, size, notes, pallkrageCount });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [name, types, size, notes, pallkrageCount]);
 
   const calculatedSqm = useMemo(() => {
     if (hasPallkrage && pallkrageCount) {
@@ -54,12 +103,28 @@ export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormPr
   const handleSubmit = () => {
     if (!name.trim() || types.length === 0) return;
     const finalSize = size ? Number(size) : calculatedSqm ?? undefined;
+    clearGardenDraft();
     onSubmit({
       name: name.trim(),
       type: types,
       size_sqm: finalSize,
       notes: notes.trim() || undefined,
     });
+  };
+
+  const handleCancel = () => {
+    // Draft is already auto-saved, just close
+    onCancel();
+  };
+
+  const handleDiscardDraft = () => {
+    clearGardenDraft();
+    setName("");
+    setTypes(["friland"]);
+    setSize("");
+    setNotes("");
+    setPallkrageCount("");
+    setShowDraftBanner(false);
   };
 
   const toggleType = (t: GardenType) => {
@@ -78,10 +143,24 @@ export function AddGardenForm({ onSubmit, onCancel, isLoading }: AddGardenFormPr
     <div className="rounded-2xl bg-card border border-border p-4 space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h3 className="font-display text-foreground">Ny odlingsyta</h3>
-        <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+        <button onClick={handleCancel} className="text-muted-foreground hover:text-foreground">
           <X className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Draft restored banner */}
+      {showDraftBanner && (
+        <div className="flex items-center gap-2 rounded-xl bg-accent/60 border border-border px-3 py-2">
+          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+          <p className="text-xs text-muted-foreground flex-1">Utkast återställt</p>
+          <button
+            onClick={handleDiscardDraft}
+            className="text-xs text-destructive hover:underline"
+          >
+            Rensa
+          </button>
+        </div>
+      )}
 
       <input
         type="text"
